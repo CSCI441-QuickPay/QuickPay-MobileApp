@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, ImageSourcePropType, ScrollView, StyleSheet, Text, View } from "react-native";
 
 // Define the type for each transaction item
 type Transaction = {
@@ -7,7 +7,7 @@ type Transaction = {
   subtitle: string;
   amount: number;
   date: string;
-  logo?: string;
+  logo?: ImageSourcePropType;
 }
 
 // Dummy data for transactions
@@ -18,7 +18,7 @@ const transactions: Transaction[] = [
     subtitle: "SOURCE: COMMERCE(-$2.00), BOA(-$1.99)",
     amount: -3.99,
     date: "Today",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+    logo: require("@/assets/images/netflix_logo.png"),
   },
   {
     id: "2",
@@ -34,7 +34,7 @@ const transactions: Transaction[] = [
     subtitle: "SOURCE: COMMERCE(-$1.1), BOA(-$1.09)",
     amount: -2.19,
     date: "Today",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg",
+    logo: require("@/assets/images/youtube_premium_logo.png"),
   },
   {
     id: "4",
@@ -42,7 +42,7 @@ const transactions: Transaction[] = [
     subtitle: "SOURCE: COMMERCE(-$2.00), BOA(-$1.99)",
     amount: -3.99,
     date: "October 4, 2025",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+    logo: require("@/assets/images/netflix_logo.png"),
   },
   {
     id: "5",
@@ -78,7 +78,7 @@ export default function TransactionList() {
                             {/* Transaction logos */}
                             {tx.logo ? (
                                 <Image 
-                                    source={{ uri: tx.logo }}
+                                    source={tx.logo }
                                     style={styles.logo}
                                     resizeMode = "contain"
                                 />
