@@ -1,18 +1,31 @@
+import BalanceCard from '@/components/BalanceCard';
 import BottomNav from '@/components/ButtomNav';
 import Header from '@/components/Header';
+import TransactionFilter from '@/components/TransactionFilter'; 
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 
 export default function Home() {
   return (
-
     // Main container
-    <View style={{ flex: 1 }}> {/* Flex 1 to take full height */}
+    <View style={{ flex: 1 , backgroundColor: "white"}}> {/* Flex 1 to take full height */}
+
       {/* Header */}
       <Header 
-        name="Sok Sreng" 
+        name="SokSreng" 
         onSettingPress={() => console.log("Go to Settings")} 
       />
+      
+      {/* Balance Card */}
+      <BalanceCard 
+        balance={1234.00} 
+        onRequest={() => console.log("Request Money")} 
+        onSend={() => console.log("Send Money")} 
+      />
+
+      {/* Transaction Filter */}
+      <TransactionFilter />
+
       {/* Main content area */}
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Home Page</Text>
