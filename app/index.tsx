@@ -1,9 +1,10 @@
 import BalanceCard from '@/components/BalanceCard';
 import BottomNav from '@/components/ButtomNav';
 import Header from '@/components/Header';
-import TransactionFilter from '@/components/TransactionFilter'; 
+import TransactionFilter from '@/components/TransactionFilter';
+import TransactionList from '@/components/TransactionList';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 export default function Home() {
   return (
@@ -27,8 +28,8 @@ export default function Home() {
       <TransactionFilter />
 
       {/* Main content area */}
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Home Page</Text>
+      <View style={{ flex: 1, marginTop: 14 }}>
+        <TransactionList />
       </View>
 
       {/* Bottom Navigation */}
