@@ -1,4 +1,4 @@
-import { Image, ImageSourcePropType, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View, Image } from "react-native";
 
 // Define the type for each transaction item
 type Transaction = {
@@ -7,7 +7,7 @@ type Transaction = {
   subtitle: string;
   amount: number;
   date: string;
-  logo?: ImageSourcePropType;
+  logo?: any;
 }
 
 // Dummy data for transactions
@@ -65,38 +65,38 @@ export default function TransactionList() {
 
     return(
         // Scrollable list of transactions
-        <ScrollView style={styles.container}>
+        <ScrollView className="flex-1 px-[12px]">
             {Object.keys(groupedTransactions).map(date => (
-                <View key={date} style={styles.dateGroup}>
+                <View key={date} className="mb-[12px]">
                     {/* Date Header */}
-                    <Text style={styles.date}>{date}</Text>
+                    <Text className="text-[16px] font-bold text-primary mt-[4px] mb-[8px]">{date}</Text>
 
                     {/* Render the list of transactions for this date */}
                     {groupedTransactions[date].map((tx) => (
-                        <View key={tx.id} style={styles.card}>
+                        <View key={tx.id} className="flex-row items-center bg-white p-[12px] rounded-[8px] mb-[8px] shadow-sm">
 
                             {/* Transaction logos */}
                             {tx.logo ? (
                                 <Image 
                                     source={tx.logo }
-                                    style={styles.logo}
-                                    resizeMode = "contain"
+                                    className="w-[46px] h-[46px] rounded-[18px]"
+                                    resizeMode="contain"
                                 />
                             ) : (
-                                <View style = {styles.fallbackLogo}>
-                                    <Text style = {styles.fallbackText}>KS</Text>
+                                <View className="w-[46px] h-[46px] rounded-[18px] bg-accent items-center justify-center">
+                                    <Text className="text-white font-bold">KS</Text>
                                 </View>
                             )}
                         
                         {/* Transaction title + subtitle */}
                         
-                        <View style={{ flex: 1, marginLeft: 10 }}>
-                            <Text style = {styles.title}>{tx.title}</Text>
-                            {tx.subtitle ? <Text style = {styles.subtitle}>{tx.subtitle}</Text> : null}
+                        <View className="flex-1 ml-[10px]">
+                            <Text className="text-[14px] font-semibold text-black">{tx.title}</Text>
+                            {tx.subtitle ? <Text className="text-[12px] text-[#666]">{tx.subtitle}</Text> : null}
                         </View>
 
                         {/* Transaction amount */}
-                        <Text style = {[styles.amount, { color: tx.amount < 0 ? "red" : "green" }]}>
+                        <Text className={`text-[15px] font-bold ${tx.amount < 0 ? "text-red-500" : "text-green-600"}`}>
                             {tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)}
                         </Text>
                     
@@ -107,64 +107,3 @@ export default function TransactionList() {
         </ScrollView>
     )
 }
-
-    // Styles for the component
-const styles = StyleSheet.create({
-    container :{
-        flex: 1,
-        paddingHorizontal: 12,
-    },
-    dateGroup: {
-        marginBottom: 12,
-    },
-    date: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#00332d",
-        marginTop: 4,
-        marginBottom: 8,
-    },
-    card: {
-        flexDirection: "row", // logo , text and amount in a row
-        alignItems: "center",
-        backgroundColor: "#fff",
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 8,
-        shadowColor: "#000",
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-    },
-    logo: {
-        width: 46,
-        height: 46,
-        borderRadius: 18,
-    },
-    fallbackLogo: {
-        width: 46,
-        height: 46,
-        borderRadius: 18,
-        backgroundColor: "#ff9800",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    fallbackText: {
-        color: "#fff",
-        fontWeight: "700",
-    },
-    title:{
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#000",
-    },
-    subtitle: {
-        fontSize: 12,
-        color: "#666",
-    },
-    amount: {
-        fontSize: 15,
-        fontWeight: "700",
-    },
-
-
-})

@@ -4,11 +4,11 @@ import Header from '@/components/Header';
 import TransactionFilter from '@/components/TransactionFilter';
 import TransactionList from '@/components/TransactionList';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 
 export default function Home() {
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       {/* Header */}
       <Header 
         name="SokSreng" 
@@ -26,7 +26,7 @@ export default function Home() {
       <TransactionFilter />
 
       {/* Main content area */}
-      <View style={styles.content}>
+      <View className="flex-1 mt-[14px]">
         <TransactionList />
       </View>
 
@@ -65,14 +65,3 @@ export default function Home() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  content: {
-    flex: 1,
-    marginTop: 14,
-  },
-});

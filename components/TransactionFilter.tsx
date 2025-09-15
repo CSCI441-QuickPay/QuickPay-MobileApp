@@ -1,84 +1,43 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import {Ionicons, FontAwesome5, Feather} from "@expo/vector-icons";
-
-// Define the type for transaction filter props
-type FilterButtonProps = {
-    label: string; // Label for the filter button
-    icon: React.ReactNode; // Icon for the filter button
-    onPress?: () => void; // Callback when the button is pressed
-}
+import { Text, TouchableOpacity, View } from "react-native";
+import { Ionicons, FontAwesome5, Feather } from "@expo/vector-icons";
 
 // Transaction filter button component
-function FilterButton({ label, icon, onPress }: FilterButtonProps) {
-    return (
-        <TouchableOpacity style={styles.filterButton} onPress={onPress}>
-            {icon}
-            <Text style={styles.filterLabel}>{label}</Text>
-            <Ionicons name="chevron-down" size={16} color="#00332d"/>
-        </TouchableOpacity>
-    )
+function FilterButton({ label, icon, onPress }: { label: string; icon: React.ReactNode; onPress?: () => void }) {
+  return (
+    <TouchableOpacity className="flex-row items-center border border-primary rounded-[20px] px-[12px] py-[6px] mr-[8px]" onPress={onPress}>
+      {icon}
+      <Text className="mx-[6px] text-[14px] text-primary">{label}</Text>
+      <Ionicons name="chevron-down" size={16} color="#00332d"/>
+    </TouchableOpacity>
+  );
 }
 
 // Main TransactionFilter component
 export default function TransactionFilter() {
-    return (
-        <View style={styles.container}>
-            {/* Title */}
-            <Text style={styles.title}>Transactions</Text>
+  return (
+    <View className="mx-[16px] mt-[8px]">
+      {/* Title */}
+      <Text className="text-[18px] font-bold text-primary mb-[12px]">Transactions</Text>
 
-            {/* Filter Buttons */}
-            <View style={styles.buttons}>
-                <FilterButton
-                    label = "Recent"
-                    icon = {<Ionicons name="time-outline" size={16} color="#00332d" />}
-                    onPress = {() => console.log("Filter by recent")}
-                />
-
-                <FilterButton
-                    label = "Categories"
-                    icon = {<FontAwesome5 name="th-large" size={16} color="#00332d" />}
-                    onPress = {() => console.log("Filter by categories")}
-                />
-
-                <FilterButton
-                    label = "Sort"
-                    icon = {<Feather name="sliders" size={16} color="#00332d" />}
-                    onPress = {() => console.log("Sort transactions")}
-                />
-            </View>
-        </View>
-    )
+      {/* Filter Buttons */}
+      <View className="flex-row">
+        <FilterButton 
+          label="Recent"
+          icon={<Ionicons name="time-outline" size={16} color="#00332d" />}
+          onPress={() => console.log("Filter by recent")}
+        />
+        <FilterButton 
+          label="Categories"
+          icon={<FontAwesome5 name="th-large" size={16} color="#00332d" />}
+          onPress={() => console.log("Filter by categories")}
+        />
+        <FilterButton 
+          label="Sort"
+          icon={<Feather name="sliders" size={16} color="#00332d" />}
+          onPress={() => console.log("Sort transactions")}
+        />
+      </View>
+    </View>
+  );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginTop: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#00332d",
-    marginBottom: 12,
-  },
-  buttons: {
-    flexDirection: "row",
-    gap: 3, 
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#00332d",
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
-  },
-  filterLabel: {
-    marginHorizontal: 6,
-    fontSize: 14,
-    color: "#00332d",
-  },
-});
