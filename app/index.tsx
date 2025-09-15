@@ -4,13 +4,11 @@ import Header from '@/components/Header';
 import TransactionFilter from '@/components/TransactionFilter';
 import TransactionList from '@/components/TransactionList';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { View } from "react-native";
+import { View, StyleSheet } from "react-native";
 
 export default function Home() {
   return (
-    // Main container
-    <View style={{ flex: 1 , backgroundColor: "white"}}> {/* Flex 1 to take full height */}
-
+    <View style={styles.container}>
       {/* Header */}
       <Header 
         name="SokSreng" 
@@ -28,7 +26,7 @@ export default function Home() {
       <TransactionFilter />
 
       {/* Main content area */}
-      <View style={{ flex: 1, marginTop: 14 }}>
+      <View style={styles.content}>
         <TransactionList />
       </View>
 
@@ -51,11 +49,10 @@ export default function Home() {
             icon: (color) => <AntDesign name="qrcode" size={28} color={color} />,
             onPress: () => console.log("Go Scan"),
             special: true,
-            
           },
           {
             label: "Favorite",
-            icon: (color) => <AntDesign name="staro" size={24} color={color} />,
+            icon: (color) => <AntDesign name="star" size={24} color={color} />,
             onPress: () => console.log("Go Favorite"),
           },
           {
@@ -68,3 +65,14 @@ export default function Home() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  content: {
+    flex: 1,
+    marginTop: 14,
+  },
+});
