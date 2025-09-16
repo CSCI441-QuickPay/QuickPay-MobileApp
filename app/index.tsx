@@ -4,32 +4,35 @@ import Header from '@/components/Header';
 import TransactionFilter from '@/components/TransactionFilter';
 import TransactionList from '@/components/TransactionList';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
   return (
-    <View className="flex-1 bg-white">
-      {/* Header */}
-      <Header 
-        name="SokSreng" 
-        onSettingPress={() => console.log("Go to Settings")} 
-      />
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+        
+        {/* Header */}
+        <Header 
+          name="SokSreng" 
+          onSettingPress={() => console.log("Go to Settings")} 
+        />
+        
+        {/* Balance Card */}
+        <BalanceCard 
+          balance={1234.00} 
+          onRequest={() => console.log("Request Money")} 
+          onSend={() => console.log("Send Money")} 
+        />
+
+        {/* Transaction Filter */}
+        <TransactionFilter />
+
+        {/* Main content area */}
+        <View className="flex-1 mt-[14px]">
+          <TransactionList />
+        </View>
       
-      {/* Balance Card */}
-      <BalanceCard 
-        balance={1234.00} 
-        onRequest={() => console.log("Request Money")} 
-        onSend={() => console.log("Send Money")} 
-      />
-
-      {/* Transaction Filter */}
-      <TransactionFilter />
-
-      {/* Main content area */}
-      <View className="flex-1 mt-[14px]">
-        <TransactionList />
-      </View>
-
       {/* Bottom Navigation */}
       <BottomNav
         items={[
@@ -53,15 +56,15 @@ export default function Home() {
           {
             label: "Favorite",
             icon: (color) => <AntDesign name="star" size={24} color={color} />,
-            onPress: () => console.log("Go Favorite"),
+            onPress: () => router.push("/favorite"),
           },
           {
             label: "Profile",
             icon: (color) => <Ionicons name="person-outline" size={24} color={color} />,
             onPress: () => console.log("Go Profile"),
-          },
+          }
         ]}
       />
-    </View>
+    </SafeAreaView>
   );
 }
