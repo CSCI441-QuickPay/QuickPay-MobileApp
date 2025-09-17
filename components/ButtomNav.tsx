@@ -29,7 +29,7 @@ const BottomNav = ({ items }: { items: NavItem[] }) => {
               {/* Special icon color for the Scan button */}
               {item.icon("#ccf8f1")}
               {/* Special label color for the Scan button */}
-              <Text className="text-[12px] mt-[4px] text-secondary">{item.label}</Text>
+              <Text className="text-small mt-[4px] text-secondary">{item.label}</Text>
             </TouchableOpacity>
           );
         }
@@ -42,7 +42,7 @@ const BottomNav = ({ items }: { items: NavItem[] }) => {
             onPress={item.onPress}
           >
             {item.icon(color)}
-            <Text className="text-[12px] mt-[4px]" style={{ color }}>
+            <Text className="text-small mt-[4px]" style={{ color }}>
               {item.label}
             </Text>
           </TouchableOpacity>

@@ -39,7 +39,7 @@ export default function Home() {
           {
             label: "Home",
             icon: (color) => <Ionicons name="home" size={24} color={color} />,
-            onPress: () => console.log("Go Home"),
+            onPress: () => router.push("/"),
             active: true,
           },
           {
@@ -61,7 +61,7 @@ export default function Home() {
           {
             label: "Profile",
             icon: (color) => <Ionicons name="person-outline" size={24} color={color} />,
-            onPress: () => console.log("Go Profile"),
+            onPress: () => router.push("/profile"),
           }
         ]}
       />

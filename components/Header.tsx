@@ -1,5 +1,5 @@
-import { Text, View, Image, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 type HeaderProps = {
   name: string;
@@ -13,13 +13,13 @@ export default function Header({ name, onSettingPress }: HeaderProps) {
       {/* Profile Image */}
       <Image 
         source={require('@/assets/images/avatar.jpg')}
-        className="w-[50px] h-[50px] rounded-full border border-black"
+        className="w-[72px] h-[72px] rounded-full border border-black"
       />
 
       {/* Greeting Text */}
-      <Text className="flex-1 text-[16px] ml-[12px] font-normal">
+      <Text className="flex-1 text-subheading ml-[12px] font-normal">
         Welcome Back, {"\n"}
-        <Text className="font-bold text-[25px]">{name}!</Text>
+        <Text className="font-bold text-heading">{name}!</Text>
       </Text>
 
       {/* Settings Button */}

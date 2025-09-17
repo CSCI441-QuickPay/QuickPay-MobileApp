@@ -17,7 +17,7 @@ export default function BalanceCard ({ balance, onRequest, onSend }: BalanceCard
     <View className="bg-secondary rounded-[12px] overflow-hidden m-[16px] shadow-sm">
       {/* Balance Section */}
       <View className="flex-row items-center p-[16px]">
-        <Text className="text-[22px] font-bold text-primary">
+        <Text className="text-[28px] font-bold text-primary">
           ${" "}
           {hidden
             ? "•••••"
@@ -40,7 +40,7 @@ export default function BalanceCard ({ balance, onRequest, onSend }: BalanceCard
         {/* Request Button */}
         <TouchableOpacity className="flex-1 flex-row items-center justify-center py-[14px]" onPress={onRequest}>
           <MaterialIcons name="request-page" size={24} color="#ccf8f1" />
-          <Text className="text-secondary text-[16px] ml-[6px] font-medium">Request</Text>
+          <Text className="text-secondary text-subheading ml-[6px] font-medium">Request</Text>
         </TouchableOpacity>
 
         {/* Divider */}
@@ -49,7 +49,7 @@ export default function BalanceCard ({ balance, onRequest, onSend }: BalanceCard
         {/* Send Button */}
         <TouchableOpacity className="flex-1 flex-row items-center justify-center py-[14px]" onPress={onSend}>
           <Feather name="send" size={24} color="#ccf8f1" />
-          <Text className="text-secondary text-[16px] ml-[6px] font-medium">Send</Text>
+          <Text className="text-secondary text-subheading ml-[6px] font-medium">Send</Text>
         </TouchableOpacity>
       </View>
     </View>

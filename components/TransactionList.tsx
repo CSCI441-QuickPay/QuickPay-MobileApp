@@ -69,7 +69,7 @@ export default function TransactionList() {
             {Object.keys(groupedTransactions).map(date => (
                 <View key={date} className="mb-[12px]">
                     {/* Date Header */}
-                    <Text className="text-[16px] font-bold text-primary mt-[4px] mb-[8px]">{date}</Text>
+                    <Text className="text-normal font-bold text-primary mt-[4px] mb-[8px]">{date}</Text>
 
                     {/* Render the list of transactions for this date */}
                     {groupedTransactions[date].map((tx) => (
@@ -91,12 +91,13 @@ export default function TransactionList() {
                         {/* Transaction title + subtitle */}
                         
                         <View className="flex-1 ml-[10px]">
-                            <Text className="text-[14px] font-semibold text-black">{tx.title}</Text>
-                            {tx.subtitle ? <Text className="text-[12px] text-[#666]">{tx.subtitle}</Text> : null}
+                            <Text className="text-[12px] font-semibold text-black">{tx.title}</Text>
+                            {/* Only show subtitle if it exists */}
+                            {tx.subtitle ? <Text className="text-[12px] text-[#666] italic mt-[2px]">{tx.subtitle}</Text> : null}
                         </View>
 
                         {/* Transaction amount */}
-                        <Text className={`text-[15px] font-bold ${tx.amount < 0 ? "text-red-500" : "text-green-600"}`}>
+                        <Text className={`text-normal font-bold ${tx.amount < 0 ? "text-red-500" : "text-green-600"}`}>
                             {tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)}
                         </Text>
                     

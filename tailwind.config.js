@@ -10,6 +10,12 @@ module.exports = {
           secondary: "#ccf8f1", // light teal/green
           accent: "#ff9800",    // orange fallback logo
       },
+      fontSize: {
+        small: 12,
+        normal: 18,
+        subheading: 24,
+      }
+      ,
     },
   },
   plugins: [],

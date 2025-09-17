@@ -50,7 +50,7 @@ export default function FavoriteScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <View className="px-5 pt-4">
-        <Text className="text-2xl font-semibold text-black">Favorites</Text>
+        <Text className="text-subheading font-semibold text-black">Favorites</Text>
       </View>
 
       {/* Favorites List */}
@@ -58,17 +58,19 @@ export default function FavoriteScreen() {
         {favorites.map((fav) => (
           <TouchableOpacity
             key={fav.id}
-            className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-3"
+            className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-3 w-[386px] h-[72px]"
           >
             <Image
               source={fav.image}
               className="w-12 h-12 rounded-full mr-4"
             />
             <View>
-              <Text className="text-lg font-semibold text-[#0A2F23]">
+
+              {/* Name and Account Info */}
+              <Text className="text-normal font-semibold text-[#0A2F23]">
                 {fav.name}
               </Text>
-              <Text className="text-sm text-gray-600">{fav.account}</Text>
+              <Text className="text-small italic text-gray-600">{fav.account}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -96,13 +98,13 @@ export default function FavoriteScreen() {
           {
             label: "Favorite",
             icon: (color) => <AntDesign name="star" size={24} color={color} />,
-            onPress: () => console.log("Go Favorite"),
+            onPress: () => router.push("/favorite"),
             active: true,
           },
           {
             label: "Profile",
             icon: (color) => <Ionicons name="person-outline" size={24} color={color} />,
-            onPress: () => console.log("Go Profile"),
+            onPress: () => router.push("/profile"),
           },
         ]}
       />

@@ -7,7 +7,7 @@ function FilterButton({ label, icon, onPress }: { label: string; icon: React.Rea
   return (
     <TouchableOpacity className="flex-row items-center border border-primary rounded-[20px] px-[12px] py-[6px] mr-[8px]" onPress={onPress}>
       {icon}
-      <Text className="mx-[6px] text-[14px] text-primary">{label}</Text>
+      <Text className="mx-[6px] text-normal text-primary">{label}</Text>
       <Ionicons name="chevron-down" size={16} color="#00332d"/>
     </TouchableOpacity>
   );
@@ -18,7 +18,7 @@ export default function TransactionFilter() {
   return (
     <View className="mx-[16px] mt-[8px]">
       {/* Title */}
-      <Text className="text-[18px] font-bold text-primary mb-[12px]">Transactions</Text>
+      <Text className="text-subheading font-bold text-primary mb-[12px]">Transactions</Text>
 
       {/* Filter Buttons */}
       <View className="flex-row">
@@ -28,7 +28,7 @@ export default function TransactionFilter() {
           onPress={() => console.log("Filter by recent")}
         />
         <FilterButton 
-          label="Categories"
+          label="Bank"
           icon={<FontAwesome5 name="th-large" size={16} color="#00332d" />}
           onPress={() => console.log("Filter by categories")}
         />
