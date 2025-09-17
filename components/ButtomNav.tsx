@@ -13,7 +13,7 @@ type NavItem = {
 // Bottom navigation component
 const BottomNav = ({ items }: { items: NavItem[] }) => {
   return (
-    <View className="flex-row justify-around bg-secondary py-[8px]">
+    <View className="flex-row justify-around bg-secondary py-[8px] px-[12px]">
       {items.map((item, index) => {
         // Default color for icon, White if active, dark green otherwise
         const color = item.active ? "#000" : "#555";
@@ -23,7 +23,7 @@ const BottomNav = ({ items }: { items: NavItem[] }) => {
           return (
             <TouchableOpacity
               key={index}
-              className="items-center justify-center bg-primary p-[16px] rounded-[20px] -mt-[20px]"
+              className="items-center justify-center bg-primary p-[16px] rounded-[20px] -mt-[20px] h-[80px] w-[80px]"
               onPress={item.onPress}
             >
               {/* Special icon color for the Scan button */}
@@ -38,7 +38,7 @@ const BottomNav = ({ items }: { items: NavItem[] }) => {
         return (
           <TouchableOpacity
             key={index}
-            className="flex-1 items-center justify-center py-[6px]"
+            className="flex-1 items-center justify-around py-[6px] "
             onPress={item.onPress}
           >
             {item.icon(color)}

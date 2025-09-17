@@ -24,7 +24,7 @@ export default function Header({ name, onSettingPress }: HeaderProps) {
 
       {/* Settings Button */}
       <TouchableOpacity onPress={onSettingPress}>
-        <Ionicons name="settings-outline" size={24} color="#000" />
+        <Ionicons name="settings-outline" size={37} color="#000" />
       </TouchableOpacity>
     </View>
   );

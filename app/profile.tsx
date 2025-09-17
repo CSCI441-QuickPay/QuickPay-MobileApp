@@ -43,7 +43,7 @@ export default function Profile() {
 
             {/* Profile Options List */}
             <View className="bg-gray-100 flex-1">
-                <View className="mt-2 p-4">
+                <View className="mt-2 px-4 pt-4">
 
                     {/* Map through options and render ProfileOption components */}
                     {option.map((option, index) => (
@@ -54,7 +54,7 @@ export default function Profile() {
                 </View>
 
                 {/* App Version Label */}
-                <View className="items-center">
+                <View className="items-center mt-2">
                     <Text className="text-gray-500 font-bold text-normal">
                         App Version: V X.xx
                     </Text>
@@ -66,29 +66,29 @@ export default function Profile() {
             items={[
             {
                 label: "Home",
-                icon: (color) => <Ionicons name="home" size={24} color={color} />,
+                icon: (color) => <Ionicons name="home" size={34} color={color} />,
                 onPress: () => router.push("/"),
                 
             },
             {
                 label: "Budget",
-                icon: (color) => <MaterialIcons name="account-tree" size={24} color={color} />,
+                icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />,
                 onPress: () => console.log("Go Budget"),
             },
             {
                 label: "Scan",
-                icon: (color) => <AntDesign name="qrcode" size={28} color={color} />,
+                icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
                 onPress: () => console.log("Go Scan"),
                 special: true,
             },
             {
                 label: "Favorite",
-                icon: (color) => <AntDesign name="star" size={24} color={color} />,
+                icon: (color) => <AntDesign name="star" size={34} color={color} />,
                 onPress: () => router.push("/favorite"),
             },
             {
                 label: "Profile",
-                icon: (color) => <Ionicons name="person-outline" size={24} color={color} />,
+                icon: (color) => <Ionicons name="person-outline" size={34} color={color} />,
                 onPress: () => router.push("/profile"),
                 active: true,
             }
