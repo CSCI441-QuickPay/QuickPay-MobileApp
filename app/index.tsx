@@ -1,5 +1,5 @@
 import BalanceCard from '@/components/BalanceCard';
-import BottomNav from '@/components/ButtomNav';
+import BottomNav from '@/components/BottomNav';
 import Header from '@/components/Header';
 import TransactionFilter from '@/components/TransactionFilter';
 import TransactionList from '@/components/TransactionList';

@@ -1,4 +1,4 @@
-import BottomNav from "@/components/ButtomNav";
+import BottomNav from "@/components/BottomNav";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -54,7 +54,7 @@ export default function FavoriteScreen() {
       </View>
 
       {/* Favorites List */}
-      <ScrollView className="px-4 mt-3">
+      <ScrollView className="px-4 mt-3 ">
         {favorites.map((fav) => (
           <TouchableOpacity
             key={fav.id}
