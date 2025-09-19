@@ -31,8 +31,9 @@ export default function TransactionList() {
                         return (
                             <View key={tx.id} className=" bg-white p-[12px] rounded-[8px] mb-[8px] shadow-sm">
                              
+                             {/* Toggle expand/collapse */}
                               <TouchableOpacity className="flex-row items-center"
-                              onPress={() => setExpandedIds(isExpanded ? null : tx.id)} > {/* Toggle expand/collapse */}
+                              onPress={() => setExpandedIds(isExpanded ? null : tx.id)} > 
                                 {/* Transaction logos */}
                                 {tx.logo ? (
                                     <Image
@@ -56,7 +57,7 @@ export default function TransactionList() {
 
                                 {/* Transaction amount */}
                                 <Text className={`text-normal font-bold ${tx.amount < 0 ? "text-red-500" : "text-green-600"}`}>
-                                    {tx.amount < 0 ? "-" : "+"}${Math.abs(tx.amount).toFixed(2)}
+                                    {`${tx.amount < 0 ? "-" : "+"}$${Math.abs(tx.amount).toFixed(2)}`}
                                 </Text>
                               </TouchableOpacity>
 
