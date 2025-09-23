@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 type HeaderProps = {
@@ -11,10 +12,12 @@ export default function Header({ name, onSettingPress }: HeaderProps) {
   return (
     <View className="flex-row items-center justify-between px-[16px] py-[12px] bg-white">
       {/* Profile Image */}
-      <Image 
-        source={require('@/assets/images/avatar.jpg')}
-        className="w-[72px] h-[72px] rounded-full border border-black"
-      />
+      <TouchableOpacity onPress={() => router.push("/profile")}>
+        <Image
+          source={require('@/assets/images/avatar.jpg')}
+          className="w-[72px] h-[72px] rounded-full border border-black"
+        />
+      </TouchableOpacity>
 
       {/* Greeting Text */}
       <Text className="flex-1 text-subheading ml-[12px] font-normal">

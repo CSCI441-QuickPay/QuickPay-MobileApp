@@ -14,7 +14,7 @@ export default function Profile() {
         { icon: "person-outline", label: "My Profile", onPress: () => console.log("Go to My Profile") },
         { icon: "shield-checkmark-outline", label: "Security", onPress: () => console.log("Go to Security") },
         { icon: "language-outline", label: "Language", onPress: () => console.log("Go to Language") },
-        { icon: "call-outline", label: "Contact Us", onPress: () => console.log("Go to Contact Us") },
+        { icon: "call-outline", label: "Contact Us", onPress: () => router.push("/contactus") },
         { icon: "document-text-outline", label: "Terms & Conditions", onPress: () => console.log("Go to Terms") },
     ]
 
