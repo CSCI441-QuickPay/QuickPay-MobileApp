@@ -13,7 +13,7 @@ export const transactions: Transaction[] = [
     title: "NETFLIX.COM,SINGAPORE",
     subtitle: "SOURCE: COMMERCE(-$2.00), BOA(-$1.99)",
     amount: -3.99,
-    date: "Today",
+    date: "2025-09-29",
     logo: require("@/assets/images/netflix_logo.png"),
   },
   {
@@ -21,14 +21,14 @@ export const transactions: Transaction[] = [
     title: "ACH Deposit DIR DEP STATE OF KANSAS",
     subtitle: "",
     amount: 679.17,
-    date: "Today",
+    date: "2025-09-29",
   },
   {
     id: "3",
     title: "GOOGLE *YouTubePremium",
     subtitle: "SOURCE: COMMERCE(-$1.1), BOA(-$1.09)",
     amount: -2.19,
-    date: "Today",
+    date: "2025-08-05",
     logo: require("@/assets/images/youtube_premium_logo.png"),
   },
   {
@@ -36,7 +36,7 @@ export const transactions: Transaction[] = [
     title: "NETFLIX.COM,SINGAPORE",
     subtitle: "SOURCE: COMMERCE(-$2.00), BOA(-$1.99)",
     amount: -3.99,
-    date: "October 4, 2025",
+    date: "2025-09-18",
     logo: require("@/assets/images/netflix_logo.png"),
   },
   {
@@ -44,6 +44,6 @@ export const transactions: Transaction[] = [
     title: "ACH Deposit DIR DEP STATE OF KANSAS",
     subtitle: "",
     amount: 679.17,
-    date: "October 4, 2025",
+    date: "2025-09-15",
   },
 ];

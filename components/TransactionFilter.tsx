@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View, Modal } from "react-native";
 import { Ionicons, FontAwesome5, Feather } from "@expo/vector-icons";
 
 // Transaction filter button component
@@ -14,7 +14,21 @@ function FilterButton({ label, icon, onPress }: { label: string; icon: React.Rea
 }
 
 // Main TransactionFilter component
-export default function TransactionFilter() {
+export default function TransactionFilter(
+  // Props: onFilterChange => call when user click on filter button
+  { onFilterChange = () => {} }: { onFilterChange?: (filter: string) => void }) {
+
+    const[modalVisible, setModalVisible] = React.useState(false); // State to manage modal visibility
+    
+    // Option for filter modal
+    const filterOptions = [
+      { label: "This Week", value: "week" },
+      { label: "Last Week", value: "last_week" },
+      { label: "Last Month", value: "last_month" },
+      { label: "All", value: "all" },
+    ];
+  
+  
   return (
     <View className="mx-[16px] mt-[8px]">
       {/* Title */}
@@ -25,7 +39,7 @@ export default function TransactionFilter() {
         <FilterButton 
           label="Recent"
           icon={<Ionicons name="time-outline" size={16} color="#00332d" />}
-          onPress={() => console.log("Filter by recent")}
+          onPress={() => setModalVisible(true)}  // Open modal on press
         />
         <FilterButton 
           label="Bank"
@@ -38,6 +52,29 @@ export default function TransactionFilter() {
           onPress={() => console.log("Sort transactions")}
         />
       </View>
+
+      {/* Modal for Recent option */}
+      <Modal visible={modalVisible} animationType="fade" transparent={true} onRequestClose={() => setModalVisible(false)}>
+        {/* Semi-transparent background to user can tap outside to close */}
+        <TouchableOpacity className="flex-1 bg-black/30" activeOpacity={1} onPressOut={() => setModalVisible(false)}>
+          {/* box with filter options */}
+          <View className="absolute top-[150px] left-8 right-8 bg-white rounded-xl p-3 shadow-lg">
+            {filterOptions.map((option) => (
+              <TouchableOpacity 
+              key={option.value} 
+              className="p-3 border-b border-gray-200"
+              onPress={() => {
+                onFilterChange(option.value); // Call parent callback
+                setModalVisible(false); // Close modal
+              }}
+              >
+                <Text className="text-normal text-gray-800">{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

@@ -5,10 +5,13 @@ import TransactionFilter from '@/components/TransactionFilter';
 import TransactionList from '@/components/TransactionList';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useState } from 'react';
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
+  
+  const [filter, setFilter] = useState("all"); // State to manage current filter
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
         
@@ -26,11 +29,11 @@ export default function Home() {
         />
 
         {/* Transaction Filter */}
-        <TransactionFilter />
+        <TransactionFilter onFilterChange={setFilter} />
 
         {/* Main content area */}
         <View className="flex-1 mt-[14px] bg-gray-100">
-          <TransactionList />
+          <TransactionList filter={filter} />
         </View>
       
       {/* Bottom Navigation */}
