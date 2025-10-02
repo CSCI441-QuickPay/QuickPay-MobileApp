@@ -8,37 +8,37 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const favorites = [
   {
     id: 1,
-    name: "ANDREW GARFIELD",
+    name: "John Doe",
     account: "XXX XXX XXX | USD",
     image: require("@/assets/images/andrew.jpeg"),
   },
   {
     id: 2,
-    name: "SOPHAK OTRA SON",
+    name: "John Doe",
     account: "XXX XXX XXX | USD",
     image: require("@/assets/images/andrew.jpeg"),
   },
   {
     id: 3,
-    name: "SEREY VATH CHHAY",
+    name: "John Doe",
     account: "XXX XXX XXX | USD",
     image: require("@/assets/images/andrew.jpeg"),
   },
   {
     id: 4,
-    name: "PUTHIKA HOK",
+    name: "John Doe",
     account: "XXX XXX XXX | USD",
     image: require("@/assets/images/andrew.jpeg"),
   },
   {
     id: 5,
-    name: "TOBEY MAGUIRE",
+    name: "John Doe",
     account: "XXX XXX XXX | USD",
     image: require("@/assets/images/andrew.jpeg"),
   },
   {
     id: 6,
-    name: "TOM HOLLAND",
+    name: "John Doe",
     account: "XXX XXX XXX | USD",
     image: require("@/assets/images/andrew.jpeg"),
   },
