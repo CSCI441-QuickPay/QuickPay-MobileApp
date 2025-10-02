@@ -12,7 +12,7 @@ export default function Header({ name, onSettingPress }: HeaderProps) {
     <View className="flex-row items-center justify-between px-[16px] py-[12px] bg-white">
       {/* Profile Image */}
       <Image 
-        source={require('@/assets/images/avatar.jpg')}
+        source={require('@/assets/images/user_profile.jpg')}
         className="w-[72px] h-[72px] rounded-full border border-black"
       />
 
