@@ -14,7 +14,7 @@ export default function Home() {
         
         {/* Header */}
         <Header 
-          name="SokSreng" 
+          name="Emily" 
           onSettingPress={() => console.log("Go to Settings")} 
         />
         
