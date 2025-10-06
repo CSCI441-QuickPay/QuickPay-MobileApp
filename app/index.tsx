@@ -1,73 +1,20 @@
-import BalanceCard from '@/components/BalanceCard';
-import BottomNav from '@/components/BottomNav';
-import Header from '@/components/Header';
-import TransactionFilter from '@/components/TransactionFilter';
-import TransactionList from '@/components/TransactionList';
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useState } from 'react';
-import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Redirect } from "expo-router";
+import { useEffect, useState } from "react";
 
-export default function Home() {
-  
-  const [filter, setFilter] = useState("all"); // State to manage current filter
-  return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-        
-        {/* Header */}
-        <Header 
-          name="SokSreng" 
-          onSettingPress={() => console.log("Go to Settings")} 
-        />
-        
-        {/* Balance Card */}
-        <BalanceCard 
-          balance={1234.00} 
-          onRequest={() => console.log("Request Money")} 
-          onSend={() => console.log("Send Money")} 
-        />
+export default function Index() {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-        {/* Transaction Filter */}
-        <TransactionFilter onFilterChange={setFilter} />
+  // Load login state on app start
+  useEffect(() => {
+    AsyncStorage.getItem("isLoggedIn").then((value) => {
+      setIsLoggedIn(value === "true");
+    });
+  }, []);
 
-        {/* Main content area */}
-        <View className="flex-1 mt-[14px] bg-gray-100">
-          <TransactionList filter={filter} />
-        </View>
-      
-      {/* Bottom Navigation */}
-      <BottomNav
-        items={[
-          {
-            label: "Home",
-            icon: (color) => <Ionicons name="home" size={34} color={color} />,
-            onPress: () => router.push("/"),
-            active: true,
-          },
-          {
-            label: "Budget",
-            icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />,
-            onPress: () => console.log("Go Budget"),
-          },
-          {
-            label: "Scan",
-            icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
-            onPress: () => console.log("Go Scan"),
-            special: true,
-          },
-          {
-            label: "Favorite",
-            icon: (color) => <AntDesign name="star" size={34} color={color} />,
-            onPress: () => router.push("/favorite"),
-          },
-          {
-            label: "Profile",
-            icon: (color) => <Ionicons name="person-outline" size={34} color={color} />,
-            onPress: () => router.push("/profile"),
-          }
-        ]}
-      />
-    </SafeAreaView>
-  );
+  // Still checking storage (avoid flicker)
+  if (isLoggedIn === null) return null;
+
+  // Redirect based on stored login state
+  return isLoggedIn ? <Redirect href="/home" /> : <Redirect href="/login" />;
 }

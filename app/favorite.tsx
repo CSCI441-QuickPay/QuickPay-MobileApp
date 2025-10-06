@@ -82,7 +82,7 @@ export default function FavoriteScreen() {
           {
             label: "Home",
             icon: (color) => <Ionicons name="home" size={34} color={color} />,
-            onPress: () => router.push("/"),
+            onPress: () => router.push("/home"),
           },
           {
             label: "Budget",
