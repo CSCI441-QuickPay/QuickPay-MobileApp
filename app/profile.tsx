@@ -1,6 +1,5 @@
-import BottomNav from '@/components/ButtomNav';
-import ProfileOption from '@/components/ProfileOption';
-import { ProfileOptionProps } from '@/components/ProfileOption';
+import BottomNav from '@/components/BottomNav';
+import ProfileOption, { ProfileOptionProps } from '@/components/ProfileOption';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from 'react-native';
@@ -15,7 +14,7 @@ export default function Profile() {
         { icon: "person-outline", label: "My Profile", onPress: () => console.log("Go to My Profile") },
         { icon: "shield-checkmark-outline", label: "Security", onPress: () => console.log("Go to Security") },
         { icon: "language-outline", label: "Language", onPress: () => console.log("Go to Language") },
-        { icon: "call-outline", label: "Contact Us", onPress: () => console.log("Go to Contact Us") },
+        { icon: "call-outline", label: "Contact Us", onPress: () => router.push("/contactus") },
         { icon: "document-text-outline", label: "Terms & Conditions", onPress: () => console.log("Go to Terms") },
     ]
 
@@ -42,7 +41,7 @@ export default function Profile() {
             </View>
 
             {/* Profile Options List */}
-            <View className="bg-gray-100 flex-1">
+            <View className="bg-gray-100 flex-1 items-center">
                 <View className="mt-2 px-4 pt-4">
 
                     {/* Map through options and render ProfileOption components */}
