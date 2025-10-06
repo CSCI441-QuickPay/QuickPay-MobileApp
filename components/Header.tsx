@@ -12,12 +12,10 @@ export default function Header({ name, onSettingPress }: HeaderProps) {
   return (
     <View className="flex-row items-center justify-between px-[16px] py-[12px] bg-white">
       {/* Profile Image */}
-      <TouchableOpacity onPress={() => router.push("/profile")}>
-        <Image
-          source={require('@/assets/images/avatar.jpg')}
-          className="w-[72px] h-[72px] rounded-full border border-black"
-        />
-      </TouchableOpacity>
+      <Image 
+        source={require('@/assets/images/user_profile.jpg')}
+        className="w-[72px] h-[72px] rounded-full border border-black"
+      />
 
       {/* Greeting Text */}
       <Text className="flex-1 text-subheading ml-[12px] font-normal">

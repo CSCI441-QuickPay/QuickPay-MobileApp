@@ -30,7 +30,7 @@ export default function Profile() {
 
                 {/* Profile Avatar */}
                 <Image
-                    source={require('@/assets/images/avatar.jpg')}
+                    source={require('@/assets/images/user_profile.jpg')}
                     className="w-[149] h-[149] rounded-full mt-[70] border border-black"
                     />
 
