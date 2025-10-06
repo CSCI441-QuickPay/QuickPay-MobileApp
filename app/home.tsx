@@ -24,7 +24,7 @@ export default function Home() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
       <Header 
-        name="SokSreng" 
+        name="Emily" 
         onSettingPress={handleLogout} // 👈 Logout on settings press
       />
         

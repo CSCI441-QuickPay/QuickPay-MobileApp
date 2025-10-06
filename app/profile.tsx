@@ -35,7 +35,7 @@ export default function Profile() {
                     />
 
                 {/* User Name & id */}
-                <Text className= "text-[28px] font-bold mt-2">SOK SRENG</Text>
+                <Text className= "text-[28px] font-bold mt-2">Emily</Text>
                 <Text className= "text-gray-500 font-bold text-subheading">ID: xxx xxx xxx</Text>
 
             </View>
