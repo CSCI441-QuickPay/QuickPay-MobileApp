@@ -8,7 +8,8 @@ import { useState } from "react";
 
 export default function SignUp() {
   // Local states
-  const [name, setName] = useState("");
+  const [firstname, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +17,7 @@ export default function SignUp() {
 
   // Handle account creation → save state + redirect
   const handleSignUp = async () => {
-    if (!name || !email || !password || !confirmPassword) {
+    if (!firstname || !lastName || !email || !password || !confirmPassword) {
       alert("Please fill in all fields.");
       return;
     }
@@ -37,16 +38,29 @@ export default function SignUp() {
             Create Account 
         </Text>
 
-        {/* Full Name */}
+        {/* First Name */}
         <View className="mb-4">
-            <Text className="text-sm text-gray-600 mb-2">Full Name</Text>
+            <Text className="text-sm text-gray-600 mb-2">First Name</Text>
             <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
             <Ionicons name="person-outline" size={20} color="#666" />
             <TextInput
-                placeholder="Enter your full name"
+                placeholder="Enter your first name"
                 className="flex-1 py-3 px-2 text-base"
-                value={name}
-                onChangeText={setName}
+                value={firstname}
+                onChangeText={setFirstName}
+            />
+            </View>
+        </View>
+        {/* Last Name */}
+        <View className="mb-4">
+            <Text className="text-sm text-gray-600 mb-2">Last Name</Text>
+            <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
+            <Ionicons name="person-outline" size={20} color="#666" />
+            <TextInput
+                placeholder="Enter your last name"
+                className="flex-1 py-3 px-2 text-base"
+                value={lastName}
+                onChangeText={setLastName}
             />
             </View>
         </View>
