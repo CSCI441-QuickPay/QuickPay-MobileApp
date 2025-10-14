@@ -1,20 +1,32 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Redirect } from "expo-router";
 import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/config/firebaseConfig";
+import { View, ActivityIndicator } from "react-native";
 
 export default function Index() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Load login state on app start
   useEffect(() => {
-    AsyncStorage.getItem("isLoggedIn").then((value) => {
-      setIsLoggedIn(value === "true");
+    // Listen to auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+      setLoading(false);
     });
+
+    return unsubscribe;
   }, []);
 
-  // Still checking storage (avoid flicker)
-  if (isLoggedIn === null) return null;
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
 
-  // Redirect based on stored login state
+  // Redirect based on auth state
   return isLoggedIn ? <Redirect href="/home" /> : <Redirect href="/login" />;
 }
