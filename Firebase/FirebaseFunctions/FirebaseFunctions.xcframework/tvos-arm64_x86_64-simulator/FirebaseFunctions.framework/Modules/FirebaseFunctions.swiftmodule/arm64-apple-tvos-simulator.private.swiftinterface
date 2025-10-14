@@ -1,0 +1,123 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.0.3 effective-5.10 (swiftlang-6.0.3.1.10 clang-1600.0.30.1)
+// swift-module-flags: -target arm64-apple-tvos15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name FirebaseFunctions
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface
+import FirebaseAppCheckInterop
+import FirebaseAuthInterop
+import FirebaseCore
+@_exported import FirebaseFunctions
+import FirebaseMessagingInterop
+import FirebaseSharedSwift
+import Foundation
+import GTMSessionFetcher
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public struct Callable<Request, Response> : Swift.Sendable where Request : Swift.Encodable, Response : Swift.Decodable {
+  public var timeoutInterval: Foundation.TimeInterval {
+    get
+    set
+  }
+  public func call(_ data: Request, completion: @escaping @_Concurrency.MainActor (Swift.Result<Response, any Swift.Error>) -> Swift.Void)
+  public func callAsFunction(_ data: Request, completion: @escaping @_Concurrency.MainActor (Swift.Result<Response, any Swift.Error>) -> Swift.Void)
+  public func call(_ data: Request) async throws -> Response
+  public func callAsFunction(_ data: Request) async throws -> Response
+}
+@available(macOS 12.0, watchOS 8.0, *)
+public enum StreamResponse<Message, Result> : Swift.Decodable, Swift.Sendable where Message : Swift.Decodable, Message : Swift.Sendable, Result : Swift.Decodable, Result : Swift.Sendable {
+  case message(Message)
+  case result(Result)
+  public init(from decoder: any Swift.Decoder) throws
+}
+@available(macOS 12.0, iOS 15.0, watchOS 8.0, tvOS 15.0, *)
+extension FirebaseFunctions.Callable where Request : Swift.Sendable, Response : Swift.Sendable {
+  public func stream(_ data: Request? = nil) throws -> _Concurrency.AsyncThrowingStream<Response, any Swift.Error>
+}
+@_hasMissingDesignatedInitializers @objc(FIRFunctions) open class Functions : ObjectiveC.NSObject, @unchecked Swift.Sendable {
+  open var emulatorOrigin: Swift.String? {
+    get
+  }
+  @objc(functions) open class func functions() -> FirebaseFunctions.Functions
+  @objc(functionsForApp:) open class func functions(app: FirebaseCore.FirebaseApp) -> FirebaseFunctions.Functions
+  @objc(functionsForRegion:) open class func functions(region: Swift.String) -> FirebaseFunctions.Functions
+  @objc(functionsForCustomDomain:) open class func functions(customDomain: Swift.String) -> FirebaseFunctions.Functions
+  @objc(functionsForApp:region:) open class func functions(app: FirebaseCore.FirebaseApp, region: Swift.String) -> FirebaseFunctions.Functions
+  @objc(functionsForApp:customDomain:) open class func functions(app: FirebaseCore.FirebaseApp, customDomain: Swift.String) -> FirebaseFunctions.Functions
+  @objc(HTTPSCallableWithName:) open func httpsCallable(_ name: Swift.String) -> FirebaseFunctions.HTTPSCallable
+  @objc(HTTPSCallableWithName:options:) public func httpsCallable(_ name: Swift.String, options: FirebaseFunctions.HTTPSCallableOptions) -> FirebaseFunctions.HTTPSCallable
+  @objc(HTTPSCallableWithURL:) open func httpsCallable(_ url: Foundation.URL) -> FirebaseFunctions.HTTPSCallable
+  @objc(HTTPSCallableWithURL:options:) public func httpsCallable(_ url: Foundation.URL, options: FirebaseFunctions.HTTPSCallableOptions) -> FirebaseFunctions.HTTPSCallable
+  open func httpsCallable<Request, Response>(_ name: Swift.String, requestAs: Request.Type = Request.self, responseAs: Response.Type = Response.self, encoder: FirebaseSharedSwift.FirebaseDataEncoder = FirebaseDataEncoder(
+                         ), decoder: FirebaseSharedSwift.FirebaseDataDecoder = FirebaseDataDecoder(
+                         )) -> FirebaseFunctions.Callable<Request, Response> where Request : Swift.Encodable, Response : Swift.Decodable
+  open func httpsCallable<Request, Response>(_ name: Swift.String, options: FirebaseFunctions.HTTPSCallableOptions, requestAs: Request.Type = Request.self, responseAs: Response.Type = Response.self, encoder: FirebaseSharedSwift.FirebaseDataEncoder = FirebaseDataEncoder(
+                         ), decoder: FirebaseSharedSwift.FirebaseDataDecoder = FirebaseDataDecoder(
+                         )) -> FirebaseFunctions.Callable<Request, Response> where Request : Swift.Encodable, Response : Swift.Decodable
+  open func httpsCallable<Request, Response>(_ url: Foundation.URL, requestAs: Request.Type = Request.self, responseAs: Response.Type = Response.self, encoder: FirebaseSharedSwift.FirebaseDataEncoder = FirebaseDataEncoder(
+                         ), decoder: FirebaseSharedSwift.FirebaseDataDecoder = FirebaseDataDecoder(
+                         )) -> FirebaseFunctions.Callable<Request, Response> where Request : Swift.Encodable, Response : Swift.Decodable
+  open func httpsCallable<Request, Response>(_ url: Foundation.URL, options: FirebaseFunctions.HTTPSCallableOptions, requestAs: Request.Type = Request.self, responseAs: Response.Type = Response.self, encoder: FirebaseSharedSwift.FirebaseDataEncoder = FirebaseDataEncoder(
+                         ), decoder: FirebaseSharedSwift.FirebaseDataDecoder = FirebaseDataDecoder(
+                         )) -> FirebaseFunctions.Callable<Request, Response> where Request : Swift.Encodable, Response : Swift.Decodable
+  @objc open func useEmulator(withHost host: Swift.String, port: Swift.Int)
+  @objc deinit
+}
+public let FunctionsErrorDomain: Swift.String
+public let FunctionsErrorDetailsKey: Swift.String
+@objc(FIRFunctionsErrorCode) public enum FunctionsErrorCode : Swift.Int, Swift.Sendable {
+  case OK = 0
+  case cancelled = 1
+  case unknown = 2
+  case invalidArgument = 3
+  case deadlineExceeded = 4
+  case notFound = 5
+  case alreadyExists = 6
+  case permissionDenied = 7
+  case resourceExhausted = 8
+  case failedPrecondition = 9
+  case aborted = 10
+  case outOfRange = 11
+  case unimplemented = 12
+  case `internal` = 13
+  case unavailable = 14
+  case dataLoss = 15
+  case unauthenticated = 16
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(FIRHTTPSCallableResult) open class HTTPSCallableResult : ObjectiveC.NSObject {
+  @objc final public let data: Any
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(FIRHTTPSCallable) final public class HTTPSCallable : ObjectiveC.NSObject, Swift.Sendable {
+  @objc final public var timeoutInterval: Foundation.TimeInterval {
+    @objc get
+    @objc set
+  }
+  @available(swift 1000.0)
+  @objc(callWithObject:completion:) final public func call(_ data: Any? = nil, completion: @escaping @_Concurrency.MainActor (FirebaseFunctions.HTTPSCallableResult?, (any Swift.Error)?) -> Swift.Void)
+  #if compiler(>=5.3) && $SendingArgsAndResults
+  @nonobjc final public func call(_ data: sending Any? = nil, completion: @escaping @_Concurrency.MainActor (FirebaseFunctions.HTTPSCallableResult?, (any Swift.Error)?) -> Swift.Void)
+  #else
+  @nonobjc final public func call(_ data: __owned Any? = nil, completion: @escaping @_Concurrency.MainActor (FirebaseFunctions.HTTPSCallableResult?, (any Swift.Error)?) -> Swift.Void)
+  #endif
+  @objc(callWithCompletion:) final public func __call(completion: @escaping @_Concurrency.MainActor (FirebaseFunctions.HTTPSCallableResult?, (any Swift.Error)?) -> Swift.Void)
+  #if compiler(>=5.3) && $SendingArgsAndResults
+  final public func call(_ data: Any? = nil) async throws -> sending FirebaseFunctions.HTTPSCallableResult
+  #else
+  final public func call(_ data: Any? = nil) async throws -> FirebaseFunctions.HTTPSCallableResult
+  #endif
+  @objc deinit
+}
+@objc(FIRHTTPSCallableOptions) final public class HTTPSCallableOptions : ObjectiveC.NSObject, Swift.Sendable {
+  @objc final public let requireLimitedUseAppCheckTokens: Swift.Bool
+  @objc public init(requireLimitedUseAppCheckTokens: Swift.Bool)
+  @objc deinit
+}
+extension FirebaseFunctions.FunctionsErrorCode : Swift.Equatable {}
+extension FirebaseFunctions.FunctionsErrorCode : Swift.Hashable {}
+extension FirebaseFunctions.FunctionsErrorCode : Swift.RawRepresentable {}

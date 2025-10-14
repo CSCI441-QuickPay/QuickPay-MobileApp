@@ -1,0 +1,3229 @@
+{
+  "ABIRoot": {
+    "kind": "Root",
+    "name": "FirebaseMLModelDownloader",
+    "printedName": "FirebaseMLModelDownloader",
+    "children": [
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "CustomModel",
+        "printedName": "CustomModel",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "name",
+            "printedName": "name",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:25FirebaseMLModelDownloader11CustomModelV4nameSSvp",
+            "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4nameSSvp",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:25FirebaseMLModelDownloader11CustomModelV4nameSSvg",
+                "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4nameSSvg",
+                "moduleName": "FirebaseMLModelDownloader",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "size",
+            "printedName": "size",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:25FirebaseMLModelDownloader11CustomModelV4sizeSivp",
+            "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4sizeSivp",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:25FirebaseMLModelDownloader11CustomModelV4sizeSivg",
+                "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4sizeSivg",
+                "moduleName": "FirebaseMLModelDownloader",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "path",
+            "printedName": "path",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:25FirebaseMLModelDownloader11CustomModelV4pathSSvp",
+            "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4pathSSvp",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:25FirebaseMLModelDownloader11CustomModelV4pathSSvg",
+                "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4pathSSvg",
+                "moduleName": "FirebaseMLModelDownloader",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "hash",
+            "printedName": "hash",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:25FirebaseMLModelDownloader11CustomModelV4hashSSvp",
+            "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4hashSSvp",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:25FirebaseMLModelDownloader11CustomModelV4hashSSvg",
+                "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4hashSSvg",
+                "moduleName": "FirebaseMLModelDownloader",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:25FirebaseMLModelDownloader11CustomModelV9hashValueSivp",
+            "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV9hashValueSivp",
+            "moduleName": "FirebaseMLModelDownloader",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:25FirebaseMLModelDownloader11CustomModelV9hashValueSivg",
+                "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV9hashValueSivg",
+                "moduleName": "FirebaseMLModelDownloader",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "printedName": "Swift.Hasher",
+                "paramValueOwnership": "InOut",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader11CustomModelV4hash4intoys6HasherVz_tF",
+            "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV4hash4intoys6HasherVz_tF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "==",
+            "printedName": "==(_:_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CustomModel",
+                "printedName": "FirebaseMLModelDownloader.CustomModel",
+                "usr": "s:25FirebaseMLModelDownloader11CustomModelV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CustomModel",
+                "printedName": "FirebaseMLModelDownloader.CustomModel",
+                "usr": "s:25FirebaseMLModelDownloader11CustomModelV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader11CustomModelV2eeoiySbAC_ACtFZ",
+            "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV2eeoiySbAC_ACtFZ",
+            "moduleName": "FirebaseMLModelDownloader",
+            "static": true,
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:25FirebaseMLModelDownloader11CustomModelV",
+        "mangledName": "$s25FirebaseMLModelDownloader11CustomModelV",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "FirebaseCoreExtension",
+        "printedName": "FirebaseCoreExtension",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "GoogleUtilities",
+        "printedName": "GoogleUtilities",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "SwiftProtobuf",
+        "printedName": "SwiftProtobuf",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "GoogleUtilities",
+        "printedName": "GoogleUtilities",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "ModelDownloadConditions",
+        "printedName": "ModelDownloadConditions",
+        "children": [
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(allowsCellularAccess:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ModelDownloadConditions",
+                "printedName": "FirebaseMLModelDownloader.ModelDownloadConditions",
+                "usr": "s:25FirebaseMLModelDownloader23ModelDownloadConditionsV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "hasDefaultArg": true,
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:25FirebaseMLModelDownloader23ModelDownloadConditionsV20allowsCellularAccessACSb_tcfc",
+            "mangledName": "$s25FirebaseMLModelDownloader23ModelDownloadConditionsV20allowsCellularAccessACSb_tcfc",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "init_kind": "Designated"
+          }
+        ],
+        "declKind": "Struct",
+        "usr": "s:25FirebaseMLModelDownloader23ModelDownloadConditionsV",
+        "mangledName": "$s25FirebaseMLModelDownloader23ModelDownloadConditionsV",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "FirebaseCore",
+        "printedName": "FirebaseCore",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "FirebaseInstallations",
+        "printedName": "FirebaseInstallations",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader"
+      },
+      {
+        "kind": "Import",
+        "name": "GoogleUtilities",
+        "printedName": "GoogleUtilities",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "ModelDownloadType",
+        "printedName": "ModelDownloadType",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "localModel",
+            "printedName": "localModel",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.ModelDownloadType.Type) -> FirebaseMLModelDownloader.ModelDownloadType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ModelDownloadType",
+                    "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                    "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.ModelDownloadType.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ModelDownloadType",
+                        "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                        "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO05localD0yA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO05localD0yA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "localModelUpdateInBackground",
+            "printedName": "localModelUpdateInBackground",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.ModelDownloadType.Type) -> FirebaseMLModelDownloader.ModelDownloadType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ModelDownloadType",
+                    "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                    "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.ModelDownloadType.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ModelDownloadType",
+                        "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                        "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO05localD18UpdateInBackgroundyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO05localD18UpdateInBackgroundyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "latestModel",
+            "printedName": "latestModel",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.ModelDownloadType.Type) -> FirebaseMLModelDownloader.ModelDownloadType",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ModelDownloadType",
+                    "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                    "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.ModelDownloadType.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ModelDownloadType",
+                        "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                        "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO06latestD0yA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO06latestD0yA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "==",
+            "printedName": "==(_:_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ModelDownloadType",
+                "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ModelDownloadType",
+                "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO2eeoiySbAC_ACtFZ",
+            "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO2eeoiySbAC_ACtFZ",
+            "moduleName": "FirebaseMLModelDownloader",
+            "static": true,
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Var",
+            "name": "hashValue",
+            "printedName": "hashValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Int",
+                "printedName": "Swift.Int",
+                "usr": "s:Si"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO9hashValueSivp",
+            "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO9hashValueSivp",
+            "moduleName": "FirebaseMLModelDownloader",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Int",
+                    "printedName": "Swift.Int",
+                    "usr": "s:Si"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO9hashValueSivg",
+                "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO9hashValueSivg",
+                "moduleName": "FirebaseMLModelDownloader",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "hash",
+            "printedName": "hash(into:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Hasher",
+                "printedName": "Swift.Hasher",
+                "paramValueOwnership": "InOut",
+                "usr": "s:s6HasherV"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO4hash4intoys6HasherVz_tF",
+            "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO4hash4intoys6HasherVz_tF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO",
+        "mangledName": "$s25FirebaseMLModelDownloader17ModelDownloadTypeO",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "ModelDownloader",
+        "printedName": "ModelDownloader",
+        "children": [
+          {
+            "kind": "Function",
+            "name": "modelDownloader",
+            "printedName": "modelDownloader()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ModelDownloader",
+                "printedName": "FirebaseMLModelDownloader.ModelDownloader",
+                "usr": "s:25FirebaseMLModelDownloader05ModelC0C"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader05ModelC0C05modelC0ACyFZ",
+            "mangledName": "$s25FirebaseMLModelDownloader05ModelC0C05modelC0ACyFZ",
+            "moduleName": "FirebaseMLModelDownloader",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "modelDownloader",
+            "printedName": "modelDownloader(app:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "ModelDownloader",
+                "printedName": "FirebaseMLModelDownloader.ModelDownloader",
+                "usr": "s:25FirebaseMLModelDownloader05ModelC0C"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "FirebaseApp",
+                "printedName": "FirebaseCore.FirebaseApp",
+                "usr": "c:objc(cs)FIRApp"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader05ModelC0C05modelC03appACSo6FIRAppC_tFZ",
+            "mangledName": "$s25FirebaseMLModelDownloader05ModelC0C05modelC03appACSo6FIRAppC_tFZ",
+            "moduleName": "FirebaseMLModelDownloader",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "getModel",
+            "printedName": "getModel(name:downloadType:conditions:progressHandler:completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ModelDownloadType",
+                "printedName": "FirebaseMLModelDownloader.ModelDownloadType",
+                "usr": "s:25FirebaseMLModelDownloader17ModelDownloadTypeO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ModelDownloadConditions",
+                "printedName": "FirebaseMLModelDownloader.ModelDownloadConditions",
+                "usr": "s:25FirebaseMLModelDownloader23ModelDownloadConditionsV"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "((Swift.Float) -> ())?",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.Float) -> ()",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Float",
+                        "printedName": "Swift.Float",
+                        "usr": "s:Sf"
+                      }
+                    ]
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Result<FirebaseMLModelDownloader.CustomModel, FirebaseMLModelDownloader.DownloadError>) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "Swift.Result<FirebaseMLModelDownloader.CustomModel, FirebaseMLModelDownloader.DownloadError>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CustomModel",
+                        "printedName": "FirebaseMLModelDownloader.CustomModel",
+                        "usr": "s:25FirebaseMLModelDownloader11CustomModelV"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ],
+                    "usr": "s:s6ResultO"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader05ModelC0C03getD04name12downloadType10conditions15progressHandler10completionySS_AA0d8DownloadH0OAA0dM10ConditionsVySfcSgys6ResultOyAA06CustomD0VAA0M5ErrorOGctF",
+            "mangledName": "$s25FirebaseMLModelDownloader05ModelC0C03getD04name12downloadType10conditions15progressHandler10completionySS_AA0d8DownloadH0OAA0dM10ConditionsVySfcSgys6ResultOyAA06CustomD0VAA0M5ErrorOGctF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "listDownloadedModels",
+            "printedName": "listDownloadedModels(completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Result<Swift.Set<FirebaseMLModelDownloader.CustomModel>, FirebaseMLModelDownloader.DownloadedModelError>) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "Swift.Result<Swift.Set<FirebaseMLModelDownloader.CustomModel>, FirebaseMLModelDownloader.DownloadedModelError>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Set",
+                        "printedName": "Swift.Set<FirebaseMLModelDownloader.CustomModel>",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "CustomModel",
+                            "printedName": "FirebaseMLModelDownloader.CustomModel",
+                            "usr": "s:25FirebaseMLModelDownloader11CustomModelV"
+                          }
+                        ],
+                        "usr": "s:Sh"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadedModelError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                      }
+                    ],
+                    "usr": "s:s6ResultO"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader05ModelC0C20listDownloadedModels10completionyys6ResultOyShyAA06CustomD0VGAA0fD5ErrorOGc_tF",
+            "mangledName": "$s25FirebaseMLModelDownloader05ModelC0C20listDownloadedModels10completionyys6ResultOyShyAA06CustomD0VGAA0fD5ErrorOGc_tF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "deleteDownloadedModel",
+            "printedName": "deleteDownloadedModel(name:completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Result<(), FirebaseMLModelDownloader.DownloadedModelError>) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Result",
+                    "printedName": "Swift.Result<(), FirebaseMLModelDownloader.DownloadedModelError>",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Void",
+                        "printedName": "()"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadedModelError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                      }
+                    ],
+                    "usr": "s:s6ResultO"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader05ModelC0C016deleteDownloadedD04name10completionySS_ys6ResultOyytAA0fD5ErrorOGctF",
+            "mangledName": "$s25FirebaseMLModelDownloader05ModelC0C016deleteDownloadedD04name10completionySS_ys6ResultOyytAA0fD5ErrorOGctF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Class",
+        "usr": "s:25FirebaseMLModelDownloader05ModelC0C",
+        "mangledName": "$s25FirebaseMLModelDownloader05ModelC0C",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "hasMissingDesignatedInitializers": true,
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "DownloadError",
+        "printedName": "DownloadError",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "notFound",
+            "printedName": "notFound",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError",
+                    "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO8notFoundyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO8notFoundyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "permissionDenied",
+            "printedName": "permissionDenied",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError",
+                    "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO16permissionDeniedyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO16permissionDeniedyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "failedPrecondition",
+            "printedName": "failedPrecondition",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError",
+                    "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO18failedPreconditionyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO18failedPreconditionyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "resourceExhausted",
+            "printedName": "resourceExhausted",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError",
+                    "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO17resourceExhaustedyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO17resourceExhaustedyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "notEnoughSpace",
+            "printedName": "notEnoughSpace",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError",
+                    "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO14notEnoughSpaceyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO14notEnoughSpaceyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "invalidArgument",
+            "printedName": "invalidArgument",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError",
+                    "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO15invalidArgumentyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO15invalidArgumentyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "emptyModelName",
+            "printedName": "emptyModelName",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError",
+                    "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO14emptyModelNameyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO14emptyModelNameyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "internalError",
+            "printedName": "internalError",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadError.Type) -> (Swift.String) -> FirebaseMLModelDownloader.DownloadError",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> FirebaseMLModelDownloader.DownloadError",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(description: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadError",
+                        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO08internalE0yACSS_tcACmF",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO08internalE0yACSS_tcACmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "==",
+            "printedName": "==(_:_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "DownloadError",
+                "printedName": "FirebaseMLModelDownloader.DownloadError",
+                "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "DownloadError",
+                "printedName": "FirebaseMLModelDownloader.DownloadError",
+                "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO2eeoiySbAC_ACtFZ",
+            "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO2eeoiySbAC_ACtFZ",
+            "moduleName": "FirebaseMLModelDownloader",
+            "static": true,
+            "implicit": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:25FirebaseMLModelDownloader13DownloadErrorO",
+        "mangledName": "$s25FirebaseMLModelDownloader13DownloadErrorO",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP",
+            "mangledName": "$ss5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP",
+            "mangledName": "$ss8SendableP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "DownloadedModelError",
+        "printedName": "DownloadedModelError",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "notFound",
+            "printedName": "notFound",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadedModelError.Type) -> FirebaseMLModelDownloader.DownloadedModelError",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "DownloadedModelError",
+                    "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                    "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadedModelError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadedModelError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO8notFoundyA2CmF",
+            "mangledName": "$s25FirebaseMLModelDownloader20DownloadedModelErrorO8notFoundyA2CmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "fileIOError",
+            "printedName": "fileIOError",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadedModelError.Type) -> (Swift.String) -> FirebaseMLModelDownloader.DownloadedModelError",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> FirebaseMLModelDownloader.DownloadedModelError",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadedModelError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(description: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadedModelError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadedModelError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO11fileIOErroryACSS_tcACmF",
+            "mangledName": "$s25FirebaseMLModelDownloader20DownloadedModelErrorO11fileIOErroryACSS_tcACmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "internalError",
+            "printedName": "internalError",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(FirebaseMLModelDownloader.DownloadedModelError.Type) -> (Swift.String) -> FirebaseMLModelDownloader.DownloadedModelError",
+                "children": [
+                  {
+                    "kind": "TypeFunc",
+                    "name": "Function",
+                    "printedName": "(Swift.String) -> FirebaseMLModelDownloader.DownloadedModelError",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadedModelError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Tuple",
+                        "printedName": "(description: Swift.String)",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "String",
+                            "printedName": "Swift.String",
+                            "usr": "s:SS"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "FirebaseMLModelDownloader.DownloadedModelError.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "DownloadedModelError",
+                        "printedName": "FirebaseMLModelDownloader.DownloadedModelError",
+                        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO08internalF0yACSS_tcACmF",
+            "mangledName": "$s25FirebaseMLModelDownloader20DownloadedModelErrorO08internalF0yACSS_tcACmF",
+            "moduleName": "FirebaseMLModelDownloader",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:25FirebaseMLModelDownloader20DownloadedModelErrorO",
+        "mangledName": "$s25FirebaseMLModelDownloader20DownloadedModelErrorO",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Error",
+            "printedName": "Error",
+            "usr": "s:s5ErrorP",
+            "mangledName": "$ss5ErrorP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP",
+            "mangledName": "$ss8SendableP"
+          }
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "GoogleUtilities",
+        "printedName": "GoogleUtilities",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "AccessControl"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "FirebaseCore",
+        "printedName": "FirebaseCore",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "FirebaseInstallations",
+        "printedName": "FirebaseInstallations",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader"
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "FirebaseCore",
+        "printedName": "FirebaseCore",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader"
+      },
+      {
+        "kind": "Import",
+        "name": "GoogleDataTransport",
+        "printedName": "GoogleDataTransport",
+        "declKind": "Import",
+        "moduleName": "FirebaseMLModelDownloader"
+      },
+      {
+        "kind": "TypeDecl",
+        "name": "URLSession",
+        "printedName": "URLSession",
+        "declKind": "Class",
+        "usr": "c:objc(cs)NSURLSession",
+        "moduleName": "Foundation",
+        "isOpen": true,
+        "intro_iOS": "7.0",
+        "objc_name": "NSURLSession",
+        "declAttributes": [
+          "Available",
+          "Available",
+          "ObjC",
+          "SynthesizedProtocol",
+          "NonSendable",
+          "Sendable",
+          "Dynamic"
+        ],
+        "superclassUsr": "c:objc(cs)NSObject",
+        "isExternal": true,
+        "inheritsConvenienceInitializers": true,
+        "superclassNames": [
+          "ObjectiveC.NSObject"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP",
+            "mangledName": "$ss8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CVarArg",
+            "printedName": "CVarArg",
+            "usr": "s:s7CVarArgP",
+            "mangledName": "$ss7CVarArgP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObservingPublishing",
+            "printedName": "_KeyValueCodingAndObservingPublishing",
+            "usr": "s:10Foundation37_KeyValueCodingAndObservingPublishingP",
+            "mangledName": "$s10Foundation37_KeyValueCodingAndObservingPublishingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "_KeyValueCodingAndObserving",
+            "printedName": "_KeyValueCodingAndObserving",
+            "usr": "s:10Foundation27_KeyValueCodingAndObservingP",
+            "mangledName": "$s10Foundation27_KeyValueCodingAndObservingP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomStringConvertible",
+            "printedName": "CustomStringConvertible",
+            "usr": "s:s23CustomStringConvertibleP",
+            "mangledName": "$ss23CustomStringConvertibleP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "CustomDebugStringConvertible",
+            "printedName": "CustomDebugStringConvertible",
+            "usr": "s:s28CustomDebugStringConvertibleP",
+            "mangledName": "$ss28CustomDebugStringConvertibleP"
+          }
+        ]
+      }
+    ],
+    "json_format_version": 8
+  },
+  "ConstValues": [
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 738,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 747,
+      "length": 27,
+      "value": "2"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 782,
+      "length": 25,
+      "value": "3"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 815,
+      "length": 15,
+      "value": "4"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 838,
+      "length": 18,
+      "value": "5"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 864,
+      "length": 13,
+      "value": "6"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 885,
+      "length": 25,
+      "value": "7"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 918,
+      "length": 23,
+      "value": "8"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 949,
+      "length": 18,
+      "value": "9"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 975,
+      "length": 24,
+      "value": "10"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1007,
+      "length": 24,
+      "value": "11"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1039,
+      "length": 30,
+      "value": "12"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1077,
+      "length": 27,
+      "value": "13"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1112,
+      "length": 13,
+      "value": "14"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1133,
+      "length": 15,
+      "value": "15"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1156,
+      "length": 19,
+      "value": "16"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1183,
+      "length": 15,
+      "value": "17"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1206,
+      "length": 19,
+      "value": "18"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1233,
+      "length": 16,
+      "value": "19"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1257,
+      "length": 16,
+      "value": "20"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1281,
+      "length": 22,
+      "value": "21"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1311,
+      "length": 12,
+      "value": "22"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1331,
+      "length": 19,
+      "value": "23"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1358,
+      "length": 17,
+      "value": "24"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1383,
+      "length": 14,
+      "value": "25"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1405,
+      "length": 14,
+      "value": "26"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1427,
+      "length": 24,
+      "value": "27"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1459,
+      "length": 24,
+      "value": "28"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1491,
+      "length": 16,
+      "value": "29"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1515,
+      "length": 20,
+      "value": "30"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1543,
+      "length": 16,
+      "value": "31"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1567,
+      "length": 19,
+      "value": "32"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1594,
+      "length": 19,
+      "value": "33"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1621,
+      "length": 14,
+      "value": "34"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1643,
+      "length": 16,
+      "value": "35"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1667,
+      "length": 22,
+      "value": "36"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1697,
+      "length": 11,
+      "value": "37"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1716,
+      "length": 23,
+      "value": "38"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1747,
+      "length": 13,
+      "value": "39"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1768,
+      "length": 15,
+      "value": "40"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1791,
+      "length": 16,
+      "value": "41"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1815,
+      "length": 17,
+      "value": "42"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1840,
+      "length": 14,
+      "value": "43"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1862,
+      "length": 13,
+      "value": "44"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1883,
+      "length": 19,
+      "value": "45"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1910,
+      "length": 25,
+      "value": "46"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1943,
+      "length": 18,
+      "value": "47"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1969,
+      "length": 9,
+      "value": "48"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/DeviceLogger.swift",
+      "kind": "StringLiteral",
+      "offset": 2069,
+      "length": 30,
+      "value": "\"[Firebase\/MLModelDownloader]\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "BooleanLiteral",
+      "offset": 8833,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "IntegerLiteral",
+      "offset": 10196,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "IntegerLiteral",
+      "offset": 10620,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "IntegerLiteral",
+      "offset": 11194,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "BooleanLiteral",
+      "offset": 14753,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 17331,
+      "length": 114,
+      "value": "\"\u0000\u0002\u0000UNKNOWN_EVENT\u0000\u0002d\u0001MODEL_DOWNLOAD\u0000\u0001MODEL_UPDATE\u0000\u0002W\u0002REMOTE_MODEL_DELETE_ON_DEVICE\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 17573,
+      "length": 287,
+      "value": "\"\u0000\u0002\u0000NO_ERROR\u0000\u0002e\u0001URI_EXPIRED\u0000\u0001NO_NETWORK_CONNECTION\u0000\u0002\u0002DOWNLOAD_FAILED\u0000\u0001MODEL_INFO_DOWNLOAD_UNSUCCESSFUL_HTTP_STATUS\u0000\u0001MODEL_INFO_DOWNLOAD_NO_HASH\u0000\u0001MODEL_INFO_DOWNLOAD_CONNECTION_FAILED\u0000\u0002\tMODEL_HASH_MISMATCH\u0000\u0002[Z\u0002UNKNOWN_ERROR\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 18028,
+      "length": 12,
+      "value": "\"SystemInfo\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 18107,
+      "length": 101,
+      "value": "\"\u0000\u0003app_id\u0000\u0003app_version\u0000\u0003firebase_project_id\u0000\u0003ml_sdk_version\u0000\u0004\u0003api_key\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 20407,
+      "length": 11,
+      "value": "\"ModelInfo\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 20485,
+      "length": 62,
+      "value": "\"\u0000\u0001name\u0000\u0001version\u0000\u0002\u0003hash\u0000\u0003model_type\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 22373,
+      "length": 38,
+      "value": "\"\u0000\u0002\u0000TYPE_UNKNOWN\u0000\u0001CUSTOM\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 22581,
+      "length": 14,
+      "value": "\"ModelOptions\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 22662,
+      "length": 56,
+      "value": "\"\u0000\u0003model_info\u0000\u0004\u0003is_model_update_enabled\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 24477,
+      "length": 23,
+      "value": "\"ModelDownloadLogEvent\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 24567,
+      "length": 153,
+      "value": "\"\u0000\u0001options\u0000\u0003rough_download_duration_ms\u0000\u0003error_code\u0000\u0003exact_download_duration_ms\u0000\u0003download_status\u0000\u0003download_failure_status\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 27669,
+      "length": 243,
+      "value": "\"\u0000\u0002\u0000UNKNOWN_STATUS\u0000\u0001EXPLICITLY_REQUESTED\u0000\u0001IMPLICITLY_REQUESTED\u0000\u0001MODEL_INFO_RETRIEVAL_SUCCEEDED\u0000\u0001MODEL_INFO_RETRIEVAL_FAILED\u0000\u0001SCHEDULED\u0000\u0001DOWNLOADING\u0000\u0001SUCCEEDED\u0000\u0001FAILED\u0000\u0002\u0002UPDATE_AVAILABLE\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 28089,
+      "length": 21,
+      "value": "\"DeleteModelLogEvent\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 28177,
+      "length": 41,
+      "value": "\"\u0000\u0003model_type\u0000\u0003is_successful\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 29653,
+      "length": 20,
+      "value": "\"FirebaseMlLogEvent\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/proto\/firebase_ml_log_sdk.pb.swift",
+      "kind": "StringLiteral",
+      "offset": 29740,
+      "length": 100,
+      "value": "\"\u0000\u0003system_info\u0000\u0003event_name\u0000\u0003model_download_log_event\u0000\u0004%delete_model_log_event\u0000\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadConditions.swift",
+      "kind": "BooleanLiteral",
+      "offset": 940,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2016,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "Dictionary",
+      "offset": 2228,
+      "length": 3,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "Dictionary",
+      "offset": 2372,
+      "length": 3,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 2478,
+      "length": 27,
+      "value": "\"downloadtask.serial.queue\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 24636,
+      "length": 29,
+      "value": "\"Expired model download URL.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 24871,
+      "length": 68,
+      "value": "\"Initialized with new downloader instance associated with this app.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 24987,
+      "length": 73,
+      "value": "\"Initialized with existing downloader instance associated with this app.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25100,
+      "length": 56,
+      "value": "\"Model downloader instance deleted due to app deletion.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25190,
+      "length": 30,
+      "value": "\"Found local model on device.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25258,
+      "length": 36,
+      "value": "\"Found and listed all local models.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25355,
+      "length": 47,
+      "value": "\"No local model info for model named: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25400,
+      "length": 1,
+      "value": "\".\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25470,
+      "length": 47,
+      "value": "\"No local model file for model named: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25515,
+      "length": 1,
+      "value": "\".\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25568,
+      "length": 44,
+      "value": "\"Downloaded latest model in the background.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25643,
+      "length": 29,
+      "value": "\"Model deleted successfully.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25706,
+      "length": 38,
+      "value": "\"Merging duplicate download requests.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25776,
+      "length": 20,
+      "value": "\"Retrying download.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25903,
+      "length": 38,
+      "value": "\"Default Firebase app not configured.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 25974,
+      "length": 64,
+      "value": "\"Unable to retrieve project ID and\/or API key for Firebase app.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26102,
+      "length": 44,
+      "value": "\"Model download failed with error: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26145,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26211,
+      "length": 64,
+      "value": "\"Model deletion failed due to no model found with name: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26274,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26351,
+      "length": 50,
+      "value": "\"Model info retrieval failed with error: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26400,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26450,
+      "length": 39,
+      "value": "\"Failed to update model in background.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26524,
+      "length": 38,
+      "value": "\"Unable to update expired model info.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26623,
+      "length": 52,
+      "value": "\"Unable to list models, failed with error: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26674,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26741,
+      "length": 66,
+      "value": "\"List models failed due to unexpected model file name at \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26805,
+      "length": 1,
+      "value": "\".\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26875,
+      "length": 78,
+      "value": "\"List models failed due to no local model info for model file named: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 26951,
+      "length": 1,
+      "value": "\".\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 27012,
+      "length": 66,
+      "value": "\"Model unavailable due to deleted local model info or model file.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 27120,
+      "length": 66,
+      "value": "\"List models failed due to outdated model paths in local storage.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 27250,
+      "length": 44,
+      "value": "\"Model deletion failed with error: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloader.swift",
+      "kind": "StringLiteral",
+      "offset": 27293,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 17530,
+      "length": 49,
+      "value": "\"Received a valid response from download server.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 17612,
+      "length": 42,
+      "value": "\"Model file saved successfully to device.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 17692,
+      "length": 60,
+      "value": "\"Downloaded model info saved successfully to user defaults.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 17786,
+      "length": 40,
+      "value": "\"Model download completed successfully.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 17952,
+      "length": 57,
+      "value": "\"Unable to resolve hostname or connect to host: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18008,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18053,
+      "length": 51,
+      "value": "\"Session invalidated due to failed pre-conditions.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18142,
+      "length": 58,
+      "value": "\"Could not get valid HTTP response for model downloading.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18244,
+      "length": 31,
+      "value": "\"Download already in progress.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18333,
+      "length": 35,
+      "value": "\"No model found with name: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18367,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18435,
+      "length": 42,
+      "value": "\"Invalid argument for model name: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18476,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18519,
+      "length": 38,
+      "value": "\"Unable to update expired model info.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18592,
+      "length": 51,
+      "value": "\"Invalid or missing permissions to download model.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18676,
+      "length": 29,
+      "value": "\"Not enough space on device.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18742,
+      "length": 38,
+      "value": "\"Unable to disable model file backup.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18816,
+      "length": 47,
+      "value": "\"Could not create directory for model storage.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18896,
+      "length": 46,
+      "value": "\"Unable to save downloaded remote model file.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 18981,
+      "length": 48,
+      "value": "\"Unable to download model due to unknown error.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 19090,
+      "length": 53,
+      "value": "\"Model download failed with HTTP error code: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelDownloadTask.swift",
+      "kind": "StringLiteral",
+      "offset": 19142,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 756,
+      "length": 4,
+      "value": "\"@@\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 801,
+      "length": 12,
+      "value": "\"fbml_model\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 852,
+      "length": 8,
+      "value": "\"tflite\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 5811,
+      "length": 55,
+      "value": "\"Could not retrieve model files in directory: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 5865,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 5929,
+      "length": 43,
+      "value": "\"Could not delete old model file: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 5971,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6033,
+      "length": 37,
+      "value": "\"Unable to save model file: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6069,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6134,
+      "length": 49,
+      "value": "\"Could not replace existing model file: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6182,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6293,
+      "length": 54,
+      "value": "\"Failed to check storage capacity on device: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6346,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6378,
+      "length": 45,
+      "value": "\"Failed to check storage capacity on device.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6492,
+      "length": 67,
+      "value": "\"Could not locate Application Support directory for model storage.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6620,
+      "length": 44,
+      "value": "\"Could not empty models directory: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelFileManager.swift",
+      "kind": "StringLiteral",
+      "offset": 6663,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 1699,
+      "length": 13,
+      "value": "\"downloadUri\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 1738,
+      "length": 12,
+      "value": "\"expireTime\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 1767,
+      "length": 11,
+      "value": "\"sizeBytes\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 27419,
+      "length": 36,
+      "value": "\"x-goog-firebase-installations-auth\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 27500,
+      "length": 15,
+      "value": "\"if-none-match\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 27559,
+      "length": 25,
+      "value": "\"x-ios-bundle-identifier\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 27653,
+      "length": 6,
+      "value": "\"Etag\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31152,
+      "length": 29,
+      "value": "\"Generated valid auth token.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31222,
+      "length": 51,
+      "value": "\"Received a valid response from model info server.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31311,
+      "length": 37,
+      "value": "\"Successfully downloaded model info.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31386,
+      "length": 48,
+      "value": "\"Local model info matches the latest on server.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31532,
+      "length": 30,
+      "value": "\"Error retrieving auth token.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31605,
+      "length": 43,
+      "value": "\"Unable to create URL to fetch model info.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31692,
+      "length": 63,
+      "value": "\"Could not get a valid HTTP response for model info retrieval.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31821,
+      "length": 53,
+      "value": "\"Server returned with HTTP error code: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31872,
+      "length": 1,
+      "value": "\".\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 31916,
+      "length": 51,
+      "value": "\"Model hash missing in model info server response.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32003,
+      "length": 30,
+      "value": "\"Unexpected model hash value.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32079,
+      "length": 38,
+      "value": "\"Model info was deleted unexpectedly.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32175,
+      "length": 35,
+      "value": "\"No model found with name: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32209,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32277,
+      "length": 42,
+      "value": "\"Invalid argument for model name: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32318,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32361,
+      "length": 56,
+      "value": "\"Invalid or missing permissions to retrieve model info.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32453,
+      "length": 46,
+      "value": "\"Resource exhausted due to too many requests.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32565,
+      "length": 59,
+      "value": "\"Model info retrieval failed with HTTP error code: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32623,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32679,
+      "length": 51,
+      "value": "\"Unable to decode model info response from server.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32778,
+      "length": 41,
+      "value": "\"Invalid model download URL from server.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32854,
+      "length": 33,
+      "value": "\"Invalid model size from server.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 32945,
+      "length": 47,
+      "value": "\"Invalid download URL expiry time from server.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 33058,
+      "length": 38,
+      "value": "\"Failed to parse model info: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 33095,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 33173,
+      "length": 41,
+      "value": "\"Failed to retrieve model info: \""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/ModelInfoRetriever.swift",
+      "kind": "StringLiteral",
+      "offset": 33213,
+      "length": 1,
+      "value": "\"\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/TelemetryLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2099,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/TelemetryLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2135,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/TelemetryLogger.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2195,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/TelemetryLogger.swift",
+      "kind": "StringLiteral",
+      "offset": 3896,
+      "length": 6,
+      "value": "\"1326\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/TelemetryLogger.swift",
+      "kind": "StringLiteral",
+      "offset": 8858,
+      "length": 37,
+      "value": "\"Unable to encode event for Firelog.\""
+    },
+    {
+      "filePath": "\/var\/folders\/y6\/nj790rtn62lfktb1sh__79hc0000gn\/T\/ZipRelease\/2025-10-02T04-01-21\/project-ios\/Pods\/FirebaseMLModelDownloader\/FirebaseMLModelDownloader\/Sources\/TelemetryLogger.swift",
+      "kind": "StringLiteral",
+      "offset": 8933,
+      "length": 36,
+      "value": "\"Unable to create telemetry logger.\""
+    }
+  ]
+}

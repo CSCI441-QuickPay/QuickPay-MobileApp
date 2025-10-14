@@ -1,0 +1,11 @@
+framework module FirebaseMLModelDownloader {
+  umbrella header "FirebaseMLModelDownloader-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module FirebaseMLModelDownloader.Swift {
+  header "FirebaseMLModelDownloader-Swift.h"
+  requires objc
+}

@@ -1,0 +1,11 @@
+framework module FirebaseAI {
+  umbrella header "FirebaseAI-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module FirebaseAI.Swift {
+  header "FirebaseAI-Swift.h"
+  requires objc
+}
