@@ -30,7 +30,7 @@ export default function Login() {
         {/* Logo / Branding */}
         <View className="items-center mb-10">
             <Image
-            source={require("../assets/images/avatar.jpg")}
+            source={require("../assets/images/user_profile.jpg")}
             className="w-20 h-20 mb-4"
             />
             <Text className="text-3xl font-bold text-[#222]">QuickPay</Text>

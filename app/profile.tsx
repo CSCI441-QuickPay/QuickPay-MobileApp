@@ -28,7 +28,7 @@ export default function Profile() {
                     <Ionicons name="settings-outline" size={37} color="#000"/>
                 </TouchableOpacity>
 
-                {/* Profile Avatar */}
+                {/* User Profile */}
                 <Image
                     source={require('@/assets/images/user_profile.jpg')}
                     className="w-[149] h-[149] rounded-full mt-[70] border border-black"
