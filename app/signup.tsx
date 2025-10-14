@@ -66,20 +66,25 @@ export default function SignUp() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="flex-1"
-          keyboardVerticalOffset={0}
-        >
-          <ScrollView 
-            contentContainerStyle={{ flexGrow: 1, paddingVertical: 20 }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
-            <View className="flex-1 px-8">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <ScrollView 
+              style={{ flex: 1 }}
+              contentContainerStyle={{ 
+                paddingHorizontal: 32,
+                paddingTop: 20,
+                paddingBottom: 5
+              }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={true}
+              bounces={true}
+              scrollEnabled={true}
+            >
               {/* Logo / Branding */}
               <View className="items-center mb-6">
                 <View className="w-20 h-20 mb-3 rounded-full bg-[#00332d] items-center justify-center shadow-lg">
@@ -89,65 +94,68 @@ export default function SignUp() {
                 <Text className="text-gray-500 text-sm">Join QuickPay today</Text>
               </View>
 
-              {/* First Name */}
-              <View className="mb-4">
-                <Text className="text-sm font-medium text-gray-700 mb-2">First Name *</Text>
-                <View 
-                  className={`flex-row items-center border-2 rounded-xl px-4 ${
-                    firstNameFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
-                  }`}
-                  style={{ minHeight: 56 }}
-                >
-                  <Ionicons 
-                    name="person-outline" 
-                    size={22} 
-                    color={firstNameFocused ? "#00332d" : "#9CA3AF"} 
-                    style={{ marginRight: 8 }}
-                  />
-                  <TextInput
-                    placeholder="Enter your first name"
-                    placeholderTextColor="#9CA3AF"
-                    className="flex-1 text-base text-gray-900"
-                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                    value={firstName}
-                    onChangeText={setFirstName}
-                    onFocus={() => setFirstNameFocused(true)}
-                    onBlur={() => setFirstNameFocused(false)}
-                    textAlignVertical="center"
-                  />
+              {/* First Name and Last Name - Side by Side */}
+              <View className="flex-row mb-4" style={{ gap: 12 }}>
+                {/* First Name */}
+                <View className="flex-1">
+                  <Text className="text-sm font-medium text-gray-700 mb-2">First Name *</Text>
+                  <View 
+                    className={`flex-row items-center border-2 rounded-xl px-4 ${
+                      firstNameFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                    }`}
+                    style={{ minHeight: 56 }}
+                  >
+                    <Ionicons 
+                      name="person-outline" 
+                      size={22} 
+                      color={firstNameFocused ? "#00332d" : "#9CA3AF"} 
+                      style={{ marginRight: 8 }}
+                    />
+                    <TextInput
+                      placeholder="First name"
+                      placeholderTextColor="#9CA3AF"
+                      className="flex-1 text-base text-gray-900"
+                      style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                      value={firstName}
+                      onChangeText={setFirstName}
+                      onFocus={() => setFirstNameFocused(true)}
+                      onBlur={() => setFirstNameFocused(false)}
+                      textAlignVertical="center"
+                    />
+                  </View>
                 </View>
-              </View>
 
-              {/* Last Name */}
-              <View className="mb-4">
-                <Text className="text-sm font-medium text-gray-700 mb-2">Last Name *</Text>
-                <View 
-                  className={`flex-row items-center border-2 rounded-xl px-4 ${
-                    lastNameFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
-                  }`}
-                  style={{ minHeight: 56 }}
-                >
-                  <Ionicons 
-                    name="person-outline" 
-                    size={22} 
-                    color={lastNameFocused ? "#00332d" : "#9CA3AF"} 
-                    style={{ marginRight: 8 }}
-                  />
-                  <TextInput
-                    placeholder="Enter your last name"
-                    placeholderTextColor="#9CA3AF"
-                    className="flex-1 text-base text-gray-900"
-                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                    value={lastName}
-                    onChangeText={setLastName}
-                    onFocus={() => setLastNameFocused(true)}
-                    onBlur={() => setLastNameFocused(false)}
-                    textAlignVertical="center"
-                  />
+                {/* Last Name */}
+                <View className="flex-1">
+                  <Text className="text-sm font-medium text-gray-700 mb-2">Last Name *</Text>
+                  <View 
+                    className={`flex-row items-center border-2 rounded-xl px-4 ${
+                      lastNameFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                    }`}
+                    style={{ minHeight: 56 }}
+                  >
+                    <Ionicons 
+                      name="person-outline" 
+                      size={22} 
+                      color={lastNameFocused ? "#00332d" : "#9CA3AF"} 
+                      style={{ marginRight: 8 }}
+                    />
+                    <TextInput
+                      placeholder="Last name"
+                      placeholderTextColor="#9CA3AF"
+                      className="flex-1 text-base text-gray-900"
+                      style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                      value={lastName}
+                      onChangeText={setLastName}
+                      onFocus={() => setLastNameFocused(true)}
+                      onBlur={() => setLastNameFocused(false)}
+                      textAlignVertical="center"
+                    />
+                  </View>
                 </View>
               </View>
 
@@ -282,7 +290,7 @@ export default function SignUp() {
                 activeOpacity={0.85}
                 onPress={handleSignUp}
                 disabled={loading}
-                className="rounded-2xl overflow-hidden shadow-lg mb-6"
+                className="rounded-2xl overflow-hidden shadow-lg"
                 style={{ width: '100%', height: 64 }}
               >
                 <LinearGradient
@@ -300,18 +308,20 @@ export default function SignUp() {
                   )}
                 </LinearGradient>
               </TouchableOpacity>
+            </ScrollView>
 
-              {/* Back to Login */}
-              <View className="flex-row justify-center items-center mb-4">
+            {/* Footer - Taller with better proportions */}
+            <View className="bg-white border-t border-gray-200 py-5 px-8">
+              <View className="flex-row justify-center items-center">
                 <Text className="text-gray-600 text-base">Already have an account? </Text>
                 <TouchableOpacity onPress={() => router.push("/login")}>
                   <Text className="text-[#00332d] font-bold text-base">Log In</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
