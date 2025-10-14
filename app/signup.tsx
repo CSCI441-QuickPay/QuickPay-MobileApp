@@ -1,4 +1,16 @@
-import { View, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Keyboard, Alert, ActivityIndicator } from "react-native";
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  TouchableWithoutFeedback, 
+  Keyboard, 
+  Alert, 
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -14,6 +26,14 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Focus states
+  const [firstNameFocused, setFirstNameFocused] = useState(false);
+  const [lastNameFocused, setLastNameFocused] = useState(false);
+  const [phoneFocused, setPhoneFocused] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
 
   const handleSignUp = async () => {
     // Validation
@@ -46,133 +66,252 @@ export default function SignUp() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView className="flex-1 bg-white px-6 justify-center">
-        {/* Header */}
-        <Text className="text-3xl font-bold text-center text-[#222] mb-10">
-          Create Account
-        </Text>
-
-        {/* First Name */}
-        <View className="mb-4">
-          <Text className="text-sm text-gray-600 mb-2">First Name *</Text>
-          <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
-            <Ionicons name="person-outline" size={20} color="#666" />
-            <TextInput
-              placeholder="Enter your first name"
-              className="flex-1 py-3 px-2 text-base"
-              value={firstName}
-              onChangeText={setFirstName}
-            />
-          </View>
-        </View>
-
-        {/* Last Name */}
-        <View className="mb-4">
-          <Text className="text-sm text-gray-600 mb-2">Last Name *</Text>
-          <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
-            <Ionicons name="person-outline" size={20} color="#666" />
-            <TextInput
-              placeholder="Enter your last name"
-              className="flex-1 py-3 px-2 text-base"
-              value={lastName}
-              onChangeText={setLastName}
-            />
-          </View>
-        </View>
-
-        {/* Email */}
-        <View className="mb-4">
-          <Text className="text-sm text-gray-600 mb-2">Email *</Text>
-          <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
-            <Ionicons name="mail-outline" size={20} color="#666" />
-            <TextInput
-              placeholder="Enter your email"
-              className="flex-1 py-3 px-2 text-base"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
-          </View>
-        </View>
-
-        {/* Phone Number */}
-        <View className="mb-4">
-          <Text className="text-sm text-gray-600 mb-2">Phone Number (Optional)</Text>
-          <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
-            <Ionicons name="call-outline" size={20} color="#666" />
-            <TextInput
-              placeholder="Enter your phone number"
-              className="flex-1 py-3 px-2 text-base"
-              keyboardType="phone-pad"
-              value={phone}
-              onChangeText={setPhone}
-            />
-          </View>
-        </View>
-
-        {/* Password */}
-        <View className="mb-4">
-          <Text className="text-sm text-gray-600 mb-2">Password *</Text>
-          <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
-            <Ionicons name="lock-closed-outline" size={20} color="#666" />
-            <TextInput
-              placeholder="Enter your password"
-              className="flex-1 py-3 px-2 text-base"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-          </View>
-        </View>
-
-        {/* Confirm Password */}
-        <View className="mb-6">
-          <Text className="text-sm text-gray-600 mb-2">Confirm Password *</Text>
-          <View className="flex-row items-center bg-gray-100 px-3 rounded-xl">
-            <Ionicons name="lock-closed-outline" size={20} color="#666" />
-            <TextInput
-              placeholder="Confirm your password"
-              className="flex-1 py-3 px-2 text-base"
-              secureTextEntry
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-            />
-          </View>
-        </View>
-
-        {/* Sign Up button */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={handleSignUp}
-          disabled={loading}
-          className="rounded-2xl overflow-hidden shadow-md"
+    <SafeAreaView className="flex-1 bg-white">
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1"
+          keyboardVerticalOffset={0}
         >
-          <LinearGradient
-            colors={["#2563eb", "#1e40af"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="py-4"
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1, paddingVertical: 20 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            bounces={false}
           >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-center text-white font-semibold text-lg tracking-wide p-1">
-                Sign Up
-              </Text>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
+            <View className="flex-1 px-8">
+              {/* Logo / Branding */}
+              <View className="items-center mb-6">
+                <View className="w-20 h-20 mb-3 rounded-full bg-[#00332d] items-center justify-center shadow-lg">
+                  <Ionicons name="person-add" size={40} color="#ccf8f1" />
+                </View>
+                <Text className="text-3xl font-bold text-[#00332d] mb-1">Create Account</Text>
+                <Text className="text-gray-500 text-sm">Join QuickPay today</Text>
+              </View>
 
-        {/* Back to Login */}
-        <View className="flex-row justify-center mt-6">
-          <Text className="text-gray-600">Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("/login")}>
-            <Text className="text-blue-600 font-semibold">Log In</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+              {/* First Name */}
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-gray-700 mb-2">First Name *</Text>
+                <View 
+                  className={`flex-row items-center border-2 rounded-xl px-4 ${
+                    firstNameFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                  }`}
+                  style={{ minHeight: 56 }}
+                >
+                  <Ionicons 
+                    name="person-outline" 
+                    size={22} 
+                    color={firstNameFocused ? "#00332d" : "#9CA3AF"} 
+                    style={{ marginRight: 8 }}
+                  />
+                  <TextInput
+                    placeholder="Enter your first name"
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 text-base text-gray-900"
+                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    onFocus={() => setFirstNameFocused(true)}
+                    onBlur={() => setFirstNameFocused(false)}
+                    textAlignVertical="center"
+                  />
+                </View>
+              </View>
+
+              {/* Last Name */}
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-gray-700 mb-2">Last Name *</Text>
+                <View 
+                  className={`flex-row items-center border-2 rounded-xl px-4 ${
+                    lastNameFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                  }`}
+                  style={{ minHeight: 56 }}
+                >
+                  <Ionicons 
+                    name="person-outline" 
+                    size={22} 
+                    color={lastNameFocused ? "#00332d" : "#9CA3AF"} 
+                    style={{ marginRight: 8 }}
+                  />
+                  <TextInput
+                    placeholder="Enter your last name"
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 text-base text-gray-900"
+                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                    value={lastName}
+                    onChangeText={setLastName}
+                    onFocus={() => setLastNameFocused(true)}
+                    onBlur={() => setLastNameFocused(false)}
+                    textAlignVertical="center"
+                  />
+                </View>
+              </View>
+
+              {/* Email */}
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-gray-700 mb-2">Email *</Text>
+                <View 
+                  className={`flex-row items-center border-2 rounded-xl px-4 ${
+                    emailFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                  }`}
+                  style={{ minHeight: 56 }}
+                >
+                  <Ionicons 
+                    name="mail-outline" 
+                    size={22} 
+                    color={emailFocused ? "#00332d" : "#9CA3AF"} 
+                    style={{ marginRight: 8 }}
+                  />
+                  <TextInput
+                    placeholder="example@email.com"
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 text-base text-gray-900"
+                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={email}
+                    onChangeText={setEmail}
+                    onFocus={() => setEmailFocused(true)}
+                    onBlur={() => setEmailFocused(false)}
+                    textAlignVertical="center"
+                  />
+                </View>
+              </View>
+
+              {/* Phone Number */}
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-gray-700 mb-2">Phone Number (Optional)</Text>
+                <View 
+                  className={`flex-row items-center border-2 rounded-xl px-4 ${
+                    phoneFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                  }`}
+                  style={{ minHeight: 56 }}
+                >
+                  <Ionicons 
+                    name="call-outline" 
+                    size={22} 
+                    color={phoneFocused ? "#00332d" : "#9CA3AF"} 
+                    style={{ marginRight: 8 }}
+                  />
+                  <TextInput
+                    placeholder="Enter your phone number"
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 text-base text-gray-900"
+                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                    keyboardType="phone-pad"
+                    value={phone}
+                    onChangeText={setPhone}
+                    onFocus={() => setPhoneFocused(true)}
+                    onBlur={() => setPhoneFocused(false)}
+                    textAlignVertical="center"
+                  />
+                </View>
+              </View>
+
+              {/* Password */}
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-gray-700 mb-2">Password *</Text>
+                <View 
+                  className={`flex-row items-center border-2 rounded-xl px-4 ${
+                    passwordFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                  }`}
+                  style={{ minHeight: 56 }}
+                >
+                  <Ionicons 
+                    name="lock-closed-outline" 
+                    size={22} 
+                    color={passwordFocused ? "#00332d" : "#9CA3AF"} 
+                    style={{ marginRight: 8 }}
+                  />
+                  <TextInput
+                    placeholder="Enter your password"
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 text-base text-gray-900"
+                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={password}
+                    onChangeText={setPassword}
+                    onFocus={() => setPasswordFocused(true)}
+                    onBlur={() => setPasswordFocused(false)}
+                    textAlignVertical="center"
+                  />
+                </View>
+              </View>
+
+              {/* Confirm Password */}
+              <View className="mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">Confirm Password *</Text>
+                <View 
+                  className={`flex-row items-center border-2 rounded-xl px-4 ${
+                    confirmPasswordFocused ? 'border-[#00332d] bg-[#ccf8f1]/10' : 'border-gray-300 bg-white'
+                  }`}
+                  style={{ minHeight: 56 }}
+                >
+                  <Ionicons 
+                    name="lock-closed-outline" 
+                    size={22} 
+                    color={confirmPasswordFocused ? "#00332d" : "#9CA3AF"} 
+                    style={{ marginRight: 8 }}
+                  />
+                  <TextInput
+                    placeholder="Confirm your password"
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 text-base text-gray-900"
+                    style={{ paddingVertical: 0, paddingHorizontal: 0, height: 56 }}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    onFocus={() => setConfirmPasswordFocused(true)}
+                    onBlur={() => setConfirmPasswordFocused(false)}
+                    textAlignVertical="center"
+                  />
+                </View>
+              </View>
+
+              {/* Sign Up button */}
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={handleSignUp}
+                disabled={loading}
+                className="rounded-2xl overflow-hidden shadow-lg mb-6"
+                style={{ width: '100%', height: 64 }}
+              >
+                <LinearGradient
+                  colors={["#00332d", "#005248"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text className="text-white font-bold text-2xl tracking-wide">
+                      Sign Up
+                    </Text>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+
+              {/* Back to Login */}
+              <View className="flex-row justify-center items-center mb-4">
+                <Text className="text-gray-600 text-base">Already have an account? </Text>
+                <TouchableOpacity onPress={() => router.push("/login")}>
+                  <Text className="text-[#00332d] font-bold text-base">Log In</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </SafeAreaView>
   );
 }
