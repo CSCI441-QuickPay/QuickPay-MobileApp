@@ -1,145 +1,124 @@
-import { 
-  collection,
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
+// models/UserModel.ts
+import { db } from '@/config/firebaseConfig';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
   deleteDoc,
-  query,
-  where,
-  getDocs,
-  serverTimestamp 
+  serverTimestamp,
+  Timestamp,
+  FieldValue,
+  increment,
 } from 'firebase/firestore';
-import { db } from '../config/firebaseConfig';
 
 export interface User {
-  userID: string;
+  uid: string;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
   phoneNumber?: string;
-  profileImage?: string;
-  createdAt?: any;
-  updatedAt?: any;
+  profilePicture?: string;
+  balance: number;
+  createdAt: Date; 
+  updatedAt: Date;
+  isActive: boolean;
+  verified: boolean;
 }
 
-class UserModel {
-  static collectionName = 'users';
+export default class UserModel {
+  private static COLLECTION = 'users';
+  static createUser: any;
 
-  /**
-   * Create a new user in Firestore
-   */
-  static async createUser(userData: Omit<User, 'createdAt' | 'updatedAt'>): Promise<User> {
+  /** Create a new user */
+  static async create(uid: string, userData: Partial<User>): Promise<void> {
     try {
-      const userRef = doc(db, this.collectionName, userData.userID);
-      const newUser: User = {
+      const userRef = doc(db, this.COLLECTION, uid);
+      const newUser = {
+        uid,
+        balance: 0,
+        isActive: true,
+        verified: false,
+        phoneNumber: userData.phoneNumber ?? '',
+        profilePicture: userData.profilePicture ?? '',
         ...userData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        createdAt: serverTimestamp() as FieldValue,
+        updatedAt: serverTimestamp() as FieldValue,
       };
-      
       await setDoc(userRef, newUser);
-      console.log('✅ User created successfully:', userData.userID);
-      return newUser;
-    } catch (error) {
-      console.error('❌ Error creating user:', error);
-      throw error;
+    } catch (err) {
+      console.error('❌ Error creating user:', err);
+      throw err;
     }
   }
 
-  /**
-   * Get user by ID
-   */
-  static async getUserByID(userID: string): Promise<User | null> {
+  /** Get user by UID */
+  static async get(uid: string): Promise<User | null> {
     try {
-      const userRef = doc(db, this.collectionName, userID);
+      const userRef = doc(db, this.COLLECTION, uid);
       const userSnap = await getDoc(userRef);
-      
-      if (userSnap.exists()) {
-        return { userID: userSnap.id, ...userSnap.data() } as User;
-      }
-      
-      console.log('⚠️ User not found:', userID);
-      return null;
-    } catch (error) {
-      console.error('❌ Error getting user:', error);
-      throw error;
-    }
-  }
+      if (!userSnap.exists()) return null;
 
-  /**
-   * Get user by email
-   */
-  static async getUserByEmail(email: string): Promise<User | null> {
-    try {
-      const q = query(
-        collection(db, this.collectionName),
-        where('email', '==', email)
-      );
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        return { userID: userDoc.id, ...userDoc.data() } as User;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('❌ Error getting user by email:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update user information
-   */
-  static async updateUser(
-    userID: string, 
-    updates: Partial<Omit<User, 'userID' | 'createdAt'>>
-  ): Promise<User | null> {
-    try {
-      const userRef = doc(db, this.collectionName, userID);
-      const updateData = {
-        ...updates,
-        updatedAt: serverTimestamp()
+      const data = userSnap.data();
+      return {
+        uid: data.uid,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber ?? '',
+        profilePicture: data.profilePicture ?? '',
+        balance: data.balance,
+        isActive: data.isActive,
+        verified: data.verified,
+        createdAt: (data.createdAt as Timestamp).toDate(),
+        updatedAt: (data.updatedAt as Timestamp).toDate(),
       };
-      
-      await updateDoc(userRef, updateData);
-      console.log('✅ User updated successfully:', userID);
-      
-      return this.getUserByID(userID);
-    } catch (error) {
-      console.error('❌ Error updating user:', error);
-      throw error;
+    } catch (err) {
+      console.error('❌ Error fetching user:', err);
+      throw err;
     }
   }
 
-  /**
-   * Delete user
-   */
-  static async deleteUser(userID: string): Promise<void> {
+  /** Update user fields */
+  static async update(uid: string, userData: Partial<User>): Promise<void> {
     try {
-      const userRef = doc(db, this.collectionName, userID);
+      const userRef = doc(db, this.COLLECTION, uid);
+      await updateDoc(userRef, {
+        ...userData,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (err) {
+      console.error('❌ Error updating user:', err);
+      throw err;
+    }
+  }
+
+  /** Delete user */
+  static async delete(uid: string): Promise<void> {
+    try {
+      const userRef = doc(db, this.COLLECTION, uid);
       await deleteDoc(userRef);
-      console.log('✅ User deleted successfully:', userID);
-    } catch (error) {
-      console.error('❌ Error deleting user:', error);
-      throw error;
+    } catch (err) {
+      console.error('❌ Error deleting user:', err);
+      throw err;
     }
   }
 
-  /**
-   * Check if user exists
-   */
-  static async userExists(userID: string): Promise<boolean> {
+  /** Update balance safely (optionally increment) */
+  static async updateBalance(
+    uid: string,
+    newBalance?: number,
+    incrementAmount?: number
+  ): Promise<void> {
     try {
-      const user = await this.getUserByID(userID);
-      return user !== null;
-    } catch (error) {
-      console.error('❌ Error checking user existence:', error);
-      return false;
+      const userRef = doc(db, this.COLLECTION, uid);
+      const updateData: any = { updatedAt: serverTimestamp() };
+      if (typeof newBalance === 'number') updateData.balance = newBalance;
+      if (typeof incrementAmount === 'number') updateData.balance = increment(incrementAmount);
+      await updateDoc(userRef, updateData);
+    } catch (err) {
+      console.error('❌ Error updating balance:', err);
+      throw err;
     }
   }
 }
-
-export default UserModel;
