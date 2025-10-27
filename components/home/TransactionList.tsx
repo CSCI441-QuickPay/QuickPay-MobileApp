@@ -2,7 +2,7 @@ import { filterAndGroupTransactions } from "@/controllers/TransactionController"
 import { transactions } from "@/data/transaction";
 import { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import TransactionActions from "./TransactionActions";
+import TransactionActions from "@/components/home/TransactionActions";
 
 
 // Define props for filtering

@@ -1,6 +1,10 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import resolveConfig from 'tailwindcss/resolveConfig';
+import tailwindConfig from '@/tailwind.config'; 
 
+const fullConfig = resolveConfig(tailwindConfig);
+const primary = fullConfig.theme.colors.primary;
 // Define the type for each navigation item
 type NavItem = {
   label: string;
@@ -16,7 +20,7 @@ const BottomNav = ({ items }: { items: NavItem[] }) => {
     <View className="flex-row justify-around bg-secondary py-[8px] px-[12px]">
       {items.map((item, index) => {
         // Default color for icon, White if active, dark green otherwise
-        const color = item.active ? "#000" : "#555";
+        const color = item.active ? primary : "#4A5A57";
 
         // Special styling for the Scan button
         if (item.special) {
