@@ -1,8 +1,8 @@
-import BalanceCard from '@/components/BalanceCard';
+import BalanceCard from '@/components/home/BalanceCard';
 import BottomNav from '@/components/BottomNav';
-import Header from '@/components/Header';
-import TransactionFilter from '@/components/TransactionFilter';
-import TransactionList from '@/components/TransactionList';
+import Header from '@/components/home/Header';
+import TransactionFilter from '@/components/home/TransactionFilter';
+import TransactionList from '@/components/home/TransactionList';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from 'react';
@@ -65,7 +65,7 @@ export default function Home() {
           {
             label: "Budget",
             icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />,
-            onPress: () => console.log("Go Budget"),
+            onPress: () => router.push("/visual_budget")
           },
           {
             label: "Scan",
@@ -80,7 +80,7 @@ export default function Home() {
           },
           {
             label: "Profile",
-            icon: (color) => <Ionicons name="person-outline" size={34} color={color} />,
+            icon: (color) => <Ionicons name="person" size={34} color={color} />,
             onPress: () => router.push("/profile"),
           }
         ]}

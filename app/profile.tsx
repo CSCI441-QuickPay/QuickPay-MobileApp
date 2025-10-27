@@ -1,5 +1,5 @@
 import BottomNav from '@/components/BottomNav';
-import ProfileOption, { ProfileOptionProps } from '@/components/ProfileOption';
+import ProfileOption, { ProfileOptionProps } from '@/components/profile/ProfileOption';
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from 'react-native';
@@ -72,7 +72,7 @@ export default function Profile() {
             {
                 label: "Budget",
                 icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />,
-                onPress: () => console.log("Go Budget"),
+                onPress: () => router.push("/visual_budget"),
             },
             {
                 label: "Scan",
@@ -87,7 +87,7 @@ export default function Profile() {
             },
             {
                 label: "Profile",
-                icon: (color) => <Ionicons name="person-outline" size={34} color={color} />,
+                icon: (color) => <Ionicons name="person" size={34} color={color} />,
                 onPress: () => router.push("/profile"),
                 active: true,
             }
