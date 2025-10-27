@@ -133,7 +133,7 @@ export default function Login() {
 
               {/* Forgot Password */}
               <TouchableOpacity
-                onPress={() => router.push("/forgot-password")}
+                onPress={() => router.push("/forgot_password")}
                 className="mb-8 self-end"
               >
                 <Text className="text-[#00332d] text-sm font-semibold">
@@ -179,6 +179,7 @@ export default function Login() {
                   <Text className="text-[#00332d] font-bold text-base">Sign Up</Text>
                 </TouchableOpacity>
               </View>
+              
             </View>
           </ScrollView>
         </KeyboardAvoidingView>

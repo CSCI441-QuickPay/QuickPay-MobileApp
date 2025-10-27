@@ -176,7 +176,7 @@ export default function FavoriteScreen() {
           {
             label: "Budget",
             icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />,
-            onPress: () => console.log("Go Budget"),
+            onPress: () => router.push("/visual_budget"),
           },
           {
             label: "Scan",
@@ -192,7 +192,7 @@ export default function FavoriteScreen() {
           },
           {
             label: "Profile",
-            icon: (color) => <Ionicons name="person-outline" size={34} color={color} />,
+            icon: (color) => <Ionicons name="person" size={34} color={color} />,
             onPress: () => router.push("/profile"),
           },
         ]}
