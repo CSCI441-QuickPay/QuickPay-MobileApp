@@ -56,7 +56,6 @@ export default function VisualBudget() {
         setParentForNewCategory={setParentForNewCategory}
       />
 
-      {/* ✅ Consistent BottomNav (matches home.tsx) */}
       <BottomNav
         items={[
           {
