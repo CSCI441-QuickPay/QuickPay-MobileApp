@@ -52,3 +52,4 @@ export default function SplitStatusView({ transaction, splitData, onClose, onEdi
     </>
   );
 }
+

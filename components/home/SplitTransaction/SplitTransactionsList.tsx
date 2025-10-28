@@ -43,3 +43,4 @@ export default function SplitTransactionsList({ splits = [] as any[] }) {
     </ScrollView>
   );
 }
+

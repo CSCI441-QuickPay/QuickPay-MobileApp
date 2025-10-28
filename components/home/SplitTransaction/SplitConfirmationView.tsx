@@ -59,3 +59,4 @@ export default function SplitConfirmationView({ transaction, splitData, onClose,
     </>
   );
 }
+

@@ -14,3 +14,4 @@ export default function SplitShareSection({ code, onShare }: { code: string; onS
     </View>
   );
 }
+

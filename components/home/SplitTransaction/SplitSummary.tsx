@@ -22,3 +22,4 @@ function Row({ label, value, highlight = false }: { label: string; value: string
     </View>
   );
 }
+

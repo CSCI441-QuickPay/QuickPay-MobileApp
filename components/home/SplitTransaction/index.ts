@@ -6,3 +6,4 @@ export { default as SplitSummary } from './SplitSummary';
 export { default as SplitTransactionsList } from './SplitTransactionsList';
 export { default as SplitShareSection } from './SplitShareSection';
 export { default as SplitTransactionHeader } from './SplitTransactionHeader';
+

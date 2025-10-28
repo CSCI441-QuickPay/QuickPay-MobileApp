@@ -92,3 +92,4 @@ export default function SplitCreateView({ transaction, existingSplit, onClose, o
     </>
   );
 }
+
