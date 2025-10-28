@@ -1,47 +1,122 @@
-import { Transaction } from '@/data/transaction';
 import { Ionicons } from '@expo/vector-icons';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Text, TouchableOpacity, View, Share, Alert } from 'react-native';
+import { SplitTransactionModal } from './SplitTransaction';
 
-// TransactionActions props
 type Props = {
-    visible: boolean;
-    transaction: Transaction; // Added transaction prop
-}
+  visible: boolean;
+  transaction: any;
+};
 
-// TransactionActions component
-export default function TransactionActions({ visible }: Props) {
-    if (!visible) return null; // If not visible, render nothing
+export default function TransactionActions({ visible, transaction }: Props) {
+  const [splitModalVisible, setSplitModalVisible] = useState(false);
 
-    return (
-    <View className="flex-row justify-center gap-9 mt-4 border-t border-gray-200 pt-3">
+  if (!visible) return null;
 
-        {/* Share button*/} 
-        <TouchableOpacity className="items-center">
-            <Ionicons name="share-social-outline" size={30} color="black" />
-            <Text className="text-xs mt-1">Share</Text>
+  const isSplit = transaction.splitData && transaction.splitData.splits && transaction.splitData.splits.length > 0;
+  const canSplit = transaction.amount < 0; // Only expenses can be split
+
+  const handleShare = async () => {
+    try {
+      await Share.share({
+        message: `${transaction.title}\n$${Math.abs(transaction.amount).toFixed(2)}`,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSplit = () => {
+    if (!canSplit) {
+      Alert.alert(
+        'Cannot Split',
+        'Only expenses (red transactions) can be split with others.'
+      );
+      return;
+    }
+    setSplitModalVisible(true);
+  };
+
+  return (
+    <>
+      <View className="flex-row items-center justify-around px-4 py-4 border-t border-gray-100 bg-white">
+        {/* Share */}
+        <TouchableOpacity 
+          onPress={handleShare}
+          className="items-center justify-center"
+          activeOpacity={0.7}
+          style={{ width: 70 }}
+        >
+          <View className="w-11 h-11 rounded-full bg-gray-50 items-center justify-center mb-1">
+            <Ionicons name="share-social-outline" size={20} color="#6B7280" />
+          </View>
+          <Text className="text-xs text-gray-600 font-medium">Share</Text>
         </TouchableOpacity>
 
-        {/* Repeat button*/}
-        <TouchableOpacity className="items-center">
-            <Ionicons name="refresh-circle-outline" size={30} color="black" />
-            <Text className="text-xs mt-1">Repeat</Text>
+        {/* Repeat */}
+        <TouchableOpacity 
+          onPress={() => console.log('Repeat')}
+          className="items-center justify-center"
+          activeOpacity={0.7}
+          style={{ width: 70 }}
+        >
+          <View className="w-11 h-11 rounded-full bg-gray-50 items-center justify-center mb-1">
+            <Ionicons name="refresh-outline" size={20} color="#6B7280" />
+          </View>
+          <Text className="text-xs text-gray-600 font-medium">Repeat</Text>
         </TouchableOpacity>
 
-        {/* Split button*/}
-        <TouchableOpacity className="items-center">
-            <Ionicons name="pie-chart-outline" size={30} color="black" />
-            <Text className="text-xs mt-1">Split</Text>
-        </TouchableOpacity>
-
-        {/* More button*/}
-        <TouchableOpacity className="items-center">
-            <Ionicons
-            name="ellipsis-horizontal-circle-outline"
-            size={30}
-            color="black"
+        {/* Split - Green outline ONLY if already split */}
+        <TouchableOpacity 
+          onPress={handleSplit}
+          className="items-center justify-center"
+          activeOpacity={0.7}
+          style={{ width: 70 }}
+          disabled={!canSplit}
+        >
+          <View 
+            className="w-11 h-11 rounded-full items-center justify-center mb-1"
+            style={{
+              backgroundColor: isSplit ? '#F0FDF4' : '#F9FAFB',
+              borderWidth: isSplit ? 2 : 0,
+              borderColor: isSplit ? '#10B981' : 'transparent',
+            }}
+          >
+            <Ionicons 
+              name="pie-chart-outline" 
+              size={20} 
+              color={isSplit ? '#10B981' : (canSplit ? '#6B7280' : '#D1D5DB')}
             />
-            <Text className="text-xs mt-1">More</Text>
+          </View>
+          <Text 
+            className="text-xs font-medium"
+            style={{ 
+              color: isSplit ? '#10B981' : (canSplit ? '#6B7280' : '#D1D5DB')
+            }}
+          >
+            Split
+          </Text>
         </TouchableOpacity>
-    </View>
-    );
+
+        {/* More */}
+        <TouchableOpacity 
+          onPress={() => console.log('More')}
+          className="items-center justify-center"
+          activeOpacity={0.7}
+          style={{ width: 70 }}
+        >
+          <View className="w-11 h-11 rounded-full bg-gray-50 items-center justify-center mb-1">
+            <Ionicons name="ellipsis-horizontal" size={20} color="#6B7280" />
+          </View>
+          <Text className="text-xs text-gray-600 font-medium">More</Text>
+        </TouchableOpacity>
+      </View>
+
+      <SplitTransactionModal
+        visible={splitModalVisible}
+        onClose={() => setSplitModalVisible(false)}
+        transaction={transaction}
+      />
+    </>
+  );
 }
