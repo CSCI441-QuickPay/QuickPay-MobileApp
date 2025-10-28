@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import BottomNav from '@/components/BottomNav';
 import BudgetHeader from '@/components/visual_budget/BudgetHeader';
 import BudgetPlayground from '@/components/visual_budget/BudgetPlayground';
-import BudgetModals from '@/components/visual_budget/BudgetModals';
+import BudgetModals from '@/components/visual_budget/BudgetModals/BudgetModals';
 
 import { budgetCategories } from '@/data/budget';
 import { TreeBudgetCategory } from '@/models/BudgetModel';
@@ -19,7 +19,7 @@ export default function VisualBudget() {
   const summary = getBudgetSummary(categories.filter(c => c.type !== 'bank'), totalBalance);
   const banks = categories.filter(c => c.type === 'bank');
 
-  // 🔁 all shared state lifted to top-level
+  // all shared state lifted to top-level
   const [modalState, setModalState] = useState({
     add: false,
     edit: false,
