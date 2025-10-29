@@ -1,4 +1,3 @@
-// models/UserModel.ts
 import { db } from '@/config/firebaseConfig';
 import {
   doc,
@@ -9,8 +8,23 @@ import {
   serverTimestamp,
   Timestamp,
   FieldValue,
-  increment,
-} from 'firebase/firestore';
+} from 'firestore';
+
+export interface PlaidConnectionData {
+  accessToken: string;
+  itemId: string;
+  institutionId: string;
+  institutionName: string;
+  connectedAt: Date;
+  accounts: Array<{
+    id: string;
+    name: string;
+    mask: string;
+    type: string;
+    subtype: string;
+    balance: number;
+  }>;
+}
 
 export interface User {
   uid: string;
@@ -20,15 +34,16 @@ export interface User {
   phoneNumber?: string;
   profilePicture?: string;
   balance: number;
-  createdAt: Date; 
+  createdAt: Date;
   updatedAt: Date;
   isActive: boolean;
   verified: boolean;
+  clerkId?: string;
+  plaidConnections?: PlaidConnectionData[];
 }
 
 export default class UserModel {
   private static COLLECTION = 'users';
-  static createUser: any;
 
   /** Create a new user */
   static async create(uid: string, userData: Partial<User>): Promise<void> {
@@ -41,11 +56,13 @@ export default class UserModel {
         verified: false,
         phoneNumber: userData.phoneNumber ?? '',
         profilePicture: userData.profilePicture ?? '',
+        plaidConnections: [],
         ...userData,
         createdAt: serverTimestamp() as FieldValue,
         updatedAt: serverTimestamp() as FieldValue,
       };
       await setDoc(userRef, newUser);
+      console.log('✅ User created in Firestore:', uid);
     } catch (err) {
       console.error('❌ Error creating user:', err);
       throw err;
@@ -70,6 +87,8 @@ export default class UserModel {
         balance: data.balance,
         isActive: data.isActive,
         verified: data.verified,
+        clerkId: data.clerkId,
+        plaidConnections: data.plaidConnections || [],
         createdAt: (data.createdAt as Timestamp).toDate(),
         updatedAt: (data.updatedAt as Timestamp).toDate(),
       };
@@ -87,6 +106,7 @@ export default class UserModel {
         ...userData,
         updatedAt: serverTimestamp(),
       });
+      console.log('✅ User updated:', uid);
     } catch (err) {
       console.error('❌ Error updating user:', err);
       throw err;
@@ -98,24 +118,56 @@ export default class UserModel {
     try {
       const userRef = doc(db, this.COLLECTION, uid);
       await deleteDoc(userRef);
+      console.log('✅ User deleted:', uid);
     } catch (err) {
       console.error('❌ Error deleting user:', err);
       throw err;
     }
   }
 
-  /** Update balance safely (optionally increment) */
-  static async updateBalance(
+  /** Add Plaid connection */
+  static async addPlaidConnection(
     uid: string,
-    newBalance?: number,
-    incrementAmount?: number
+    connectionData: PlaidConnectionData
   ): Promise<void> {
     try {
-      const userRef = doc(db, this.COLLECTION, uid);
-      const updateData: any = { updatedAt: serverTimestamp() };
-      if (typeof newBalance === 'number') updateData.balance = newBalance;
-      if (typeof incrementAmount === 'number') updateData.balance = increment(incrementAmount);
-      await updateDoc(userRef, updateData);
+      const user = await this.get(uid);
+      if (!user) throw new Error('User not found');
+
+      const connections = user.plaidConnections || [];
+      connections.push(connectionData);
+
+      await this.update(uid, { plaidConnections: connections });
+      console.log('✅ Plaid connection added for user:', uid);
+    } catch (err) {
+      console.error('❌ Error adding Plaid connection:', err);
+      throw err;
+    }
+  }
+
+  /** Remove Plaid connection */
+  static async removePlaidConnection(uid: string, itemId: string): Promise<void> {
+    try {
+      const user = await this.get(uid);
+      if (!user) throw new Error('User not found');
+
+      const connections = (user.plaidConnections || []).filter(
+        (conn) => conn.itemId !== itemId
+      );
+
+      await this.update(uid, { plaidConnections: connections });
+      console.log('✅ Plaid connection removed for user:', uid);
+    } catch (err) {
+      console.error('❌ Error removing Plaid connection:', err);
+      throw err;
+    }
+  }
+
+  /** Update account balance from Plaid */
+  static async updateBalance(uid: string, newBalance: number): Promise<void> {
+    try {
+      await this.update(uid, { balance: newBalance });
+      console.log('✅ Balance updated for user:', uid, '- New balance:', newBalance);
     } catch (err) {
       console.error('❌ Error updating balance:', err);
       throw err;
