@@ -17,8 +17,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useSignIn, useOAuth } from "@clerk/clerk-expo";
+import { useSignIn, useOAuth, useUser } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
+import UserSyncService from "@/services/UserSyncService";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -54,6 +55,8 @@ export default function Login() {
       const result = await signIn.create({ identifier: email, password });
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
+
+        // The sync will happen in the home screen after user hook loads
         router.replace("/home");
       } else {
         Alert.alert("Login Failed", "Invalid credentials or unverified account");
@@ -74,6 +77,8 @@ export default function Login() {
 
       if (createdSessionId) {
         await setClerkActive({ session: createdSessionId });
+
+        // The sync will happen in the home screen after user hook loads
         router.replace("/home");
       } else if (signIn || signUp) {
         Alert.alert("Continue Registration", "Please complete your setup");

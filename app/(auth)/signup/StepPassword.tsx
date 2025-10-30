@@ -15,6 +15,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useSignUp } from "@clerk/clerk-expo";
+import UserSyncService from "@/services/UserSyncService";
 
 export default function StepPassword({ onNext, onBack, signupData, cachedData }: any) {
   const { signUp, setActive } = useSignUp();
@@ -46,14 +47,19 @@ export default function StepPassword({ onNext, onBack, signupData, cachedData }:
   const handleSignUp = async () => {
     if (!validatePassword()) return;
 
+    if (!signUp) {
+      Alert.alert("Error", "Signup session not found. Please start over.");
+      return;
+    }
+
     setLoading(true);
     try {
       // Update the signUp with password
-      await signUp?.update({ password });
+      await signUp.update({ password });
 
       // Try to complete the signup
       // Clerk will automatically create session if all required verifications are done
-      const result = await signUp?.attemptVerification({
+      const result = await signUp.attemptVerification({
         strategy: "password",
       });
 
@@ -63,6 +69,8 @@ export default function StepPassword({ onNext, onBack, signupData, cachedData }:
       // If sign-up is complete, set the active session
       if (result?.status === "complete" && result?.createdSessionId) {
         await setActive({ session: result.createdSessionId });
+
+        // The sync will happen in home screen after user is fully loaded
         Alert.alert("Success!", "Your account has been created.");
         onNext({ password });
       } else if (result?.status === "missing_requirements") {
