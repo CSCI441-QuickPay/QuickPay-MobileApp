@@ -5,7 +5,7 @@
 # in a neat tree-like format for key folders.
 # -----------------------------------------------
 
-folders=("app" "assets" "components" "controllers" "data" "config" "models" "utils" "styles")
+folders=("app"  "services" "assets" "components" "controllers" "data" "config" "models" "utils" "styles")
 
 for folder in "${folders[@]}"; do
   if [ -d "$folder" ]; then
