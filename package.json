@@ -19,6 +19,7 @@
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
+    "@supabase/supabase-js": "^2.78.0",
     "dotenv": "^17.2.3",
     "expo": "~53.0.23",
     "expo-auth-session": "~6.2.1",

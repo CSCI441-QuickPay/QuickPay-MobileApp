@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -10,10 +10,27 @@ import Header from "@/components/home/Header";
 import TransactionFilter from "@/components/home/TransactionFilter";
 import TransactionList from "@/components/home/TransactionList";
 import { transactions } from "@/data/transaction";
+import UserSyncService from "@/services/UserSyncService";
 
 export default function Home() {
   const { user } = useUser();
   const firstName = user?.firstName || "User";
+
+  // Sync user to Supabase when home loads
+  useEffect(() => {
+    async function syncUser() {
+      if (user) {
+        try {
+          console.log("🔄 Syncing user to Supabase from home...", user.id);
+          await UserSyncService.syncCurrentUser(user);
+          console.log("✅ User synced successfully");
+        } catch (error) {
+          console.error("❌ Failed to sync user:", error);
+        }
+      }
+    }
+    syncUser();
+  }, [user]);
 
   // Calculate total balance from transactions
   const totalBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
