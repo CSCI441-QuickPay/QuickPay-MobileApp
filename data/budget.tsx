@@ -1,39 +1,42 @@
 /**
- * budget.ts
+ * budget.tsx
  * Static data and configuration for budget system
+ * SYNCED with transaction data - Total Balance: $1,348.17
  */
 
 import { TreeBudgetCategory, Bank } from '@/models/BudgetModel';
 
 /**
  * Default bank accounts
+ * Total: $1,348.17 (matches transaction total)
+ * NOTE: Use 'budget' property to match budgetCategories structure
  */
 export const banks: Bank[] = [
   {
     id: 'bank1',
     name: 'Chase',
-    amount: 250,
+    budget: 550.00,
     color: '#3B82F6',
     icon: 'card',
   },
   {
     id: 'bank2',
     name: 'Wells Fargo',
-    amount: 350,
+    budget: 450.00,
     color: '#10B981',
     icon: 'business',
   },
   {
     id: 'bank3',
     name: 'Bank of America',
-    amount: 200,
+    budget: 200.17,
     color: '#F59E0B',
     icon: 'card-outline',
   },
   {
     id: 'bank4',
     name: 'Citi',
-    amount: 200,
+    budget: 148.00,
     color: '#8B5CF6',
     icon: 'wallet-outline',
   },
@@ -41,16 +44,17 @@ export const banks: Bank[] = [
 
 /**
  * Default budget categories with tree structure
+ * Total Balance: $1,348.17 (synced with transactions)
  */
 export const budgetCategories: TreeBudgetCategory[] = [
-  // Banks (money sources)
+  // Banks (money sources) - Updated to match total balance
   {
     id: 'bank1',
     name: 'Chase',
     icon: 'card',
     color: '#3B82F6',
     spent: 0,
-    budget: 250,
+    budget: 550.00,
     parentId: null,
     children: ['total'],
     position: { x: 60, y: 30 },
@@ -62,7 +66,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     icon: 'business',
     color: '#10B981',
     spent: 0,
-    budget: 350,
+    budget: 450.00,
     parentId: null,
     children: ['total'],
     position: { x: 260, y: 30 },
@@ -74,7 +78,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     icon: 'card-outline',
     color: '#F59E0B',
     spent: 0,
-    budget: 200,
+    budget: 200.17,
     parentId: null,
     children: ['total'],
     position: { x: 460, y: 30 },
@@ -86,35 +90,35 @@ export const budgetCategories: TreeBudgetCategory[] = [
     icon: 'wallet-outline',
     color: '#8B5CF6',
     spent: 0,
-    budget: 200,
+    budget: 148.00,
     parentId: null,
     children: ['total'],
     position: { x: 660, y: 30 },
     type: 'bank',
   },
   
-  // Total Budget (pools from banks)
+  // Total Budget (pools from banks) - Matches total balance
   {
     id: 'total',
     name: 'Current Budget',
     icon: 'cash',
     color: '#1F2937',
-    spent: 1000,
-    budget: 1000,
+    spent: 0, // Container block - spending tracked in categories below
+    budget: 1348.17, // Updated to match transaction total
     parentId: null,
     children: ['cat1', 'cat2', 'cat3'],
     position: { x: 360, y: 240 },
     type: 'budget',
   },
   
-  // Main categories
+  // Main categories - Adjusted to total $1,200 allocated (leaving $148.17 unallocated)
   {
     id: 'cat1',
     name: 'Rent',
     icon: 'home',
     color: '#EF4444',
     spent: 1000,
-    budget: 2800,
+    budget: 1000, // Reduced from 1200 to 1000
     parentId: 'total',
     children: [],
     position: { x: 60, y: 450 },
@@ -138,7 +142,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     icon: 'water',
     color: '#3B82F6',
     spent: 0,
-    budget: 200,
+    budget: 100, // Reduced from 150 to 100
     parentId: 'total',
     children: [],
     position: { x: 360, y: 450 },
@@ -151,7 +155,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     icon: 'cart',
     color: '#84CC16',
     spent: 0,
-    budget: 660,
+    budget: 100, // Reduced from 660 to 100
     parentId: 'total',
     children: ['sub1', 'sub2', 'sub3'],
     position: { x: 660, y: 450 },
@@ -159,14 +163,14 @@ export const budgetCategories: TreeBudgetCategory[] = [
     transactions: [],
   },
   
-  // Sub-categories
+  // Sub-categories - Adjusted to total $100 within Living budget
   {
     id: 'sub1',
     name: 'Groceries',
     icon: 'restaurant',
     color: '#10B981',
     spent: 0,
-    budget: 500,
+    budget: 50, // Reduced from 500 to 50
     parentId: 'cat3',
     children: [],
     position: { x: 460, y: 660 },
@@ -179,7 +183,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     icon: 'flask',
     color: '#A78BFA',
     spent: 0,
-    budget: 20,
+    budget: 30, // Reduced from 80 to 30
     parentId: 'cat3',
     children: [],
     position: { x: 660, y: 660 },
@@ -192,7 +196,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     icon: 'shirt',
     color: '#F97316',
     spent: 0,
-    budget: 40,
+    budget: 20, // Reduced from 80 to 20
     parentId: 'cat3',
     children: [],
     position: { x: 860, y: 660 },

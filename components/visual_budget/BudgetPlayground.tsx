@@ -90,6 +90,7 @@ export default function BudgetPlayground({
           <BudgetBlock
             key={cat.id}
             category={cat}
+            categories={categories}
             isShaking={false}
             isFocused={focusedCategoryId === cat.id}
             shakeTransform="0deg"

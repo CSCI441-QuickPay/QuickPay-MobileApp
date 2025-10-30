@@ -60,7 +60,6 @@ export default function SplitCreateView({ transaction, existingSplit, onClose, o
             <TextInput
               placeholder="e.g., 3"
               placeholderTextColor="#9CA3AF"
-              className="text-base text-gray-900"
               keyboardType="number-pad"
               value={people}
               onChangeText={setPeople}

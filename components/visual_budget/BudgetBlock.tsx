@@ -17,6 +17,7 @@ import {
 
 interface BudgetBlockProps {
   category: TreeBudgetCategory;
+  categories?: TreeBudgetCategory[]; // For calculating remaining budget
   isShaking: boolean;
   isFocused: boolean;
   shakeTransform: any;
@@ -31,6 +32,7 @@ interface BudgetBlockProps {
 
 export default function BudgetBlock({
   category,
+  categories,
   isShaking,
   isFocused,
   shakeTransform,
@@ -47,6 +49,52 @@ export default function BudgetBlock({
   const iconSize = getIconSize(category.type);
   const nameStyle = textStyles.blockName(category.type);
   const amountStyle = textStyles.blockAmount(category.type);
+
+  // Calculate display amount
+  const calculateDisplayAmount = () => {
+    if (category.id === 'total' && categories) {
+      // For "Current Budget" node: show UNALLOCATED money from remaining cash
+      // Step 1: Calculate total spent across all categories
+      const totalSpent = categories
+        .filter(c => c.type === 'category')
+        .reduce((sum, cat) => sum + cat.spent, 0);
+      
+      // Step 2: Calculate remaining cash after spending
+      const remainingCash = category.budget - totalSpent;
+      
+      // Step 3: Calculate allocated budgets (only count budget - spent for each category)
+      // This prevents double-counting money that's already been spent
+      const totalAllocated = categories
+        .filter(c => c.parentId === 'total' && c.type === 'category')
+        .reduce((sum, cat) => {
+          // Only count the remaining budget (budget - spent)
+          const remaining = cat.budget - cat.spent;
+          return sum + remaining;
+        }, 0);
+      
+      // Step 4: Unallocated = remaining cash - allocated budgets (that haven't been spent)
+      return remainingCash - totalAllocated;
+    }
+    
+    // For regular categories: show budget - spent (what's left in that budget)
+    return category.budget - category.spent;
+  };
+
+  const displayAmount = calculateDisplayAmount();
+  
+  // Calculate the denominator for Current Budget display
+  const calculateTotalForDisplay = () => {
+    if (category.id === 'total' && categories) {
+      // For Current Budget: show remaining cash as denominator
+      const totalSpent = categories
+        .filter(c => c.type === 'category')
+        .reduce((sum, cat) => sum + cat.spent, 0);
+      return category.budget - totalSpent;
+    }
+    return category.budget;
+  };
+  
+  const totalForDisplay = calculateTotalForDisplay();
 
   return (
     <Animated.View
@@ -106,11 +154,13 @@ export default function BudgetBlock({
         {category.type !== 'bank' && (
           <>
             <Text style={{ ...amountStyle, color: '#000000' }}>
-              ${category.spent}
+              ${displayAmount.toFixed(2)}
             </Text>
-            <Text style={textStyles.blockBudget}>
-              of ${category.budget}
-            </Text>
+            {category.id === 'total' && (
+              <Text style={textStyles.blockBudget}>
+                of ${totalForDisplay.toFixed(2)}
+              </Text>
+            )}
             
             {/* Transaction Count Badge */}
             {category.type === 'category' && category.transactions && category.transactions.length > 0 && (
