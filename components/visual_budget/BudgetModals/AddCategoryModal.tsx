@@ -56,7 +56,6 @@ export default function AddCategoryModal({
                 <TextInput
                   placeholder="e.g., Entertainment"
                   placeholderTextColor="#9CA3AF"
-                  className="text-base text-gray-900"
                   value={name}
                   onChangeText={setName}
                 />
@@ -71,7 +70,6 @@ export default function AddCategoryModal({
                 <TextInput
                     placeholder="0.00"
                     placeholderTextColor="#9CA3AF"
-                    className="flex-1 text-base text-gray-900"
                     keyboardType="decimal-pad"
                     value={budget}
                     onChangeText={(v) => {
