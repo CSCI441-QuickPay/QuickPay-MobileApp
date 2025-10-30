@@ -13,7 +13,7 @@ export default function Header() {
     return null;
   }
 
-  // ✅ SAME LOGIC AS PROFILE
+
   const getInitials = (name: string) => {
     const names = name.split(" ");
     if (names.length >= 2) {
@@ -35,7 +35,7 @@ export default function Header() {
           </View>
           <View>
             <Text className="text-sm text-gray-600">Welcome back,</Text>
-            <Text className="text-xl font-bold text-gray-900">{fullName}</Text>
+            <Text className="text-xl font-bold text-gray-900">{user.firstName}</Text>
           </View>
         </View>
 
