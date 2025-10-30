@@ -1,56 +1,82 @@
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { Feather, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 
 type BalanceCardProps = {
-  balance: number; // User's balance amount
-  onRequest: () => void; // Callback when Request button is pressed
-  onSend: () => void; // Callback when Send button is pressed
+  balance: number;
+  onRequest: () => void;
+  onSend: () => void;
 };
 
-// Balance card component
-export default function BalanceCard ({ balance, onRequest, onSend }: BalanceCardProps) {
-  // State to manage balance visibility
+export default function BalanceCard({ balance, onRequest, onSend }: BalanceCardProps) {
   const [hidden, setHidden] = useState(false);
 
   return (
-    <View className="bg-secondary rounded-[12px] overflow-hidden m-[16px] shadow-sm">
-      {/* Balance Section */}
-      <View className="flex-row items-center p-[16px]">
-        <Text className="text-[28px] font-bold text-primary">
-          ${" "}
-          {hidden
-            ? "•••••"
-            : balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-        </Text>
+    <View className="mx-6 my-4">
+      <View className="rounded-2xl overflow-hidden">
+        <LinearGradient
+          colors={["#00332d", "#005248"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ padding: 24 }}
+        >
+          {/* Balance Section */}
+          <View className="flex-row items-center justify-between mb-6">
+            <View className="flex-1">
+              <Text className="text-white/70 text-sm font-medium mb-2">
+                Total Balance
+              </Text>
+              <View className="flex-row items-center">
+                <Text className="text-white text-4xl font-extrabold">
+                  {hidden ? "••••••" : `$${balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setHidden(!hidden)}
+                  activeOpacity={0.7}
+                  className="ml-3 w-10 h-10 items-center justify-center"
+                >
+                  <Ionicons
+                    name={hidden ? "eye-off-outline" : "eye-outline"}
+                    size={22}
+                    color="rgba(255,255,255,0.7)"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
 
-        {/* Toggle visibility button */}
-        <TouchableOpacity onPress={() => setHidden(!hidden)}>
-          <Ionicons 
-            name={hidden ? "eye-off" : "eye"} 
-            size={24} 
-            color="#00332d" 
-            style={{ marginLeft: 25 }}
-          />
-        </TouchableOpacity>
-      </View>
-      
-      {/* Action Buttons */}
-      <View className="flex-row bg-primary">
-        {/* Request Button */}
-        <TouchableOpacity className="flex-1 flex-row items-center justify-center py-[14px]" onPress={onRequest}>
-          <MaterialIcons name="request-page" size={24} color="#ccf8f1" />
-          <Text className="text-secondary text-subheading ml-[6px] font-medium">Request</Text>
-        </TouchableOpacity>
+          {/* Action Buttons */}
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={onRequest}
+              className="flex-1 bg-white/20 rounded-xl py-3 flex-row items-center justify-center"
+            >
+              <Ionicons
+                name="arrow-down"
+                size={18}
+                color="white"
+                style={{ marginRight: 6 }}
+              />
+              <Text className="text-white font-bold text-sm">Request</Text>
+            </TouchableOpacity>
 
-        {/* Divider */}
-        <View className="w-[1px] bg-secondary opacity-30" />
-
-        {/* Send Button */}
-        <TouchableOpacity className="flex-1 flex-row items-center justify-center py-[14px]" onPress={onSend}>
-          <Feather name="send" size={24} color="#ccf8f1" />
-          <Text className="text-secondary text-subheading ml-[6px] font-medium">Send</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={onSend}
+              className="flex-1 bg-white rounded-xl py-3 flex-row items-center justify-center"
+            >
+              <Ionicons
+                name="arrow-up"
+                size={18}
+                color="#00332d"
+                style={{ marginRight: 6 }}
+              />
+              <Text className="text-primary font-bold text-sm">Send</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
       </View>
     </View>
   );

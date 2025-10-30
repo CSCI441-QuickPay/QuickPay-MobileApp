@@ -1,10 +1,28 @@
-import BottomNav from "@/components/BottomNav";
-import ProfileOption, { ProfileOptionProps } from "@/components/profile/ProfileOption";
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Image, Text, TouchableOpacity, View, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser, useAuth } from "@clerk/clerk-expo";
+import { LinearGradient } from "expo-linear-gradient";
+import BottomNav from "@/components/BottomNav";
+import { userCards, getUserStats } from "@/data/user";
+import { getFavoritesCount } from "@/data/favorites";
+
+// Get initials from name
+const getInitials = (name: string) => {
+  const names = name.split(" ");
+  if (names.length >= 2) {
+    return `${names[0][0]}${names[1][0]}`.toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+};
 
 export default function Profile() {
   const { user, isLoaded } = useUser();
@@ -18,9 +36,14 @@ export default function Profile() {
     );
   }
 
-  const fullName = user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User" : "Guest";
-  const userId = user?.id || "Unknown ID";
+  const fullName = user
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User"
+    : "Guest";
   const userEmail = user?.primaryEmailAddress?.emailAddress || "Not provided";
+  const userId = user?.id?.slice(0, 8) || "Unknown";
+
+  // Get synced stats
+  const stats = getUserStats(getFavoritesCount());
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -40,55 +63,307 @@ export default function Profile() {
     ]);
   };
 
-  // Profile Options
-  const option: ProfileOptionProps[] = [
-    { icon: "person-outline", label: "My Profile", onPress: () => console.log("Go to My Profile") },
-    { icon: "shield-checkmark-outline", label: "Security", onPress: () => console.log("Go to Security") },
-    { icon: "language-outline", label: "Language", onPress: () => console.log("Go to Language") },
-    { icon: "call-outline", label: "Contact Us", onPress: () => router.push("/contact_us") },
-    { icon: "document-text-outline", label: "Terms & Conditions", onPress: () => console.log("Go to Terms") },
-  ];
-
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="flex-1">
-        {/* Profile Header */}
-        <View className="items-center mt-4 px-4 relative h-[300px]">
-          {/* Settings / Logout Button */}
+      {/* Header Section */}
+      <View className="px-6 pt-4 pb-5">
+        {/* Title with Logout Button */}
+        <View className="flex-row items-center justify-between mb-6">
+          <View className="flex-row items-center flex-1">
+            <View className="w-14 h-14 rounded-full bg-[#f0fdf4] items-center justify-center mr-3">
+              <Ionicons name="person" size={28} color="#00332d" />
+            </View>
+            <View>
+              <Text className="text-3xl font-extrabold text-primary">
+                Profile
+              </Text>
+              <Text className="text-gray-500 text-sm mt-0.5">
+                Manage your account
+              </Text>
+            </View>
+          </View>
+
+          {/* Logout Button (Standard iOS/Android position) */}
           <TouchableOpacity
-            onPress={handleLogout}
-            className="absolute right-10 top-5"
             activeOpacity={0.7}
+            onPress={handleLogout}
+            className="px-3 py-1.5"
           >
-            <Ionicons name="log-out-outline" size={37} color="#000" />
+            <Ionicons name="log-out-outline" size={26} color="#EF4444" />
+          </TouchableOpacity>
+        </View>
+
+        {/* User Info Card */}
+        <View className="rounded-2xl overflow-hidden mb-5">
+          <LinearGradient
+            colors={["#00332d", "#005248"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ padding: 20 }}
+          >
+            <View className="flex-row items-center mb-4">
+              {/* Avatar with Initials */}
+              <View className="w-16 h-16 rounded-full bg-white items-center justify-center mr-4">
+                <Text className="text-2xl font-extrabold text-primary">
+                  {getInitials(fullName)}
+                </Text>
+              </View>
+
+              <View className="flex-1">
+                <Text className="text-white text-xl font-bold mb-1">
+                  {fullName}
+                </Text>
+                <Text className="text-white/70 text-sm font-medium">
+                  {userEmail}
+                </Text>
+              </View>
+            </View>
+
+            <View className="bg-white/10 px-3 py-2 rounded-lg self-start">
+              <Text className="text-white/90 text-xs font-semibold">
+                ID: {userId}
+              </Text>
+            </View>
+          </LinearGradient>
+        </View>
+
+        {/* Stats Cards */}
+        <View className="flex-row gap-3 mb-5">
+          <TouchableOpacity
+            activeOpacity={0.7}
+            className="flex-1 bg-blue-50 rounded-2xl p-4 border-2 border-blue-100"
+          >
+            <View className="flex-row items-center justify-between mb-2">
+              <Ionicons name="card-outline" size={24} color="#3B82F6" />
+              <Text className="text-2xl font-bold text-blue-600">
+                {stats.activeCards}
+              </Text>
+            </View>
+            <Text className="text-gray-600 text-sm font-medium">
+              Active Cards
+            </Text>
           </TouchableOpacity>
 
-          {/* User Profile Image */}
-          <Image
-            source={require("@/assets/images/user_profile.jpg")}
-            className="w-[149] h-[149] rounded-full mt-[70] border border-black"
-          />
-
-          {/* User Info */}
-          <Text className="text-[28px] font-bold mt-2 text-[#00332d]">{fullName}</Text>
-          <Text className="text-gray-500 font-medium mt-1">ID: {userId}</Text>
-          <Text className="text-gray-500 font-medium mt-1">{userEmail}</Text>
-        </View>
-
-        {/* Options List */}
-        <View className="bg-gray-100 flex-1 items-center">
-          <View className="mt-2 px-4 pt-4">
-            {option.map((option, index) => (
-              <ProfileOption key={index} {...option} />
-            ))}
-          </View>
-
-          {/* App Version */}
-          <View className="items-center mt-2 mb-8">
-            <Text className="text-gray-500 font-bold text-normal">App Version: v1.0.0</Text>
-          </View>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push("/favorite")}
+            className="flex-1 bg-amber-50 rounded-2xl p-4 border-2 border-amber-100"
+          >
+            <View className="flex-row items-center justify-between mb-2">
+              <Ionicons name="star" size={24} color="#F59E0B" />
+              <Text className="text-2xl font-bold text-amber-600">
+                {stats.totalFavorites}
+              </Text>
+            </View>
+            <Text className="text-gray-600 text-sm font-medium">Favorites</Text>
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Settings List */}
+      <ScrollView
+        className="flex-1 px-6"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
+        {/* Account Section */}
+        <View className="mb-6">
+          <Text className="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">
+            Account
+          </Text>
+          <View className="gap-2">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => console.log("Go to My Profile")}
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center mr-3">
+                <Ionicons name="person-outline" size={20} color="#3B82F6" />
+              </View>
+              <Text className="flex-1 text-base font-semibold text-gray-900">
+                My Profile
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => console.log("Go to Security")}
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-green-50 items-center justify-center mr-3">
+                <Ionicons
+                  name="shield-checkmark-outline"
+                  size={20}
+                  color="#10B981"
+                />
+              </View>
+              <Text className="flex-1 text-base font-semibold text-gray-900">
+                Security
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => console.log("Go to Cards")}
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-purple-50 items-center justify-center mr-3">
+                <Ionicons name="card-outline" size={20} color="#8B5CF6" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-gray-900">
+                  My Cards
+                </Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  {stats.activeCards} active
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Preferences Section */}
+        <View className="mb-6">
+          <Text className="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">
+            Preferences
+          </Text>
+          <View className="gap-2">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => console.log("Go to Notifications")}
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-orange-50 items-center justify-center mr-3">
+                <Ionicons
+                  name="notifications-outline"
+                  size={20}
+                  color="#F97316"
+                />
+              </View>
+              <Text className="flex-1 text-base font-semibold text-gray-900">
+                Notifications
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => console.log("Go to Language")}
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-indigo-50 items-center justify-center mr-3">
+                <Ionicons name="language-outline" size={20} color="#6366F1" />
+              </View>
+              <Text className="flex-1 text-base font-semibold text-gray-900">
+                Language
+              </Text>
+              <View className="flex-row items-center">
+                <Text className="text-sm text-gray-500 mr-2">English</Text>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Support Section */}
+        <View className="mb-6">
+          <Text className="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">
+            Support
+          </Text>
+          <View className="gap-2">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push("/contact_us")}
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-teal-50 items-center justify-center mr-3">
+                <Ionicons name="call-outline" size={20} color="#14B8A6" />
+              </View>
+              <Text className="flex-1 text-base font-semibold text-gray-900">
+                Contact Us
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => console.log("Go to Terms")}
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center mr-3">
+                <Ionicons
+                  name="document-text-outline"
+                  size={20}
+                  color="#6B7280"
+                />
+              </View>
+              <Text className="flex-1 text-base font-semibold text-gray-900">
+                Terms & Conditions
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* App Version */}
+        <View className="items-center py-6">
+          <Text className="text-gray-400 font-medium text-sm">
+            QuickPay v1.0.0
+          </Text>
+        </View>
+      </ScrollView>
 
       {/* Bottom Navigation */}
       <BottomNav
@@ -100,7 +375,9 @@ export default function Profile() {
           },
           {
             label: "Budget",
-            icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />,
+            icon: (color) => (
+              <MaterialIcons name="account-tree" size={34} color={color} />
+            ),
             onPress: () => router.push("/visual_budget"),
           },
           {
