@@ -28,7 +28,7 @@ export default function Home() {
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       {/* Fixed Header */}
       <View className="bg-white">
-        <Header name={firstName} />
+        <Header/>
       </View>
 
       {/* Fixed Balance Card */}
