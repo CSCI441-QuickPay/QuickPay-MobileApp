@@ -103,7 +103,7 @@ export default function Login() {
               {/* Logo */}
               <View className="items-center mb-8">
                 <Image
-                  source={require("@/assets/images/icon.png")}
+                  source={require("@/assets/images/adaptive-icon.png")}
                   className="w-64 h-32"
                   resizeMode="contain"
                 />
