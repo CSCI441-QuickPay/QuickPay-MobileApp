@@ -1,6 +1,7 @@
 {
   "name": "quickpay",
   "main": "expo-router/entry",
+  "type": "module",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
@@ -13,9 +14,14 @@
   "dependencies": {
     "@clerk/clerk-expo": "^2.17.3",
     "@expo/vector-icons": "^14.1.0",
+<<<<<<< HEAD
     "@prisma/client": "^6.18.0",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-community/datetimepicker": "8.4.1",
+=======
+    "@google-cloud/firestore": "^7.11.6",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+>>>>>>> 45d9a714e81b3475ae962d37f2dc76ef076231d8
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
@@ -33,8 +39,12 @@
     "expo-linking": "~7.1.7",
     "expo-print": "~14.1.4",
     "expo-router": "~5.1.7",
+<<<<<<< HEAD
     "expo-secure-store": "~14.2.4",
     "expo-sharing": "~13.1.5",
+=======
+    "expo-secure-store": "^15.0.7",
+>>>>>>> 45d9a714e81b3475ae962d37f2dc76ef076231d8
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
@@ -49,9 +59,13 @@
     "react-dom": "19.0.0",
     "react-native": "^0.79.5",
     "react-native-gesture-handler": "~2.24.0",
+<<<<<<< HEAD
     "react-native-pager-view": "6.7.1",
     "react-native-phone-number-input": "^2.1.0",
     "react-native-qrcode-svg": "^6.3.16",
+=======
+    "react-native-plaid-link-sdk": "^12.6.1",
+>>>>>>> 45d9a714e81b3475ae962d37f2dc76ef076231d8
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",

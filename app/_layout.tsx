@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // app/_layout.tsx
 import React from "react";
 import { ClerkProvider } from "@clerk/clerk-expo";
@@ -28,3 +29,20 @@ export default function RootLayout() {
     </ClerkProvider>
   );
 }
+=======
+import { Stack } from "expo-router";
+import '../global.css';
+import ClerkAuthProvider from "@/providers/ClerkProvider";
+
+export default function RootLayout() {
+  return (
+    <ClerkAuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ title: "Home" }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </ClerkAuthProvider>
+  );
+}
+>>>>>>> 45d9a714e81b3475ae962d37f2dc76ef076231d8
