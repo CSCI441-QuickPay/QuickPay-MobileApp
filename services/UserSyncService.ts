@@ -1,5 +1,4 @@
 // services/UserSyncService.ts
-import { useUser } from '@clerk/clerk-expo';
 import UserModel from '@/models/UserModel';
 
 export interface ClerkUserData {
@@ -20,13 +19,19 @@ export default class UserSyncService {
     try {
       console.log('🔄 Syncing user to Supabase...', userData.email);
 
-      // Check if user already exists
-      const existingUser = await UserModel.getByClerkId(userData.clerkId);
+      // Check if user already exists by Clerk ID
+      let existingUser = await UserModel.getByClerkId(userData.clerkId);
+
+      // If not found by Clerk ID, check by email (in case of duplicate signup)
+      if (!existingUser) {
+        existingUser = await UserModel.getByEmail(userData.email);
+      }
 
       if (existingUser) {
         console.log('✅ User already exists in Supabase:', existingUser.email);
-        // Optionally update user data if needed
+        // Update user data
         await UserModel.update(userData.clerkId, {
+          email: userData.email,
           firstName: userData.firstName,
           lastName: userData.lastName,
           phoneNumber: userData.phoneNumber,
@@ -35,22 +40,46 @@ export default class UserSyncService {
         console.log('✅ User updated in Supabase');
       } else {
         // Create new user in Supabase
-        const newUser = await UserModel.create(userData.clerkId, {
-          email: userData.email,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          phoneNumber: userData.phoneNumber,
-          profilePicture: userData.profilePicture,
-          balance: 0,
-          isActive: true,
-          verified: false,
-        } as any);
+        try {
+          const newUser = await UserModel.create(userData.clerkId, {
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            phoneNumber: userData.phoneNumber,
+            profilePicture: userData.profilePicture,
+            balance: 0,
+            isActive: true,
+            verified: false,
+          } as any);
 
-        console.log('✅ New user created in Supabase:', newUser.email);
+          console.log('✅ New user created in Supabase:', newUser.email);
+        } catch (createError: any) {
+          // Handle duplicate key error gracefully
+          if (createError?.code === '23505') {
+            console.log('⚠️ User already exists (duplicate key), fetching existing user...');
+            existingUser = await UserModel.getByEmail(userData.email);
+            if (existingUser) {
+              console.log('✅ Found existing user, updating...');
+              await UserModel.update(userData.clerkId, {
+                email: userData.email,
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                phoneNumber: userData.phoneNumber,
+                profilePicture: userData.profilePicture,
+              } as any);
+            }
+          } else {
+            throw createError;
+          }
+        }
       }
-    } catch (error) {
-      console.error('❌ Error syncing user to Supabase:', error);
-      throw error;
+    } catch (error: any) {
+      // Only log non-duplicate errors
+      if (error?.code !== '23505') {
+        console.error('❌ Failed to sync user:', error);
+      }
+      // Don't throw error - allow user to continue even if sync fails
+      console.log('⚠️ Continuing despite sync error...');
     }
   }
 
