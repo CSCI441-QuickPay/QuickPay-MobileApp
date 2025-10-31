@@ -164,7 +164,7 @@ export default function Profile() {
       <ScrollView
         className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
         {/* Account Section */}
         <View className="mb-6">
@@ -358,9 +358,9 @@ export default function Profile() {
         </View>
 
         {/* App Version */}
-        <View className="items-center py-6">
+        <View className="items-center py-2">
           <Text className="text-gray-400 font-medium text-sm">
-            QuickPay v1.0.0
+            QuickPay v2.0.0
           </Text>
         </View>
       </ScrollView>
