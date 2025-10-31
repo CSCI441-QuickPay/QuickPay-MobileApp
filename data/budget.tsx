@@ -117,7 +117,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     name: 'Rent',
     icon: 'home',
     color: '#EF4444',
-    spent: 1000,
+    spent: 0, // Fixed: Rent budget should not be marked as spent
     budget: 1000, // Reduced from 1200 to 1000
     parentId: 'total',
     children: [],
