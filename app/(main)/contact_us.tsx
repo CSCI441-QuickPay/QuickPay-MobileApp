@@ -7,35 +7,36 @@ import { router } from 'expo-router';
 export default function ContactUs() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <ScrollView 
-        className="flex-1"
+      {/* Static Header Section */}
+      <View className="px-6 pt-4 pb-5">
+        {/* Back Button */}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="mb-6"
+        >
+          <Ionicons name="arrow-back" size={28} color="#00332d" />
+        </TouchableOpacity>
+
+        {/* Title with Icon */}
+        <View className="flex-row items-center mb-6">
+          <View className="w-14 h-14 rounded-full bg-[#f0fdf4] items-center justify-center mr-3">
+            <Ionicons name="chatbubbles" size={28} color="#00332d" />
+          </View>
+          <View>
+            <Text className="text-3xl font-extrabold text-primary">Contact Us</Text>
+            <Text className="text-gray-500 text-sm mt-0.5">We're here to help 24/7</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Scrollable Content */}
+      <ScrollView
+        className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* Header Section */}
-        <View className="px-6 pt-6 pb-8">
-          {/* Back Button */}
-          <TouchableOpacity 
-            onPress={() => router.back()}
-            className="mb-6"
-          >
-            <Ionicons name="arrow-back" size={28} color="#00332d" />
-          </TouchableOpacity>
-
-          {/* Title with Icon */}
-          <View className="flex-row items-center mb-6">
-            <View className="w-14 h-14 rounded-full bg-[#00332d] items-center justify-center mr-4">
-              <Ionicons name="chatbubbles" size={28} color="#ccf8f1" />
-            </View>
-            <View>
-              <Text className="text-3xl font-bold text-[#00332d]">Contact Us</Text>
-              <Text className="text-gray-500 text-sm">We're here to help 24/7</Text>
-            </View>
-          </View>
-        </View>
-
         {/* Main Content */}
-        <View className="px-6">
+        <View>
           {/* Info Card */}
           <View className="bg-[#ccf8f1]/20 border-2 border-[#00332d]/10 rounded-2xl p-6 mb-6">
             <View className="items-center mb-4">
@@ -53,109 +54,146 @@ export default function ContactUs() {
 
           {/* Contact Options */}
           <View>
-            <Text className="text-lg font-bold text-[#00332d] mb-4">
+            <Text className="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">
               Get In Touch
             </Text>
 
-            {/* Live Chat */}
-            <TouchableOpacity 
-              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4 mb-3 shadow-sm"
-              activeOpacity={0.7}
-              onPress={() => console.log("Open live chat")}
-            >
-              <View className="w-12 h-12 rounded-full bg-[#00332d] items-center justify-center mr-4">
-                <Ionicons name="chatbubble-ellipses" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-[#00332d] mb-1">
-                  Live Chat
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Chat with our support team
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#00332d" />
-            </TouchableOpacity>
+            <View className="gap-2">
+              {/* Live Chat */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => console.log("Open live chat")}
+                className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 1,
+                }}
+              >
+                <View className="w-10 h-10 rounded-full bg-green-50 items-center justify-center mr-3">
+                  <Ionicons name="chatbubble-ellipses-outline" size={20} color="#10B981" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    Live Chat
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    Chat with our support team
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
 
-            {/* Facebook Messenger */}
-            <TouchableOpacity 
-              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4 mb-3 shadow-sm"
-              activeOpacity={0.7}
-              onPress={() => Linking.openURL('https://m.me/yourpage')}
-            >
-              <View className="w-12 h-12 rounded-full bg-[#0084FF] items-center justify-center mr-4">
-                <Ionicons name="logo-facebook" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-[#00332d] mb-1">
-                  Facebook Messenger
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Message us on Facebook
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#00332d" />
-            </TouchableOpacity>
+              {/* Facebook Messenger */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('https://m.me/yourpage')}
+                className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 1,
+                }}
+              >
+                <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center mr-3">
+                  <Ionicons name="logo-facebook" size={20} color="#3B82F6" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    Facebook Messenger
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    Message us on Facebook
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
 
-            {/* Phone Call */}
-            <TouchableOpacity 
-              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4 mb-3 shadow-sm"
-              activeOpacity={0.7}
-              onPress={() => Linking.openURL('tel:1234567890')}
-            >
-              <View className="w-12 h-12 rounded-full bg-[#00332d] items-center justify-center mr-4">
-                <Ionicons name="call" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-[#00332d] mb-1">
-                  Call Hotline
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  +1 (234) 567-890
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#00332d" />
-            </TouchableOpacity>
+              {/* Phone Call */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('tel:1234567890')}
+                className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 1,
+                }}
+              >
+                <View className="w-10 h-10 rounded-full bg-purple-50 items-center justify-center mr-3">
+                  <Ionicons name="call-outline" size={20} color="#8B5CF6" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    Call Hotline
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    +1 (234) 567-890
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
 
-            {/* Email */}
-            <TouchableOpacity 
-              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4 mb-3 shadow-sm"
-              activeOpacity={0.7}
-              onPress={() => Linking.openURL('mailto:support@quickpay.com')}
-            >
-              <View className="w-12 h-12 rounded-full bg-[#00332d] items-center justify-center mr-4">
-                <Ionicons name="mail" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-[#00332d] mb-1">
-                  Email Us
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  support@quickpay.com
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#00332d" />
-            </TouchableOpacity>
+              {/* Email */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('mailto:support@quickpay.com')}
+                className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 1,
+                }}
+              >
+                <View className="w-10 h-10 rounded-full bg-orange-50 items-center justify-center mr-3">
+                  <Ionicons name="mail-outline" size={20} color="#F97316" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    Email Us
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    support@quickpay.com
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
 
-            {/* Leave Review */}
-            <TouchableOpacity 
-              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4 mb-3 shadow-sm"
-              activeOpacity={0.7}
-              onPress={() => console.log("Open review form")}
-            >
-              <View className="w-12 h-12 rounded-full bg-[#00332d] items-center justify-center mr-4">
-                <Ionicons name="star" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-lg font-bold text-[#00332d] mb-1">
-                  Leave a Review
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Share your feedback with us
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="#00332d" />
-            </TouchableOpacity>
+              {/* Leave Review */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => console.log("Open review form")}
+                className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 2,
+                  elevation: 1,
+                }}
+              >
+                <View className="w-10 h-10 rounded-full bg-amber-50 items-center justify-center mr-3">
+                  <Ionicons name="star-outline" size={20} color="#F59E0B" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-gray-900">
+                    Leave a Review
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-0.5">
+                    Share your feedback with us
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Office Hours Info */}
