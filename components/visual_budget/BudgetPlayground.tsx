@@ -54,31 +54,6 @@ export default function BudgetPlayground({
     })
   ).current;
 
-  /**
-   * Compute a non-overlapping position for a new child.
-   * Distributes siblings evenly around the parent horizontally.
-   */
-  const getNewChildPosition = (parentId: string) => {
-    const parent = categories.find((c: any) => c.id === parentId);
-    if (!parent) return { x: 0, y: 0 };
-
-    const siblings = categories.filter((c: any) => c.parentId === parentId);
-    const siblingCount = siblings.length;
-
-    const baseX = parent.position.x;
-    const baseY = parent.position.y + 160; // vertical gap
-    const horizontalGap = 200; // spacing between siblings
-
-    // --- distribute siblings symmetrically ---
-    // Example: if 2 siblings → [-1, +1], if 3 → [-1, 0, +1], etc.
-    const newIndex = siblingCount; // index for this new child
-    const total = siblingCount + 1;
-    const offsetFromCenter = newIndex - (total - 1) / 2;
-    const newX = baseX + offsetFromCenter * horizontalGap;
-
-    return { x: newX, y: baseY };
-  };
-
   return (
     <View className="flex-1 bg-gray-50 rounded-3xl border border-gray-200 overflow-hidden">
       <FocusButtons
@@ -127,12 +102,10 @@ export default function BudgetPlayground({
               setModalState((prev: any) => ({ ...prev, transaction: true }));
             }}
             onAddChild={() => {
-              const newPosition = getNewChildPosition(cat.id);
               setParentForNewCategory(cat.id);
               setModalState((prev: any) => ({
                 ...prev,
                 add: true,
-                newPosition, // Pass computed new position
               }));
             }}
             onDelete={() => {
