@@ -58,10 +58,10 @@ export default function BudgetBlock({
       const totalSpent = categories
         .filter(c => c.type === 'category')
         .reduce((sum, cat) => sum + cat.spent, 0);
-      
+
       // Step 2: Calculate remaining cash after spending
       const remainingCash = category.budget - totalSpent;
-      
+
       // Step 3: Calculate allocated budgets (only count budget - spent for each category)
       // This prevents double-counting money that's already been spent
       const totalAllocated = categories
@@ -71,27 +71,40 @@ export default function BudgetBlock({
           const remaining = cat.budget - cat.spent;
           return sum + remaining;
         }, 0);
-      
+
       // Step 4: Unallocated = remaining cash - allocated budgets (that haven't been spent)
       return remainingCash - totalAllocated;
     }
-    
-    // For regular categories: show budget - spent (what's left in that budget)
+
+    // For categories with children: show remaining budget after children's allocations
+    if (category.children && category.children.length > 0 && categories) {
+      const childrenBudgetSum = category.children.reduce((sum, childId) => {
+        const child = categories.find(c => c.id === childId);
+        return sum + (child?.budget || 0);
+      }, 0);
+      // Remaining = budget - spent - children's allocated budgets
+      return category.budget - category.spent - childrenBudgetSum;
+    }
+
+    // For regular categories without children: show budget - spent (what's left in that budget)
     return category.budget - category.spent;
   };
 
   const displayAmount = calculateDisplayAmount();
   
-  // Calculate the denominator for Current Budget display
+  // Calculate the denominator for display (total budget before children allocations)
   const calculateTotalForDisplay = () => {
     if (category.id === 'total' && categories) {
-      // For Current Budget: show remaining cash as denominator
+      // For Current Budget: show remaining cash as denominator (after all spending)
       const totalSpent = categories
         .filter(c => c.type === 'category')
         .reduce((sum, cat) => sum + cat.spent, 0);
       return category.budget - totalSpent;
     }
-    return category.budget;
+
+    // For all categories (with or without children): show budget - spent
+    // This represents the total amount before allocating to children
+    return category.budget - category.spent;
   };
   
   const totalForDisplay = calculateTotalForDisplay();
@@ -156,12 +169,12 @@ export default function BudgetBlock({
             <Text style={{ ...amountStyle, color: '#000000' }}>
               ${displayAmount.toFixed(2)}
             </Text>
-            {category.id === 'total' && (
+            {(category.id === 'total' || (category.children && category.children.length > 0)) && (
               <Text style={textStyles.blockBudget}>
                 of ${totalForDisplay.toFixed(2)}
               </Text>
             )}
-            
+
             {/* Transaction Count Badge */}
             {category.type === 'category' && category.transactions && category.transactions.length > 0 && (
               <View 
