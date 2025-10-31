@@ -32,7 +32,7 @@ export default function SplitConfirmationView({ transaction, splitData, onClose,
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {showBanner && (
-          <View className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-5 flex-row items-center">
+          <View className="bg-green-50 border-2 border-green-200 rounded-2xl p-4 mb-5 flex-row items-center shadow-sm">
             <Ionicons name="checkmark-circle" size={28} color="#10B981" />
             <Text className="ml-2 text-sm font-semibold text-green-700">
               Split Created Successfully!
@@ -59,4 +59,3 @@ export default function SplitConfirmationView({ transaction, splitData, onClose,
     </>
   );
 }
-
