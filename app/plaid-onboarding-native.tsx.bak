@@ -1,0 +1,197 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useUser } from '@clerk/clerk-expo';
+import { usePlaidLink, LinkSuccess, LinkExit } from 'react-native-plaid-link-sdk';
+
+// Use Supabase Edge Functions - works everywhere!
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
+
+console.log('🔧 Supabase URL:', SUPABASE_URL);
+console.log('🔧 Functions URL:', FUNCTIONS_URL);
+
+export default function PlaidOnboarding() {
+  console.log("🏦 PlaidOnboarding component mounted");
+
+  const { user } = useUser();
+  const [linkToken, setLinkToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch link token from backend
+  useEffect(() => {
+    async function fetchLinkToken() {
+      if (!user) {
+        console.log('❌ No user found, cannot fetch link token');
+        return;
+      }
+
+      console.log('🔄 Fetching Plaid link token for user:', user.id);
+      console.log('📡 API URL:', `${FUNCTIONS_URL}/plaid-create-link-token`);
+
+      setLoading(true);
+      try {
+        const response = await fetch(`${FUNCTIONS_URL}/plaid-create-link-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ clerkId: user.id }),
+        });
+
+        console.log('📥 Response status:', response.status);
+        const data = await response.json();
+        console.log('📊 Response data:', data);
+
+        if (data.link_token) {
+          setLinkToken(data.link_token);
+          console.log('✅ Link token received');
+        } else {
+          console.error('❌ No link_token in response:', data);
+          Alert.alert('Error', data.error || 'Failed to initialize Plaid. Please try again.');
+        }
+      } catch (error) {
+        console.error('❌ Failed to create link token:', error);
+        Alert.alert('Error', 'Failed to initialize Plaid. Please check your internet connection and try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchLinkToken();
+  }, [user]);
+
+  const onSuccess = async (success: LinkSuccess) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${FUNCTIONS_URL}/plaid-exchange-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          publicToken: success.publicToken,
+          clerkId: user?.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to exchange token');
+      }
+
+      console.log('✅ Bank account linked successfully!');
+      Alert.alert('Success!', 'Bank account linked successfully! You can now view your transactions.', [
+        {
+          text: 'Continue',
+          onPress: () => router.replace('/home'),
+        },
+      ]);
+    } catch (error) {
+      console.error('Failed to exchange token:', error);
+      Alert.alert('Error', 'Failed to link bank account. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onExit = (exit: LinkExit) => {
+    console.log('Plaid Link exited:', exit);
+  };
+
+  const { open, ready } = usePlaidLink({
+    tokenConfig: {
+      token: linkToken || '',
+    },
+    onSuccess,
+    onExit,
+  });
+
+
+  return (
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 justify-center items-center px-8">
+        {/* Icon */}
+        <View className="bg-green-50 rounded-full p-6 mb-8">
+          <Ionicons name="card-outline" size={80} color="#10B981" />
+        </View>
+
+        {/* Title */}
+        <Text className="text-4xl font-extrabold text-primary mb-3 text-center">
+          Link Your Bank
+        </Text>
+
+        {/* Subtitle */}
+        <Text className="text-gray-500 text-base text-center mb-10 px-4">
+          Connect your bank account to see your balances, transactions, and manage your finances
+        </Text>
+
+        {/* Benefits */}
+        <View className="w-full mb-10">
+          <View className="flex-row items-center mb-4 bg-secondary rounded-2xl p-4">
+            <View className="bg-primary rounded-full p-2 mr-3">
+              <Ionicons name="shield-checkmark" size={20} color="white" />
+            </View>
+            <Text className="text-gray-700 text-sm flex-1">
+              Bank-level security with 256-bit encryption
+            </Text>
+          </View>
+
+          <View className="flex-row items-center mb-4 bg-secondary rounded-2xl p-4">
+            <View className="bg-primary rounded-full p-2 mr-3">
+              <Ionicons name="eye-off" size={20} color="white" />
+            </View>
+            <Text className="text-gray-700 text-sm flex-1">
+              We never store your banking credentials
+            </Text>
+          </View>
+
+          <View className="flex-row items-center bg-secondary rounded-2xl p-4">
+            <View className="bg-primary rounded-full p-2 mr-3">
+              <Ionicons name="sync" size={20} color="white" />
+            </View>
+            <Text className="text-gray-700 text-sm flex-1">
+              Automatic transaction syncing
+            </Text>
+          </View>
+        </View>
+
+        {/* Link Bank Button */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => open()}
+          disabled={!ready || loading}
+          className="rounded-2xl overflow-hidden w-full shadow-lg mb-4"
+          style={{ height: 56, opacity: !ready || loading ? 0.5 : 1 }}
+        >
+          <LinearGradient
+            colors={["#00332d", "#005248"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white font-bold text-base tracking-wide">
+                Connect Bank Account
+              </Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Info Text */}
+        <Text className="text-gray-500 text-sm text-center mt-2">
+          This step is required to use QuickPay
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+}
