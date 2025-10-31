@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -47,7 +46,6 @@ export default function StepEmail({ onNext, onBack, cachedData }: any) {
   // ---------- Step 1: Send email verification ----------
   const sendEmailVerification = async () => {
     if (!email.includes("@")) {
-      Alert.alert("Invalid Email", "Please enter a valid email address.");
       return;
     }
 
@@ -56,15 +54,13 @@ export default function StepEmail({ onNext, onBack, cachedData }: any) {
       await signUp.update({ emailAddress: email });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setIsCodeSent(true);
-      Alert.alert("Code Sent", `We've sent a 6-digit code to ${email}`);
-      
+
       // Focus first code input after a short delay
       setTimeout(() => {
         codeRefs.current[0]?.focus();
       }, 300);
     } catch (err: any) {
       console.error("Email verification error:", err);
-      Alert.alert("Error", err.message || "Failed to send verification code");
     } finally {
       setLoading(false);
     }
@@ -73,7 +69,7 @@ export default function StepEmail({ onNext, onBack, cachedData }: any) {
   // ---------- Step 2: Verify email code ----------
   const verifyCodeWithString = async (codeString: string) => {
     if (codeString.length < 6) return;
-    
+
     setLoading(true);
     try {
       const complete = await signUp.attemptEmailAddressVerification({
@@ -81,16 +77,13 @@ export default function StepEmail({ onNext, onBack, cachedData }: any) {
       });
 
       if (complete.status === "complete" || complete.verifications?.emailAddress?.status === "verified") {
-        Alert.alert("Success!", "Your email has been verified successfully");
         onNext({ email });
       } else {
-        Alert.alert("Invalid Code", "The code you entered is incorrect. Please try again.");
         setCode(["", "", "", "", "", ""]);
         codeRefs.current[0]?.focus();
       }
     } catch (err: any) {
       console.error("Email verification error:", err);
-      Alert.alert("Error", err.message || "Invalid verification code");
       setCode(["", "", "", "", "", ""]);
       codeRefs.current[0]?.focus();
     } finally {
@@ -149,16 +142,18 @@ export default function StepEmail({ onNext, onBack, cachedData }: any) {
     if (e.nativeEvent.key === 'Backspace' && !code[index] && index > 0) {
       // Move to previous input on backspace if current is empty
       codeRefs.current[index - 1]?.focus();
+    } else if (e.nativeEvent.key === 'Enter' && code.every(digit => digit !== "")) {
+      // Submit on Enter if all digits are filled
+      handleVerify();
     }
   };
 
   const handleVerify = async () => {
     const codeString = code.join("");
     if (codeString.length < 6) {
-      Alert.alert("Error", "Please enter the complete 6-digit code");
       return;
     }
-    
+
     await verifyCodeWithString(codeString);
   };
 
