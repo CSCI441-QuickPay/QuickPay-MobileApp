@@ -12,6 +12,7 @@ import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import BottomNav from "@/components/BottomNav";
 import AddFavoriteModal, { FavoriteContact } from "@/components/favorite/AddFavoriteModal";
+import EditFavoriteModal from "@/components/favorite/EditFavoriteModal";
 
 // Get initials from name
 const getInitials = (name: string) => {
@@ -40,6 +41,8 @@ export default function FavoriteScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingContact, setEditingContact] = useState<FavoriteContact | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteContact[]>([
     {
@@ -83,6 +86,11 @@ export default function FavoriteScreen() {
     Alert.alert("Success", `${newFavorite.name} has been added to your favorites`);
   };
 
+  const handleUpdateFavorite = (updatedFavorite: FavoriteContact) => {
+    setFavorites(favorites.map((f) => (f.id === updatedFavorite.id ? updatedFavorite : f)));
+    Alert.alert("Success", `${updatedFavorite.name} has been updated`);
+  };
+
   const handleDeleteFavorite = (id: string) => {
     const favorite = favorites.find((f) => f.id === id);
     Alert.alert(
@@ -102,24 +110,28 @@ export default function FavoriteScreen() {
   };
 
   const handleFavoritePress = (favorite: FavoriteContact) => {
-    if (isEditMode) return; // Don't open details in edit mode
-    
-    // Navigate to transfer screen with contact info
-    Alert.alert(
-      "Send Money",
-      `Send money to ${favorite.nickname || favorite.name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Continue",
-          onPress: () => {
-            // Navigate to transfer screen - pass contact data
-            console.log("Transfer to:", favorite);
-            // router.push({ pathname: "/transfer", params: { contactId: favorite.id } });
+    if (isEditMode) {
+      // Edit mode: Open edit modal
+      setEditingContact(favorite);
+      setEditModalVisible(true);
+    } else {
+      // Normal mode: Navigate to transfer/send money screen
+      Alert.alert(
+        "Send Money",
+        `Send money to ${favorite.nickname || favorite.name}?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Continue",
+            onPress: () => {
+              // Navigate to transfer screen - pass contact data
+              console.log("Transfer to:", favorite);
+              // router.push({ pathname: "/transfer", params: { contactId: favorite.id } });
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (
@@ -213,9 +225,9 @@ export default function FavoriteScreen() {
                 <TouchableOpacity
                   key={fav.id}
                   activeOpacity={0.7}
-                  onPress={() => isEditMode ? handleDeleteFavorite(fav.id) : handleFavoritePress(fav)}
+                  onPress={() => handleFavoritePress(fav)}
                   className={`flex-row items-center bg-white border-2 rounded-2xl p-4 ${
-                    isEditMode ? "border-red-200" : "border-gray-200"
+                    isEditMode ? "border-[#00332d]" : "border-gray-200"
                   }`}
                   style={{
                     shadowColor: "#000",
@@ -280,8 +292,8 @@ export default function FavoriteScreen() {
 
                   {/* Action Icon */}
                   {isEditMode ? (
-                    <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center">
-                      <Ionicons name="trash-outline" size={18} color="#DC2626" />
+                    <View className="w-8 h-8 rounded-full bg-[#f0fdf4] items-center justify-center">
+                      <Ionicons name="create-outline" size={18} color="#00332d" />
                     </View>
                   ) : (
                     <View className="w-8 h-8 rounded-full bg-[#f0fdf4] items-center justify-center">
@@ -336,6 +348,18 @@ export default function FavoriteScreen() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onAdd={handleAddFavorite}
+      />
+
+      {/* Edit Favorite Modal */}
+      <EditFavoriteModal
+        visible={editModalVisible}
+        onClose={() => {
+          setEditModalVisible(false);
+          setEditingContact(null);
+        }}
+        onUpdate={handleUpdateFavorite}
+        onDelete={handleDeleteFavorite}
+        contact={editingContact}
       />
 
       {/* Bottom Navigation */}
