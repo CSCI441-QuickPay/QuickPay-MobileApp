@@ -7,9 +7,17 @@ type BalanceCardProps = {
   balance: number;
   onRequest: () => void;
   onSend: () => void;
+  onLinkAccount?: () => void; // Optional: only show if user hasn't linked bank
+  showLinkAccount?: boolean; // Flag to show/hide the link account button
 };
 
-export default function BalanceCard({ balance, onRequest, onSend }: BalanceCardProps) {
+export default function BalanceCard({
+  balance,
+  onRequest,
+  onSend,
+  onLinkAccount,
+  showLinkAccount = false
+}: BalanceCardProps) {
   const [hidden, setHidden] = useState(false);
 
   return (
@@ -74,6 +82,20 @@ export default function BalanceCard({ balance, onRequest, onSend }: BalanceCardP
                 style={{ marginRight: 6 }}
               />
               <Text className="text-primary font-bold text-sm">Send</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={onLinkAccount}
+              className="flex-1 bg-blue-500 rounded-xl py-3 flex-row items-center justify-center"
+            >
+              <Ionicons
+                name="link"
+                size={18}
+                color="white"
+                style={{ marginRight: 6 }}
+              />
+              <Text className="text-white font-bold text-sm">Link Bank</Text>
             </TouchableOpacity>
           </View>
         </LinearGradient>

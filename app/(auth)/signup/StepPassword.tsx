@@ -15,7 +15,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useSignUp } from "@clerk/clerk-expo";
-import UserSyncService from "@/services/UserSyncService";
+import { router } from "expo-router";
 
 export default function StepPassword({ onNext, onBack, signupData, cachedData }: any) {
   const { signUp, setActive } = useSignUp();
@@ -48,44 +48,75 @@ export default function StepPassword({ onNext, onBack, signupData, cachedData }:
     if (!validatePassword()) return;
 
     if (!signUp) {
-      Alert.alert("Error", "Signup session not found. Please start over.");
+      Alert.alert("Error", "Signup session not found. Please start over.", [
+        { text: "OK", onPress: () => router.replace("/(auth)/signup") }
+      ]);
       return;
     }
 
     setLoading(true);
     try {
-      // Update the signUp with password
-      await signUp.update({ password });
-
-      // Try to complete the signup
-      // Clerk will automatically create session if all required verifications are done
-      const result = await signUp.attemptVerification({
-        strategy: "password",
-      });
+      // Update the signUp with password - this is the final required field
+      const result = await signUp.update({ password });
 
       console.log("SignUp result status:", result?.status);
       console.log("SignUp verifications:", result?.verifications);
 
-      // If sign-up is complete, set the active session
-      if (result?.status === "complete" && result?.createdSessionId) {
-        await setActive({ session: result.createdSessionId });
+      // Check if signup is complete after adding password
+      if (result.status === "complete") {
+        // Create the session
+        if (result.createdSessionId) {
+          await setActive({ session: result.createdSessionId });
 
-        // The sync will happen in home screen after user is fully loaded
-        Alert.alert("Success!", "Your account has been created.");
-        onNext({ password });
-      } else if (result?.status === "missing_requirements") {
-        // Still missing some required fields/verifications
-        console.log("Missing requirements:", result?.missingFields, result?.unverifiedFields);
-        Alert.alert("Almost there!", "Please complete all required steps.");
-        onNext({ password });
+          // Success - the app/index.tsx will automatically redirect to plaid-onboarding
+          // since the user won't have plaid_access_token yet
+          console.log("✅ Signup complete! Session created.");
+        } else {
+          Alert.alert("Error", "Account created but session not available. Please try logging in.");
+          router.replace("/(auth)/login");
+        }
+      } else if (result.status === "missing_requirements") {
+        // Still missing requirements - this shouldn't happen if email & phone are verified
+        console.log("Missing requirements:", result.missingFields, result.unverifiedFields);
+        Alert.alert(
+          "Additional Information Required",
+          "Please complete all required verification steps.",
+          [{ text: "OK" }]
+        );
       } else {
-        // Some other status - proceed anyway
-        console.log("Unexpected status:", result?.status);
-        onNext({ password });
+        // Unexpected status
+        console.log("Unexpected signup status:", result.status);
+        Alert.alert("Error", "Unexpected signup status. Please try again or contact support.");
+        router.replace("/(auth)/signup");
       }
     } catch (err: any) {
       console.error("Sign up error:", err);
-      Alert.alert("Sign Up Error", err.message || "Something went wrong.");
+
+      // Handle specific error cases
+      const errorMessage = err.message || err.toString();
+
+      if (errorMessage.includes("No sign up attempt was found") ||
+          errorMessage.includes("sign up attempt") ||
+          errorMessage.includes("session") && errorMessage.includes("expired")) {
+        Alert.alert(
+          "Session Expired",
+          "Your signup session has expired. Please start the signup process again.",
+          [{ text: "Start Over", onPress: () => router.replace("/(auth)/signup") }]
+        );
+      } else if (errorMessage.includes("form_identifier_exists") ||
+                 errorMessage.includes("already exists") ||
+                 errorMessage.includes("taken")) {
+        Alert.alert(
+          "Account Exists",
+          "An account with this email or phone number already exists. Please sign in instead.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Go to Login", onPress: () => router.replace("/(auth)/login") }
+          ]
+        );
+      } else {
+        Alert.alert("Sign Up Error", errorMessage);
+      }
     } finally {
       setLoading(false);
     }
