@@ -35,6 +35,7 @@ export interface BudgetCategory {
  * Extended Budget Category with tree structure and type
  */
 export interface TreeBudgetCategory extends BudgetCategory {
+  amount: any;
   parentId: string | null;
   children: string[];
   position: { x: number; y: number };

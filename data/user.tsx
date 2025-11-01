@@ -27,35 +27,46 @@ export interface UserCard {
 export const userCards: UserCard[] = [
   {
     id: 'card1',
-    bankName: 'Chase Checking',
+    bankName: 'Chase',
     cardType: 'debit',
     last4: '4567',
-    balance: 2450.50,
+    balance: 550.00,  // Synced with budget.tsx bank1
     isActive: true,
     color: '#3B82F6',
-    icon: 'card-outline',
+    icon: 'card',
   },
   {
     id: 'card2',
-    bankName: 'Bank of America Savings',
+    bankName: 'Wells Fargo',
     cardType: 'savings',
     last4: '8901',
-    balance: 5200.00,
+    balance: 450.00,  // Synced with budget.tsx bank2
     isActive: true,
     color: '#10B981',
-    icon: 'wallet-outline',
+    icon: 'business',
   },
   {
     id: 'card3',
-    bankName: 'Wells Fargo Credit',
-    cardType: 'credit',
+    bankName: 'Bank of America',
+    cardType: 'savings',
     last4: '2345',
-    balance: 1500.00,
+    balance: 200.17,  // Synced with budget.tsx bank3
     isActive: true,
     color: '#F59E0B',
-    icon: 'card',
+    icon: 'card-outline',
+  },
+  {
+    id: 'card4',
+    bankName: 'Citi',
+    cardType: 'credit',
+    last4: '6789',
+    balance: 148.00,  // Synced with budget.tsx bank4
+    isActive: true,
+    color: '#8B5CF6',
+    icon: 'wallet-outline',
   },
 ];
+
 
 /**
  * Calculate user statistics dynamically

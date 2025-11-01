@@ -4,10 +4,14 @@ import ConnectionLines from '@/components/visual_budget/ConnectionLines';
 import BudgetBlock from '@/components/visual_budget/BudgetBlock';
 import FocusButtons from '@/components/visual_budget/controls/FocusButtons';
 import ZoomControls from '@/components/visual_budget/controls/ZoomControls';
-import { calculateCenterPosition, shouldShowInFocusMode } from '@/utils/budgetUtils';
+import { calculateCenterPosition } from '@/utils/budgetUtils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+/**
+ * BudgetPlayground.tsx
+ * Fixed: ensures siblings are spaced evenly horizontally and banks connect properly.
+ */
 export default function BudgetPlayground({
   categories,
   setCategories,
@@ -17,20 +21,15 @@ export default function BudgetPlayground({
 }: any) {
   const [scale, setScale] = useState(0.5);
   const [focusedCategoryId, setFocusedCategoryId] = useState<string | null>(null);
-  const [showAllDescendants, setShowAllDescendants] = useState(false);
   const [isDraggingBlock, setIsDraggingBlock] = useState(false);
-  const canvasPan = useRef(new Animated.ValueXY(calculateCenterPosition(SCREEN_WIDTH))).current;
 
-  // ✅ Fix: reusable no-op handlers
-  const handlePressIn = () => {};
-  const handlePressOut = () => {};
+  const canvasPan = useRef(new Animated.ValueXY(calculateCenterPosition(SCREEN_WIDTH))).current;
 
   const handleZoomIn = () => setScale(s => Math.min(s + 0.1, 1.2));
   const handleZoomOut = () => setScale(s => Math.max(s - 0.1, 0.3));
 
   const resetFocus = () => {
     setFocusedCategoryId(null);
-    setShowAllDescendants(false);
     Animated.spring(canvasPan, {
       toValue: calculateCenterPosition(SCREEN_WIDTH),
       useNativeDriver: false,
@@ -76,6 +75,7 @@ export default function BudgetPlayground({
           ],
         }}
       >
+        {/* Lines between nodes */}
         <ConnectionLines
           categories={categories}
           focusedCategoryId={focusedCategoryId}
@@ -86,24 +86,27 @@ export default function BudgetPlayground({
           onLinePress={setFocusedCategoryId}
         />
 
+        {/* All budget blocks */}
         {categories.map((cat: any) => (
           <BudgetBlock
             key={cat.id}
             category={cat}
+            categories={categories}
             isShaking={false}
             isFocused={focusedCategoryId === cat.id}
             shakeTransform="0deg"
             blockPosition={new Animated.ValueXY(cat.position)}
             panHandlers={{}}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
             onPress={() => {
               setSelectedCategory(cat);
               setModalState((prev: any) => ({ ...prev, transaction: true }));
             }}
             onAddChild={() => {
               setParentForNewCategory(cat.id);
-              setModalState((prev: any) => ({ ...prev, add: true }));
+              setModalState((prev: any) => ({
+                ...prev,
+                add: true,
+              }));
             }}
             onDelete={() => {
               setSelectedCategory(cat);

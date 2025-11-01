@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,6 @@ import {
   Keyboard,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,20 +23,29 @@ export default function StepName({ onNext, cachedData }: any) {
   const [firstNameFocused, setFirstNameFocused] = useState(false);
   const [lastNameFocused, setLastNameFocused] = useState(false);
   const [loading, setLoading] = useState(false);
+  const lastNameRef = useRef<TextInput>(null);
 
   const handleContinue = async () => {
     if (firstName.trim() && lastName.trim()) {
       setLoading(true);
       try {
-        // Create the signUp object with name - this is the ONLY create() call
-        await signUp?.create({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-        });
+        // Check if signUp session exists, if not create it, otherwise update it
+        if (signUp?.id) {
+          // SignUp session already exists, just update it
+          await signUp.update({
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+          });
+        } else {
+          // Create new signUp session
+          await signUp?.create({
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+          });
+        }
         onNext({ firstName, lastName });
       } catch (err: any) {
         console.error("Create signUp error:", err);
-        Alert.alert("Error", err.message || "Failed to start signup process");
       } finally {
         setLoading(false);
       }
@@ -91,6 +99,7 @@ export default function StepName({ onNext, cachedData }: any) {
                   onFocus={() => setFirstNameFocused(true)}
                   onBlur={() => setFirstNameFocused(false)}
                   returnKeyType="next"
+                  onSubmitEditing={() => lastNameRef.current?.focus()}
                   style={{ flex: 1, color: "#111827", fontSize: 16 }}
                 />
               </View>
@@ -116,6 +125,7 @@ export default function StepName({ onNext, cachedData }: any) {
                   style={{ marginRight: 8 }}
                 />
                 <TextInput
+                  ref={lastNameRef}
                   placeholder="Enter your last name"
                   placeholderTextColor="#9CA3AF"
                   value={lastName}

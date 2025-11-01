@@ -12,30 +12,23 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { FavoriteContact } from "./AddFavoriteModal";
 
-export interface FavoriteContact {
-  id: string;
-  name: string;
-  phoneNumber?: string;
-  email?: string;
-  nickname?: string;
-}
-
-interface AddFavoriteModalProps {
+interface EditFavoriteModalProps {
   visible: boolean;
   onClose: () => void;
-  onAdd: (favorite: FavoriteContact) => void;
-  onUpdate?: (favorite: FavoriteContact) => void;
-  editingContact?: FavoriteContact | null;
+  onUpdate: (favorite: FavoriteContact) => void;
+  onDelete: (id: string) => void;
+  contact: FavoriteContact | null;
 }
 
-export default function AddFavoriteModal({
+export default function EditFavoriteModal({
   visible,
   onClose,
-  onAdd,
   onUpdate,
-  editingContact,
-}: AddFavoriteModalProps) {
+  onDelete,
+  contact,
+}: EditFavoriteModalProps) {
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
@@ -52,22 +45,13 @@ export default function AddFavoriteModal({
   const nicknameRef = useRef<TextInput>(null);
 
   useEffect(() => {
-    if (editingContact) {
-      setName(editingContact.name || "");
-      setPhoneNumber(editingContact.phoneNumber || "");
-      setEmail(editingContact.email || "");
-      setNickname(editingContact.nickname || "");
-    } else {
-      resetForm();
+    if (contact) {
+      setName(contact.name || "");
+      setPhoneNumber(contact.phoneNumber || "");
+      setEmail(contact.email || "");
+      setNickname(contact.nickname || "");
     }
-  }, [editingContact, visible]);
-
-  const resetForm = () => {
-    setName("");
-    setPhoneNumber("");
-    setEmail("");
-    setNickname("");
-  };
+  }, [contact, visible]);
 
   const formatPhoneNumber = (text: string) => {
     const cleaned = text.replace(/\D/g, "");
@@ -92,31 +76,38 @@ export default function AddFavoriteModal({
       return;
     }
 
-    const newFavorite: FavoriteContact = {
-      id: editingContact ? editingContact.id : Date.now().toString(),
+    const updatedFavorite: FavoriteContact = {
+      id: contact!.id,
       name: name.trim(),
       phoneNumber: phoneNumber.trim() || undefined,
       email: email.trim() || undefined,
       nickname: nickname.trim() || undefined,
     };
 
-    if (editingContact && onUpdate) {
-      onUpdate(newFavorite);
-    } else {
-      onAdd(newFavorite);
-    }
-
-    resetForm();
+    onUpdate(updatedFavorite);
     onClose();
   };
 
-  const handleClose = () => {
-    resetForm();
-    onClose();
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Contact",
+      `Are you sure you want to delete ${nickname || name}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            onDelete(contact!.id);
+            onClose();
+          },
+        },
+      ]
+    );
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View className="flex-1 bg-black/50 justify-end">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -129,13 +120,11 @@ export default function AddFavoriteModal({
               <View className="flex-row items-center justify-between mb-2">
                 <View className="flex-row items-center">
                   <View className="w-12 h-12 rounded-full bg-[#f0fdf4] items-center justify-center mr-3">
-                    <Ionicons name="person-add-outline" size={24} color="#00332d" />
+                    <Ionicons name="create-outline" size={24} color="#00332d" />
                   </View>
-                  <Text className="text-2xl font-extrabold text-primary">
-                    {editingContact ? "Edit Contact" : "Add Contact"}
-                  </Text>
+                  <Text className="text-2xl font-extrabold text-primary">Edit Contact</Text>
                 </View>
-                <TouchableOpacity onPress={handleClose} activeOpacity={0.7}>
+                <TouchableOpacity onPress={onClose} activeOpacity={0.7}>
                   <Ionicons name="close" size={28} color="#9CA3AF" />
                 </TouchableOpacity>
               </View>
@@ -291,7 +280,7 @@ export default function AddFavoriteModal({
               <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={handleSave}
-                className="rounded-2xl overflow-hidden shadow-lg"
+                className="rounded-2xl overflow-hidden shadow-lg mb-3"
                 style={{ height: 56 }}
               >
                 <LinearGradient
@@ -305,13 +294,26 @@ export default function AddFavoriteModal({
                   }}
                 >
                   <Text className="text-white font-bold text-base tracking-wide">
-                    {editingContact ? "Save Changes" : "Add Contact"}
+                    Save Changes
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
 
+              {/* Delete Button */}
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={handleDelete}
+                className="rounded-2xl bg-red-50 border-2 border-red-200 items-center justify-center mb-2"
+                style={{ height: 56 }}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name="trash-outline" size={20} color="#DC2626" style={{ marginRight: 8 }} />
+                  <Text className="text-red-600 font-bold text-base">Delete Contact</Text>
+                </View>
+              </TouchableOpacity>
+
               {/* Cancel Button */}
-              <TouchableOpacity onPress={handleClose} className="items-center py-4 mt-2" activeOpacity={0.7}>
+              <TouchableOpacity onPress={onClose} className="items-center py-4" activeOpacity={0.7}>
                 <Text className="text-gray-600 text-base font-semibold">Cancel</Text>
               </TouchableOpacity>
             </View>
