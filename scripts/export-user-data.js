@@ -136,7 +136,7 @@ async function exportUserData(clerkId) {
     console.log(`📁 File: ${filepath}`);
     console.log(`📊 Summary:`);
     console.log(`   - User Email: ${user.email}`);
-    console.log(`   - Name: ${user.firstName} ${user.lastName}`);
+    console.log(`   - Name: ${user.first_name} ${user.last_name}`);
     console.log(`   - Favorites: ${favorites?.length || 0}`);
     console.log(`   - Plaid Linked: ${!!user.plaid_access_token ? 'Yes' : 'No'}`);
     console.log(`   - Account Status: ${user.isActive ? 'Active' : 'Inactive'}`);
