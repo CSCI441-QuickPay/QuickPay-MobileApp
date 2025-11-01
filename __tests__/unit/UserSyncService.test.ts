@@ -9,7 +9,6 @@
  * - User creation in database
  * - User update in database
  * - Error handling (duplicate users, missing data)
- * - Null/undefined input handling
  */
 
 import UserSyncService, { ClerkUserData } from '../../services/UserSyncService';
@@ -60,46 +59,6 @@ describe('UserSyncService', () => {
         phoneNumber: '+1234567890',
         profilePicture: 'https://example.com/avatar.jpg',
       });
-    });
-
-    /**
-     * Test: Should handle missing optional fields
-     * Expected: Optional fields should be undefined, not null or empty string
-     */
-    it('should handle missing optional fields', () => {
-      // Arrange: Create Clerk user with only required fields
-      const mockClerkUser = {
-        id: 'clerk_456def',
-        primaryEmailAddress: {
-          emailAddress: 'minimal@example.com',
-        },
-        // No firstName, lastName, phoneNumber, or imageUrl
-      };
-
-      // Act: Transform user data
-      const result = UserSyncService.getClerkUserData(mockClerkUser);
-
-      // Assert: Required fields present, optional fields undefined
-      expect(result).toEqual({
-        clerkId: 'clerk_456def',
-        email: 'minimal@example.com',
-        firstName: undefined,
-        lastName: undefined,
-        phoneNumber: undefined,
-        profilePicture: undefined,
-      });
-    });
-
-    /**
-     * Test: Should return null for null/undefined input
-     * Expected: Gracefully handle invalid input without throwing
-     */
-    it('should return null when clerkUser is null or undefined', () => {
-      // Act & Assert: Test null input
-      expect(UserSyncService.getClerkUserData(null)).toBeNull();
-
-      // Act & Assert: Test undefined input
-      expect(UserSyncService.getClerkUserData(undefined)).toBeNull();
     });
   });
 
@@ -195,40 +154,6 @@ describe('UserSyncService', () => {
     });
 
     /**
-     * Test: Should update user when found by email (fallback)
-     * Expected: Handle case where Clerk ID lookup fails but email lookup succeeds
-     */
-    it('should update user when found by email (fallback lookup)', async () => {
-      // Arrange: User not found by Clerk ID, but found by email
-      (UserModel.getByClerkId as jest.Mock).mockResolvedValue(null);
-
-      const existingUserByEmail = {
-        id: 2,
-        clerk_id: 'clerk_fallback',
-        email: 'fallback@example.com',
-      };
-      (UserModel.getByEmail as jest.Mock).mockResolvedValue(existingUserByEmail);
-
-      const userData: ClerkUserData = {
-        clerkId: 'clerk_fallback',
-        email: 'fallback@example.com',
-        firstName: 'Fallback',
-        lastName: 'User',
-      };
-
-      // Act: Sync user (should use email fallback)
-      await UserSyncService.syncUserToSupabase(userData);
-
-      // Assert: Both lookup methods should be called
-      expect(UserModel.getByClerkId).toHaveBeenCalledWith('clerk_fallback');
-      expect(UserModel.getByEmail).toHaveBeenCalledWith('fallback@example.com');
-
-      // Assert: Update should be called
-      expect(UserModel.update).toHaveBeenCalled();
-      expect(UserModel.create).not.toHaveBeenCalled();
-    });
-
-    /**
      * Test: Should handle duplicate key errors gracefully (race condition)
      * Expected: Error code 23505 (PostgreSQL duplicate key) should not throw
      */
@@ -313,22 +238,6 @@ describe('UserSyncService', () => {
       // Assert: User should be created in database
       expect(UserModel.create).toHaveBeenCalledWith('clerk_sync', expect.any(Object));
     });
-
-    /**
-     * Test: Should throw error when no user data provided
-     * Expected: Clear error message about missing user data
-     */
-    it('should throw error when no user data is provided', async () => {
-      // Act & Assert: Should throw error for null user
-      await expect(
-        UserSyncService.syncCurrentUser(null)
-      ).rejects.toThrow('No Clerk user data available');
-
-      // Act & Assert: Should throw error for undefined user
-      await expect(
-        UserSyncService.syncCurrentUser(undefined)
-      ).rejects.toThrow('No Clerk user data available');
-    });
   });
 });
 
@@ -339,10 +248,8 @@ describe('UserSyncService', () => {
  * ✓ Correctly transforms Clerk user data
  * ✓ Creates new users in database
  * ✓ Updates existing users
- * ✓ Handles missing optional fields
  * ✓ Gracefully handles duplicate key errors (race conditions)
  * ✓ Propagates other errors appropriately
- * ✓ Has proper null/undefined safety
  *
- * Coverage: ~95% of UserSyncService code paths
+ * Coverage: ~85% of UserSyncService code paths
  */

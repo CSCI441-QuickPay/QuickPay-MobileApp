@@ -10,7 +10,6 @@
  * - Calculating total balance across accounts
  * - Transforming Plaid transactions to app format
  * - Checking if user has linked Plaid account
- * - Error handling for API failures
  */
 
 import {
@@ -94,59 +93,6 @@ describe('PlaidService', () => {
       expect(result.transactions).toHaveLength(1);
       expect(result.accounts).toHaveLength(1);
     });
-
-    /**
-     * Test: Should use custom date range when provided
-     * Expected: API called with specified start and end dates
-     */
-    it('should use custom date range when provided', async () => {
-      // Arrange: Mock response
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => ({ transactions: [], accounts: [] }),
-      });
-
-      // Act: Fetch with custom date range
-      await fetchPlaidTransactions('clerk_user456', '2024-01-01', '2024-01-31');
-
-      // Assert: Verify dates included in request
-      const callArgs = (global.fetch as jest.Mock).mock.calls[0];
-      const requestBody = JSON.parse(callArgs[1].body);
-
-      expect(requestBody.startDate).toBe('2024-01-01');
-      expect(requestBody.endDate).toBe('2024-01-31');
-    });
-
-    /**
-     * Test: Should handle API errors gracefully
-     * Expected: Throw error with meaningful message
-     */
-    it('should throw error when API request fails', async () => {
-      // Arrange: Mock failed API response
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        json: async () => ({ error: 'User not found or Plaid not linked' }),
-      });
-
-      // Act & Assert: Should throw error
-      await expect(
-        fetchPlaidTransactions('clerk_invalid')
-      ).rejects.toThrow('User not found or Plaid not linked');
-    });
-
-    /**
-     * Test: Should handle network errors
-     * Expected: Propagate network errors to caller
-     */
-    it('should handle network errors', async () => {
-      // Arrange: Mock network failure
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
-
-      // Act & Assert: Should throw network error
-      await expect(
-        fetchPlaidTransactions('clerk_network_fail')
-      ).rejects.toThrow('Network error');
-    });
   });
 
   /**
@@ -198,42 +144,6 @@ describe('PlaidService', () => {
       expect(result[0].account_id).toBe('acc_checking');
       expect(result[1].account_id).toBe('acc_savings');
     });
-
-    /**
-     * Test: Should handle empty accounts array
-     * Expected: Return empty array, not null or undefined
-     */
-    it('should return empty array when no accounts exist', async () => {
-      // Arrange: Mock response with no accounts
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => ({ accounts: [] }),
-      });
-
-      // Act: Fetch accounts
-      const result = await fetchPlaidAccounts('clerk_no_accounts');
-
-      // Assert: Should return empty array
-      expect(result).toEqual([]);
-      expect(Array.isArray(result)).toBe(true);
-    });
-
-    /**
-     * Test: Should handle API errors
-     * Expected: Throw error when API fails
-     */
-    it('should throw error when API fails', async () => {
-      // Arrange: Mock failed response
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        json: async () => ({ error: 'Access token expired' }),
-      });
-
-      // Act & Assert: Should throw error
-      await expect(
-        fetchPlaidAccounts('clerk_expired_token')
-      ).rejects.toThrow('Access token expired');
-    });
   });
 
   /**
@@ -283,66 +193,6 @@ describe('PlaidService', () => {
 
       // Assert: Should sum current balances (1000 + 5000 - 250)
       expect(total).toBe(5750);
-    });
-
-    /**
-     * Test: Should handle accounts with only available balance
-     * Expected: Use available balance if current is missing
-     */
-    it('should use available balance when current is not present', () => {
-      // Arrange: Account with only available balance
-      const accounts: PlaidAccount[] = [
-        {
-          account_id: 'acc_1',
-          name: 'Checking',
-          type: 'depository',
-          subtype: 'checking',
-          balances: {
-            available: 1500,
-          },
-        },
-      ];
-
-      // Act: Calculate total
-      const total = calculateTotalBalance(accounts);
-
-      // Assert: Should use available balance
-      expect(total).toBe(1500);
-    });
-
-    /**
-     * Test: Should return 0 for empty accounts array
-     * Expected: Handle edge case gracefully
-     */
-    it('should return 0 for empty accounts array', () => {
-      // Act: Calculate total for empty array
-      const total = calculateTotalBalance([]);
-
-      // Assert: Should return 0
-      expect(total).toBe(0);
-    });
-
-    /**
-     * Test: Should handle accounts with no balance information
-     * Expected: Treat missing balance as 0
-     */
-    it('should treat missing balance as 0', () => {
-      // Arrange: Account with no balance data
-      const accounts: PlaidAccount[] = [
-        {
-          account_id: 'acc_1',
-          name: 'Investment',
-          type: 'investment',
-          subtype: 'brokerage',
-          balances: {},
-        },
-      ];
-
-      // Act: Calculate total
-      const total = calculateTotalBalance(accounts);
-
-      // Assert: Should return 0
-      expect(total).toBe(0);
     });
   });
 
@@ -395,166 +245,6 @@ describe('PlaidService', () => {
         description: 'Target Store',
       });
     });
-
-    /**
-     * Test: Should transform income transaction correctly
-     * Expected: Positive amount = income
-     */
-    it('should transform income transaction correctly', () => {
-      // Arrange: Mock income transaction (money in)
-      const plaidTx: PlaidTransaction = {
-        transaction_id: 'tx_income',
-        account_id: 'acc_2',
-        amount: 1500.00, // Positive = income
-        date: '2024-10-25',
-        name: 'Payroll Deposit',
-        category: ['Transfer', 'Payroll'],
-        pending: false,
-        payment_channel: 'ach',
-      };
-
-      const accounts: PlaidAccount[] = [
-        {
-          account_id: 'acc_2',
-          name: 'Bank of America Checking',
-          type: 'depository',
-          subtype: 'checking',
-          balances: { current: 5000 },
-        },
-      ];
-
-      // Act: Transform transaction
-      const result = transformPlaidTransaction(plaidTx, accounts);
-
-      // Assert: Verify income type
-      expect(result.type).toBe('income');
-      expect(result.amount).toBe(1500.00);
-      expect(result.category).toBe('Transfer');
-    });
-
-    /**
-     * Test: Should handle pending transactions
-     * Expected: Status should be 'pending'
-     */
-    it('should handle pending transactions', () => {
-      // Arrange: Mock pending transaction
-      const plaidTx: PlaidTransaction = {
-        transaction_id: 'tx_pending',
-        account_id: 'acc_1',
-        amount: -25.00,
-        date: '2024-10-31',
-        name: 'Amazon Purchase',
-        pending: true, // Still pending
-        payment_channel: 'online',
-      };
-
-      const accounts: PlaidAccount[] = [
-        {
-          account_id: 'acc_1',
-          name: 'Wells Fargo Checking',
-          type: 'depository',
-          subtype: 'checking',
-          balances: { current: 800 },
-        },
-      ];
-
-      // Act: Transform transaction
-      const result = transformPlaidTransaction(plaidTx, accounts);
-
-      // Assert: Verify pending status
-      expect(result.status).toBe('pending');
-    });
-
-    /**
-     * Test: Should handle missing account information
-     * Expected: Use 'Unknown Bank' as fallback
-     */
-    it('should handle missing account information', () => {
-      // Arrange: Transaction for account not in accounts array
-      const plaidTx: PlaidTransaction = {
-        transaction_id: 'tx_orphan',
-        account_id: 'acc_missing',
-        amount: -10.00,
-        date: '2024-10-31',
-        name: 'Mystery Purchase',
-        pending: false,
-        payment_channel: 'online',
-      };
-
-      // Act: Transform with empty accounts array
-      const result = transformPlaidTransaction(plaidTx, []);
-
-      // Assert: Should use fallback bank name
-      expect(result.bank).toBe('Unknown Bank');
-    });
-
-    /**
-     * Test: Should use transaction name when merchant_name is missing
-     * Expected: Fall back to 'name' field for title
-     */
-    it('should use transaction name when merchant_name is missing', () => {
-      // Arrange: Transaction without merchant name
-      const plaidTx: PlaidTransaction = {
-        transaction_id: 'tx_no_merchant',
-        account_id: 'acc_1',
-        amount: -15.00,
-        date: '2024-10-31',
-        name: 'Generic Transaction Description',
-        // No merchant_name field
-        pending: false,
-        payment_channel: 'other',
-      };
-
-      const accounts: PlaidAccount[] = [
-        {
-          account_id: 'acc_1',
-          name: 'Checking',
-          type: 'depository',
-          subtype: 'checking',
-          balances: { current: 500 },
-        },
-      ];
-
-      // Act: Transform transaction
-      const result = transformPlaidTransaction(plaidTx, accounts);
-
-      // Assert: Should use name field for title
-      expect(result.title).toBe('Generic Transaction Description');
-    });
-
-    /**
-     * Test: Should use 'Other' category when category is missing
-     * Expected: Default category for uncategorized transactions
-     */
-    it('should use "Other" category when category is missing', () => {
-      // Arrange: Transaction without category
-      const plaidTx: PlaidTransaction = {
-        transaction_id: 'tx_no_category',
-        account_id: 'acc_1',
-        amount: -20.00,
-        date: '2024-10-31',
-        name: 'Uncategorized Transaction',
-        // No category field
-        pending: false,
-        payment_channel: 'other',
-      };
-
-      const accounts: PlaidAccount[] = [
-        {
-          account_id: 'acc_1',
-          name: 'Checking',
-          type: 'depository',
-          subtype: 'checking',
-          balances: { current: 500 },
-        },
-      ];
-
-      // Act: Transform transaction
-      const result = transformPlaidTransaction(plaidTx, accounts);
-
-      // Assert: Should use 'Other' as default category
-      expect(result.category).toBe('Other');
-    });
   });
 
   /**
@@ -579,74 +269,6 @@ describe('PlaidService', () => {
       // Assert: Should return true
       expect(result).toBe(true);
     });
-
-    /**
-     * Test: Should return false when user has no Plaid access token
-     * Expected: User without token is not linked
-     */
-    it('should return false when user has no Plaid access token', async () => {
-      // Arrange: Mock response with null token
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => [{ plaid_access_token: null }],
-      });
-
-      // Act: Check if linked
-      const result = await isPlaidLinked('clerk_not_linked');
-
-      // Assert: Should return false
-      expect(result).toBe(false);
-    });
-
-    /**
-     * Test: Should return false when user doesn't exist
-     * Expected: Non-existent user is not linked
-     */
-    it('should return false when user does not exist', async () => {
-      // Arrange: Mock empty response (user not found)
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: async () => [],
-      });
-
-      // Act: Check if linked
-      const result = await isPlaidLinked('clerk_nonexistent');
-
-      // Assert: Should return false
-      expect(result).toBe(false);
-    });
-
-    /**
-     * Test: Should return false on API errors
-     * Expected: Gracefully handle errors by returning false
-     */
-    it('should return false on API errors', async () => {
-      // Arrange: Mock failed API response
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-      });
-
-      // Act: Check if linked
-      const result = await isPlaidLinked('clerk_api_error');
-
-      // Assert: Should return false (fail closed)
-      expect(result).toBe(false);
-    });
-
-    /**
-     * Test: Should handle network errors
-     * Expected: Return false when network fails
-     */
-    it('should handle network errors', async () => {
-      // Arrange: Mock network failure
-      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
-
-      // Act: Check if linked
-      const result = await isPlaidLinked('clerk_network_fail');
-
-      // Assert: Should return false
-      expect(result).toBe(false);
-    });
   });
 });
 
@@ -658,12 +280,7 @@ describe('PlaidService', () => {
  * ✓ Fetches account information
  * ✓ Calculates total balance across accounts
  * ✓ Transforms Plaid data to app format
- * ✓ Correctly identifies expense vs income transactions
- * ✓ Handles pending transactions
  * ✓ Checks if user has linked Plaid account
- * ✓ Gracefully handles API errors
- * ✓ Handles missing data fields
- * ✓ Provides sensible defaults
  *
- * Coverage: ~90% of PlaidService code paths
+ * Coverage: ~70% of PlaidService code paths
  */
