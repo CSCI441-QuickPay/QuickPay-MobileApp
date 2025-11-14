@@ -14,7 +14,7 @@
     "esModuleInterop": true,
     "allowJs": true,
     "skipLibCheck": true,
-    "types": ["react", "react-native", "nativewind/types"],
+    "types": ["react", "react-native", "nativewind/types", "jest"],
     "baseUrl": "."
   },
   "include": [

@@ -11,6 +11,7 @@ type Props = {
     bankFilter: string;
     sortType: string;
   };
+  transactions?: Transaction[];
 };
 
 // Helper function to filter by time
@@ -105,11 +106,14 @@ function groupTransactionsByDate(transactions: Transaction[]): { [key: string]: 
   return groups;
 }
 
-export default function TransactionList({ filters }: Props) {
+export default function TransactionList({ filters, transactions: transactionsProp }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Use provided transactions or default to mock data
+  const transactionsData = transactionsProp || transactions;
+
   // Apply all filters
-  let filteredTransactions = transactions;
+  let filteredTransactions = transactionsData;
   filteredTransactions = filterByTime(filteredTransactions, filters.timeFilter);
   filteredTransactions = filterByBank(filteredTransactions, filters.bankFilter);
   filteredTransactions = sortTransactions(filteredTransactions, filters.sortType);

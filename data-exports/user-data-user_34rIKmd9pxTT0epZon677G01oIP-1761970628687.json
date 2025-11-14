@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "exportDate": "2025-11-01T04:17:08.686Z",
+    "exportedBy": "QuickPay Data Export Script v1.0",
+    "clerkId": "user_34rIKmd9pxTT0epZon677G01oIP"
+  },
+  "user": {
+    "id": "f8b14652-4827-474c-9d9d-cb272a9e0cd7",
+    "clerk_id": "user_34rIKmd9pxTT0epZon677G01oIP",
+    "email": "hourseththaro@gmail.com",
+    "balance": 0,
+    "verified": false,
+    "created_at": "2025-11-01T02:46:44.378065+00:00",
+    "updated_at": "2025-11-01T02:47:40.646799+00:00",
+    "plaid_access_token": null,
+    "hasPlaidLinked": false
+  },
+  "favorites": [],
+  "summary": {
+    "totalFavorites": 0,
+    "accountAge": "Less than 1 day",
+    "plaidLinked": false,
+    "accountStatus": "Inactive",
+    "emailVerified": false
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * ConnectionLines.tsx
- * Component for rendering connection lines between budget blocks
+ * Final: fixes bank→total connectors and single-child artifacts.
  */
 
 import React from 'react';
@@ -25,42 +25,46 @@ export default function ConnectionLines({
   return (
     <>
       {categories.map((category) => {
-        if (category.children.length === 0) return null;
+        if (!category.children?.length) return null;
 
-        // Skip if not in focus view
+        // Focus: keep only lines around the focused node
         if (focusedCategoryId) {
-          const focusedCategory = categories.find(c => c.id === focusedCategoryId);
-          const shouldShow = 
+          const focused = categories.find(c => c.id === focusedCategoryId);
+          const shouldShow =
             category.id === focusedCategoryId ||
             category.children.includes(focusedCategoryId) ||
-            category.id === focusedCategory?.parentId;
-          
+            category.id === focused?.parentId;
           if (!shouldShow) return null;
         }
+
+        const isMultiChild = category.children.length > 1;
 
         return category.children.map((childId) => {
           const child = categories.find(c => c.id === childId);
           if (!child) return null;
 
           const parentPos = getBlockPosition(category.id);
-          const childPos = getBlockPosition(childId);
-          const parentSize = getBlockSize(category.type);
-          const childSize = getBlockSize(child.type);
+          const childPos  = getBlockPosition(childId);
+          const parentSz  = getBlockSize(category.type);
+          const childSz   = getBlockSize(child.type);
 
-          const startX = parentPos.x + (parentSize.width / 2);
-          const startY = parentPos.y + parentSize.height;
-          const endX = childPos.x + (childSize.width / 2);
-          const endY = childPos.y;
-          const midY = startY + 35;
+          const startX = parentPos.x + parentSz.width / 2;
+          const startY = parentPos.y + parentSz.height;
+          const endX   = childPos.x + childSz.width / 2;
+          const endY   = childPos.y;
 
+          const midY   = startY + 35;
           const lineColor = focusedCategoryId === category.id ? category.color : '#6B7280';
-          
-          // Check if parent is a bank to enable "show all descendants" mode
-          const isFromBank = category.type === 'bank';
+          const isFromBank   = category.type === 'bank';
+          const isBankToTotal = isFromBank && child.id === 'total';
+
+          const dx = Math.abs(endX - startX);
+          // draw horizontal if siblings branch, or if centers differ (route), or bank→total
+          const shouldDrawHorizontal = isMultiChild || dx > 6 || isBankToTotal;
 
           return (
             <View key={`line-${category.id}-${childId}`}>
-              {/* Vertical from parent */}
+              {/* vertical down from parent to midY */}
               <TouchableOpacity
                 onPress={() => onLinePress(category.id, isFromBank)}
                 style={{
@@ -75,22 +79,24 @@ export default function ConnectionLines({
                 <View style={createConnectionLineStyle('vertical', lineColor, 35)} />
               </TouchableOpacity>
 
-              {/* Horizontal */}
-              <TouchableOpacity
-                onPress={() => onLinePress(category.id, isFromBank)}
-                style={{
-                  position: 'absolute',
-                  left: Math.min(startX, endX),
-                  top: midY - 12,
-                  width: Math.abs(endX - startX),
-                  height: 24,
-                  justifyContent: 'center',
-                }}
-              >
-                <View style={createConnectionLineStyle('horizontal', lineColor, Math.abs(endX - startX))} />
-              </TouchableOpacity>
+              {/* horizontal bus if needed */}
+              {shouldDrawHorizontal && (
+                <TouchableOpacity
+                  onPress={() => onLinePress(category.id, isFromBank)}
+                  style={{
+                    position: 'absolute',
+                    left: Math.min(startX, endX),
+                    top: midY - 12,
+                    width: Math.max(1, dx),
+                    height: 24,
+                    justifyContent: 'center',
+                  }}
+                >
+                  <View style={createConnectionLineStyle('horizontal', lineColor, Math.max(1, dx))} />
+                </TouchableOpacity>
+              )}
 
-              {/* Vertical to child */}
+              {/* vertical from midY down to the child top */}
               <TouchableOpacity
                 onPress={() => onLinePress(category.id, isFromBank)}
                 style={{
@@ -105,8 +111,8 @@ export default function ConnectionLines({
                 <View style={createConnectionLineStyle('vertical', lineColor, endY - midY)} />
               </TouchableOpacity>
 
-              {/* Arrow */}
-              <View 
+              {/* arrow tip at child */}
+              <View
                 style={{
                   ...createArrowStyle(lineColor),
                   left: endX - 6,

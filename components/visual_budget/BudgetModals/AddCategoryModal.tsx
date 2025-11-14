@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { availableIcons, availableColors } from '@/data/budget';
@@ -20,6 +20,9 @@ export default function AddCategoryModal({
   const [budget, setBudget] = useState('');
   const [icon, setIcon] = useState('wallet');
   const [color, setColor] = useState('#3B82F6');
+  
+  // ✅ Add ref for budget input
+  const budgetInputRef = useRef<TextInput>(null);
 
   const handleSave = () => {
     if (!name.trim() || !budget.trim()) return;
@@ -58,6 +61,9 @@ export default function AddCategoryModal({
                   placeholderTextColor="#9CA3AF"
                   value={name}
                   onChangeText={setName}
+                  returnKeyType="next"
+                  onSubmitEditing={() => budgetInputRef.current?.focus()}
+                  blurOnSubmit={false}
                 />
               </View>
             </View>
@@ -68,16 +74,19 @@ export default function AddCategoryModal({
               <View className="flex-row items-center bg-gray-50 border-2 border-gray-200 rounded-2xl px-5 h-14">
                 <Text className="text-gray-600 text-xl mr-2">$</Text>
                 <TextInput
-                    placeholder="0.00"
-                    placeholderTextColor="#9CA3AF"
-                    keyboardType="decimal-pad"
-                    value={budget}
-                    onChangeText={(v) => {
-                        // Allow digits, one dot, and commas (which we strip later anyway)
-                        const cleaned = v.replace(/[^0-9.,]/g, '');
-                        setBudget(cleaned);
-                    }}
-                    />
+                  ref={budgetInputRef}
+                  placeholder="0.00"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="decimal-pad"
+                  value={budget}
+                  onChangeText={(v) => {
+                    // Allow digits, one dot, and commas (which we strip later anyway)
+                    const cleaned = v.replace(/[^0-9.,]/g, '');
+                    setBudget(cleaned);
+                  }}
+                  returnKeyType="done"
+                  onSubmitEditing={() => budgetInputRef.current?.blur()}
+                />
               </View>
             </View>
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -35,6 +35,7 @@ export default function Login() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const passwordRef = useRef<TextInput>(null);
 
   if (!isLoaded) {
     return (
@@ -145,6 +146,7 @@ export default function Login() {
                     onFocus={() => setEmailFocused(true)}
                     onBlur={() => setEmailFocused(false)}
                     returnKeyType="next"
+                    onSubmitEditing={() => passwordRef.current?.focus()}
                     style={{ flex: 1, color: "#111827", fontSize: 17, fontWeight: "500" }}
                   />
                 </View>
@@ -168,6 +170,7 @@ export default function Login() {
                     style={{ marginRight: 12 }}
                   />
                   <TextInput
+                    ref={passwordRef}
                     placeholder="Enter your password"
                     placeholderTextColor="#9CA3AF"
                     secureTextEntry={!showPassword}

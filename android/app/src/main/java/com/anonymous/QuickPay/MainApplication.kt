@@ -1,4 +1,4 @@
-package com.anonymous.QuickPay
+package com.anonymous.quickpay
 
 import android.app.Application
 import android.content.res.Configuration

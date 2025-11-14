@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -19,7 +18,8 @@ import { useSignUp } from "@clerk/clerk-expo";
 
 export default function StepPhone({ onNext, onBack, cachedData }: any) {
   const { signUp } = useSignUp();
-  const [phoneNumber, setPhoneNumber] = useState(cachedData?.phoneNumber || "");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneValue, setPhoneValue] = useState(cachedData?.phoneValue || "");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
@@ -28,27 +28,33 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
 
   const sendOTP = async () => {
     if (!phoneNumber) {
-      Alert.alert("Error", "Please enter your phone number");
       return;
     }
-    
+
     setLoading(true);
     try {
-      await signUp?.update({ 
-        phoneNumber: phoneNumber 
+      await signUp?.update({
+        phoneNumber: phoneNumber
       });
-      
+
       await signUp?.preparePhoneNumberVerification({ strategy: "phone_code" });
       setOtpSent(true);
-      Alert.alert("Code Sent", `We've sent a 6-digit code to ${phoneNumber}`);
-      
+
       // Focus first OTP input after a short delay
       setTimeout(() => {
         otpRefs.current[0]?.focus();
       }, 300);
     } catch (err: any) {
       console.error("Phone verification error:", err);
-      Alert.alert("Error", err.message || "Failed to send verification code");
+
+      // Handle rate limiting gracefully - just proceed to OTP screen
+      if (err?.message?.includes("Too many") || err?.message?.includes("rate limit")) {
+        console.log("⚠️ Rate limited, proceeding to OTP screen anyway...");
+        setOtpSent(true);
+        setTimeout(() => {
+          otpRefs.current[0]?.focus();
+        }, 300);
+      }
     } finally {
       setLoading(false);
     }
@@ -57,10 +63,9 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
   const verifyOTP = async () => {
     const otpCode = otp.join("");
     if (otpCode.length < 6) {
-      Alert.alert("Error", "Please enter the complete 6-digit code");
       return;
     }
-    
+
     setLoading(true);
     try {
       const result = await signUp?.attemptPhoneNumberVerification({
@@ -68,16 +73,13 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
       });
 
       if (result?.status === "complete" || result?.verifications?.phoneNumber?.status === "verified") {
-        Alert.alert("Success!", "Phone number verified successfully");
         onNext({ phoneNumber });
       } else {
-        Alert.alert("Invalid Code", "The code you entered is incorrect. Please try again.");
         setOtp(["", "", "", "", "", ""]);
         otpRefs.current[0]?.focus();
       }
     } catch (err: any) {
       console.error("OTP verification error:", err);
-      Alert.alert("Error", err.message || "Invalid verification code");
       setOtp(["", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
     } finally {
@@ -134,7 +136,7 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
 
   const verifyOTPWithCode = async (otpCode: string) => {
     if (otpCode.length < 6) return;
-    
+
     setLoading(true);
     try {
       const result = await signUp?.attemptPhoneNumberVerification({
@@ -142,16 +144,13 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
       });
 
       if (result?.status === "complete" || result?.verifications?.phoneNumber?.status === "verified") {
-        Alert.alert("Success!", "Phone number verified successfully");
         onNext({ phoneNumber });
       } else {
-        Alert.alert("Invalid Code", "The code you entered is incorrect. Please try again.");
         setOtp(["", "", "", "", "", ""]);
         otpRefs.current[0]?.focus();
       }
     } catch (err: any) {
       console.error("OTP verification error:", err);
-      Alert.alert("Error", err.message || "Invalid verification code");
       setOtp(["", "", "", "", "", ""]);
       otpRefs.current[0]?.focus();
     } finally {
@@ -163,6 +162,9 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
     if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
       // Move to previous input on backspace if current is empty
       otpRefs.current[index - 1]?.focus();
+    } else if (e.nativeEvent.key === 'Enter' && otp.every(digit => digit !== "")) {
+      // Submit on Enter if all digits are filled
+      verifyOTP();
     }
   };
 
@@ -172,8 +174,8 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
       setOtpSent(false);
       setOtp(["", "", "", "", "", ""]);
     } else {
-      // Go back to previous step
-      onBack({ phoneNumber });
+      // Go back to previous step - save only what user typed, not the formatted number
+      onBack({ phoneValue });
     }
   };
 
@@ -215,8 +217,13 @@ export default function StepPhone({ onNext, onBack, cachedData }: any) {
                     ref={phoneRef}
                     defaultCode="US"
                     layout="first"
-                    value={phoneNumber}
+                    value={phoneValue}
+                    onChangeText={setPhoneValue}
                     onChangeFormattedText={setPhoneNumber}
+                    textInputProps={{
+                      returnKeyType: "done",
+                      onSubmitEditing: sendOTP,
+                    }}
                     containerStyle={{
                       width: "100%",
                       borderRadius: 16,
