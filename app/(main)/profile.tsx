@@ -174,7 +174,7 @@ export default function Profile() {
           <View className="gap-2">
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to My Profile")}
+              onPress={() => router.push("/my_profile")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
