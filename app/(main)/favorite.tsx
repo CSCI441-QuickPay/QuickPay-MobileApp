@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,103 +6,107 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useUser } from "@clerk/clerk-expo";
 import BottomNav from "@/components/BottomNav";
 import AddFavoriteModal, { FavoriteContact } from "@/components/favorite/AddFavoriteModal";
 import EditFavoriteModal from "@/components/favorite/EditFavoriteModal";
-
-// Get initials from name
-const getInitials = (name: string) => {
-  const names = name.split(" ");
-  if (names.length >= 2) {
-    return `${names[0][0]}${names[1][0]}`.toUpperCase();
-  }
-  return name.slice(0, 2).toUpperCase();
-};
-
-// Get random pastel color for avatar
-const getAvatarColor = (id: string) => {
-  const colors = [
-    { bg: "#DBEAFE", text: "#2563EB" },
-    { bg: "#D1FAE5", text: "#059669" },
-    { bg: "#FEF3C7", text: "#D97706" },
-    { bg: "#FCE7F3", text: "#DB2777" },
-    { bg: "#E0E7FF", text: "#4F46E5" },
-    { bg: "#FED7AA", text: "#EA580C" },
-  ];
-  const index = parseInt(id) % colors.length;
-  return colors[index];
-};
+import FavoriteModel from "@/models/FavoriteModel";
+import UserModel from "@/models/UserModel";
+import { getInitials, getProfileColor } from "@/utils/profileUtils";
 
 export default function FavoriteScreen() {
+  const { user } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingContact, setEditingContact] = useState<FavoriteContact | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [favorites, setFavorites] = useState<FavoriteContact[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      phoneNumber: "(555) 123-4567",
-      email: "john@example.com",
-      nickname: "Dad",
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      phoneNumber: "(555) 987-6543",
-      email: "jane@example.com",
-    },
-    {
-      id: "3",
-      name: "Michael Johnson",
-      email: "michael@example.com",
-      nickname: "Mike",
-    },
-    {
-      id: "4",
-      name: "Emily Davis",
-      phoneNumber: "(555) 456-7890",
-      nickname: "Mom",
-    },
-  ]);
+  const [favorites, setFavorites] = useState<FavoriteContact[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load favorites from database
+  useEffect(() => {
+    loadFavorites();
+  }, [user]);
+
+  const loadFavorites = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      // Get database user UUID from Clerk ID
+      const dbUser = await UserModel.getByClerkId(user.id);
+      if (!dbUser || !dbUser.id) {
+        console.error("User not found in database");
+        return;
+      }
+
+      // Load favorites from database
+      const dbFavorites = await FavoriteModel.getByUserId(dbUser.id);
+
+      // Map to FavoriteContact format
+      const mappedFavorites: FavoriteContact[] = dbFavorites.map(fav => ({
+        id: fav.id!,
+        accountNumber: fav.accountNumber,
+        accountHolderName: fav.accountHolderName,
+        accountHolderProfile: fav.accountHolderProfile,
+        nickname: fav.nickname,
+      }));
+
+      setFavorites(mappedFavorites);
+    } catch (error) {
+      console.error("Error loading favorites:", error);
+      Alert.alert("Error", "Failed to load favorites");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter favorites based on search
   const filteredFavorites = favorites.filter(
     (fav) =>
-      fav.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      fav.accountHolderName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       fav.nickname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      fav.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      fav.phoneNumber?.includes(searchQuery)
+      fav.accountNumber?.includes(searchQuery)
   );
 
-  const handleAddFavorite = (newFavorite: FavoriteContact) => {
-    setFavorites([...favorites, newFavorite]);
-    Alert.alert("Success", `${newFavorite.name} has been added to your favorites`);
+  const handleAddFavorite = async (newFavorite: FavoriteContact) => {
+    // Reload favorites from database to get the fresh list
+    await loadFavorites();
+    Alert.alert("Success", `${newFavorite.accountHolderName} has been added to your favorites`);
   };
 
-  const handleUpdateFavorite = (updatedFavorite: FavoriteContact) => {
-    setFavorites(favorites.map((f) => (f.id === updatedFavorite.id ? updatedFavorite : f)));
-    Alert.alert("Success", `${updatedFavorite.name} has been updated`);
+  const handleUpdateFavorite = async (updatedFavorite: FavoriteContact) => {
+    // Reload favorites from database
+    await loadFavorites();
+    Alert.alert("Success", `${updatedFavorite.accountHolderName} has been updated`);
   };
 
-  const handleDeleteFavorite = (id: string) => {
+  const handleDeleteFavorite = async (id: string) => {
     const favorite = favorites.find((f) => f.id === id);
     Alert.alert(
       "Remove Contact",
-      `Are you sure you want to remove ${favorite?.nickname || favorite?.name}?`,
+      `Are you sure you want to remove ${favorite?.nickname || favorite?.accountHolderName}?`,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Remove",
           style: "destructive",
-          onPress: () => {
-            setFavorites(favorites.filter((f) => f.id !== id));
+          onPress: async () => {
+            try {
+              await FavoriteModel.delete(id);
+              await loadFavorites();
+              Alert.alert("Success", "Contact removed from favorites");
+            } catch (error) {
+              console.error("Error deleting favorite:", error);
+              Alert.alert("Error", "Failed to delete favorite");
+            }
           },
         },
       ]
@@ -217,10 +221,17 @@ export default function FavoriteScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {filteredFavorites.length > 0 ? (
+        {loading ? (
+          <View className="flex-1 items-center justify-center py-20">
+            <ActivityIndicator size="large" color="#00332d" />
+            <Text className="text-gray-500 text-base mt-4">Loading favorites...</Text>
+          </View>
+        ) : filteredFavorites.length > 0 ? (
           <View className="gap-3">
             {filteredFavorites.map((fav) => {
-              const avatarColor = getAvatarColor(fav.id);
+              const profileColor = getProfileColor(fav.accountHolderName || "User");
+              const initials = getInitials(fav.accountHolderName || "?");
+
               return (
                 <TouchableOpacity
                   key={fav.id}
@@ -237,56 +248,36 @@ export default function FavoriteScreen() {
                     elevation: 2,
                   }}
                 >
-                  {/* Avatar with Initials */}
+                  {/* Avatar with Initials - Consistent Color Scheme */}
                   <View
                     className="w-12 h-12 rounded-full items-center justify-center mr-3"
-                    style={{ backgroundColor: avatarColor.bg }}
+                    style={{ backgroundColor: profileColor }}
                   >
-                    <Text
-                      className="text-lg font-extrabold"
-                      style={{ color: avatarColor.text }}
-                    >
-                      {getInitials(fav.name)}
+                    <Text className="text-lg font-extrabold text-white">
+                      {initials}
                     </Text>
                   </View>
 
                   {/* Contact Info */}
                   <View className="flex-1">
                     <Text className="text-base font-bold text-primary mb-0.5">
-                      {fav.nickname || fav.name}
+                      {fav.nickname || fav.accountHolderName}
                     </Text>
                     {fav.nickname && (
                       <Text className="text-sm text-gray-600 font-medium mb-1">
-                        {fav.name}
+                        {fav.accountHolderName}
                       </Text>
                     )}
-                    <View className="flex-row items-center flex-wrap">
-                      {fav.phoneNumber && (
-                        <View className="flex-row items-center mr-2">
-                          <Ionicons
-                            name="call-outline"
-                            size={12}
-                            color="#9CA3AF"
-                            style={{ marginRight: 3 }}
-                          />
-                          <Text className="text-xs text-gray-500 font-medium">
-                            {fav.phoneNumber}
-                          </Text>
-                        </View>
-                      )}
-                      {fav.email && (
-                        <View className="flex-row items-center">
-                          <Ionicons
-                            name="mail-outline"
-                            size={12}
-                            color="#9CA3AF"
-                            style={{ marginRight: 3 }}
-                          />
-                          <Text className="text-xs text-gray-500 font-medium">
-                            {fav.email}
-                          </Text>
-                        </View>
-                      )}
+                    <View className="flex-row items-center">
+                      <Ionicons
+                        name="card-outline"
+                        size={12}
+                        color="#9CA3AF"
+                        style={{ marginRight: 3 }}
+                      />
+                      <Text className="text-xs text-gray-500 font-medium">
+                        {fav.accountNumber}
+                      </Text>
                     </View>
                   </View>
 
