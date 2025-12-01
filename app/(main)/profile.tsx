@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -14,6 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import BottomNav from "@/components/BottomNav";
 import { userCards, getUserStats } from "@/data/user";
 import { getFavoritesCount } from "@/data/favorites";
+import UserModel from "@/models/UserModel";
 
 // Get initials from name
 const getInitials = (name: string) => {
@@ -27,6 +30,31 @@ const getInitials = (name: string) => {
 export default function Profile() {
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
+  const [accountNumber, setAccountNumber] = useState<string>("");
+  const [loadingAccount, setLoadingAccount] = useState(true);
+
+  // Load account number from database
+  useEffect(() => {
+    const loadAccountNumber = async () => {
+      if (!user) return;
+
+      try {
+        setLoadingAccount(true);
+        const dbUser = await UserModel.getByClerkId(user.id);
+        if (dbUser && dbUser.accountNumber) {
+          setAccountNumber(dbUser.accountNumber);
+        }
+      } catch (error) {
+        console.error("Error loading account number:", error);
+      } finally {
+        setLoadingAccount(false);
+      }
+    };
+
+    if (isLoaded && user) {
+      loadAccountNumber();
+    }
+  }, [user, isLoaded]);
 
   if (!isLoaded) {
     return (
@@ -40,10 +68,16 @@ export default function Profile() {
     ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User"
     : "Guest";
   const userEmail = user?.primaryEmailAddress?.emailAddress || "Not provided";
-  const userId = user?.id?.slice(0, 8) || "Unknown";
 
   // Get synced stats
   const stats = getUserStats(getFavoritesCount());
+
+  const handleCopyAccountNumber = async () => {
+    if (accountNumber) {
+      await Clipboard.setStringAsync(accountNumber);
+      Alert.alert("Copied!", "Account number copied to clipboard");
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -119,11 +153,42 @@ export default function Profile() {
               </View>
             </View>
 
-            <View className="bg-white/10 px-3 py-2 rounded-lg self-start">
-              <Text className="text-white/90 text-xs font-semibold">
-                ID: {userId}
-              </Text>
-            </View>
+            {/* Account Number with Copy */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleCopyAccountNumber}
+              disabled={loadingAccount || !accountNumber}
+              className="bg-white/20 px-4 py-3 rounded-xl flex-row items-center justify-between"
+              style={{
+                minWidth: 200,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 3,
+              }}
+            >
+              <View className="flex-1">
+                <View className="flex-row items-center mb-1">
+                  <Ionicons name="shield-checkmark" size={14} color="#10B981" style={{ marginRight: 4 }} />
+                  <Text className="text-white/80 text-xs font-semibold">
+                    Verified Account
+                  </Text>
+                </View>
+                {loadingAccount ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text className="text-white font-bold text-base tracking-wider">
+                    {accountNumber || "Loading..."}
+                  </Text>
+                )}
+              </View>
+              {!loadingAccount && accountNumber && (
+                <View className="ml-3 w-8 h-8 rounded-full bg-white/20 items-center justify-center">
+                  <Ionicons name="copy-outline" size={16} color="white" />
+                </View>
+              )}
+            </TouchableOpacity>
           </LinearGradient>
         </View>
 
