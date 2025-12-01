@@ -1,7 +1,7 @@
-// app/main/profile.tsx
 
 // React / Expo imports
-import { useEffect, useState } from 'react';
+import * as ImagePicker from "expo-image-picker";
+import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Image,
@@ -14,16 +14,16 @@ import {
     TextInput,
     TouchableOpacity,
     View,
-} from 'react-native';
+} from "react-native";
 
 // Navigation hook from Expo Router
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
 
 // Icons
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 
 // Clerk (your auth system)
-import { useUser } from '@clerk/clerk-expo';
+import { useUser } from "@clerk/clerk-expo";
 
 // Your Supabase service functions + types
 // NOTE: ../../ because profile.tsx is inside app/main/
@@ -31,10 +31,11 @@ import {
     fetchProfile,
     updateMerchantMode,
     updatePhoneNumber,
+    uploadAvatar,
     upsertProfile,
-} from '../../services/profileService';
+} from "../../services/profileService";
 
-import { Profile } from '../../types/Profile';
+import { Profile } from "../../types/Profile";
 
 export default function MyProfileScreen() {
   const router = useRouter();
@@ -52,8 +53,12 @@ export default function MyProfileScreen() {
 
   // Phone number editing state
   const [editingPhone, setEditingPhone] = useState(false);
-  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState("");
   const [savingPhone, setSavingPhone] = useState(false);
+
+  //uploading avatar state
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   // -----------------------------
   // Load user profile on mount
@@ -69,7 +74,7 @@ export default function MyProfileScreen() {
 
         // If Clerk says no user logged in → cannot continue
         if (!clerkUserId) {
-          setErrorText('No logged in user from Clerk. Please sign in again.');
+          setErrorText("No logged in user from Clerk. Please sign in again.");
           return;
         }
 
@@ -78,20 +83,20 @@ export default function MyProfileScreen() {
 
         // 2. If no row exists, we create a default one using Clerk data
         if (!p) {
-          const defaultProfilePartial: Partial<Profile> & { clerk_id: string } = {
-            clerk_id: clerkUserId,
-            email: user?.primaryEmailAddress?.emailAddress ?? null,
-            first_name: user?.firstName ?? null,
-            last_name: user?.lastName ?? null,
-            phone_number: user?.primaryPhoneNumber?.phoneNumber ?? null,
-            profile_picture: user?.imageUrl ?? null,
+          const defaultProfilePartial: Partial<Profile> & { clerk_id: string } =
+            {
+              clerk_id: clerkUserId,
+              email: user?.primaryEmailAddress?.emailAddress ?? null,
+              first_name: user?.firstName ?? null,
+              last_name: user?.lastName ?? null,
+              phone_number: user?.primaryPhoneNumber?.phoneNumber ?? null,
 
-            // Optional app-specific fields (only work if added to DB):
-            app_id: Math.floor(100000 + Math.random() * 900000).toString(),
-            merchant_mode: false,
-            is_active: true,
-            verified: false,
-          };
+              // Optional app-specific fields (only work if added to DB):
+              app_id: Math.floor(100000 + Math.random() * 900000).toString(),
+              merchant_mode: false,
+              is_active: true,
+              verified: false,
+            };
 
           // Save new profile to Supabase
           p = await upsertProfile(defaultProfilePartial);
@@ -101,10 +106,10 @@ export default function MyProfileScreen() {
         setProfile(p);
 
         // Phone input default
-        setPhoneInput(p.phone_number ?? '');
+        setPhoneInput(p.phone_number ?? "");
       } catch (err: any) {
-        console.log('profile init error:', err);
-        setErrorText(err?.message || 'Failed to load profile.');
+        console.log("profile init error:", err);
+        setErrorText(err?.message || "Failed to load profile.");
       } finally {
         setLoading(false);
       }
@@ -126,8 +131,8 @@ export default function MyProfileScreen() {
       // Save to database
       await updateMerchantMode(clerkUserId, value);
     } catch (err) {
-      console.log('Error updating merchant mode:', err);
-      setErrorText('Failed to update merchant mode.');
+      console.log("Error updating merchant mode:", err);
+      setErrorText("Failed to update merchant mode.");
     }
   };
 
@@ -145,8 +150,8 @@ export default function MyProfileScreen() {
       setProfile({ ...profile, phone_number: phoneInput.trim() });
       setEditingPhone(false);
     } catch (err) {
-      console.log('Error updating phone number:', err);
-      setErrorText('Failed to update phone number.');
+      console.log("Error updating phone number:", err);
+      setErrorText("Failed to update phone number.");
     } finally {
       setSavingPhone(false);
     }
@@ -195,21 +200,67 @@ export default function MyProfileScreen() {
 
   // Build clean display name
   const fullName =
-    `${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim() ||
-    'QuickPay User';
+    `${profile.first_name ?? ""} ${profile.last_name ?? ""}`.trim() ||
+    "QuickPay User";
 
   // If no app_id exists, fallback to short-form UUID
   const appIdDisplay =
-    profile.app_id ?? (profile.id ? profile.id.slice(0, 6).toUpperCase() : '------');
+    profile.app_id ??
+    (profile.id ? profile.id.slice(0, 6).toUpperCase() : "------");
 
   const merchantEnabled = profile.merchant_mode ?? false;
+
+  //Handle change avatar
+ const handleChangeAvatar = async () => {
+  if (!clerkUserId) return;
+
+  try {
+    setErrorText(null);
+    setAvatarError(false);
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      setErrorText("Permission to access photos was denied.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (result.canceled) return;
+
+    const uri = result.assets[0]?.uri;
+    if (!uri) return;
+
+    setUploadingAvatar(true);
+
+    // Upload to Supabase
+    await uploadAvatar(clerkUserId, uri);
+
+    // Refetch updated full row from DB
+    const fresh = await fetchProfile(clerkUserId);
+    if (fresh) setProfile(fresh);
+
+  } catch (err) {
+    console.log("Avatar upload error:", err);
+    setErrorText("Failed to update profile picture.");
+  } finally {
+    setUploadingAvatar(false);
+  }
+};
+
+  
 
   return (
     <SafeAreaView className="flex-1 bg-[#050816]">
       {/* Handles iOS keyboard nicely */}
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
           className="flex-1"
@@ -239,28 +290,46 @@ export default function MyProfileScreen() {
           {/* Profile Header (avatar + name + app ID) */}
           {/* -------------------------------------- */}
           <View className="mx-4 mt-3 mb-6 rounded-2xl bg-slate-900/80 flex-row items-center p-5">
-
             {/* Avatar */}
             <View className="relative">
-              <Image
-                source={
-                  profile.profile_picture
-                    ? { uri: profile.profile_picture }
-                    : require('../../assets/images/user_profile.jpg')
-                }
-                className="w-20 h-20 rounded-full border-2 border-emerald-500/70"
-              />
+                <View className="w-20 h-20 rounded-full border-2 border-emerald-500/70 bg-slate-900 overflow-hidden items-center justify-center">
+                    {!avatarError && profile.profile_picture ? (
+                    <Image
+                        source={{ uri: profile.profile_picture }}
+                        className="w-20 h-20"
+                        resizeMode="cover"
+                        onError={() => {
+                        console.log("AVATAR FAILED:", profile.profile_picture);
+                        setAvatarError(true);
+                        }}
+                    />
+                    ) : (
+                    <Ionicons name="person" size={40} color="#9CA3AF" />
+                    )}
+                </View>
 
-              {/* Camera icon (future feature) */}
-              <TouchableOpacity className="absolute -bottom-1 right-0 w-7 h-7 rounded-full bg-emerald-500 items-center justify-center">
-                <Ionicons name="camera" size={16} color="#F9FAFB" />
-              </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={handleChangeAvatar}
+                    disabled={uploadingAvatar}
+                    className="absolute -bottom-1 right-0 w-7 h-7 rounded-full bg-emerald-500 items-center justify-center"
+                >
+                    {uploadingAvatar ? (
+                    <ActivityIndicator size="small" color="#F9FAFB" />
+                    ) : (
+                    <Ionicons name="camera" size={16} color="#F9FAFB" />
+                    )}
+                </TouchableOpacity>
             </View>
+
 
             {/* Name + App ID */}
             <View className="ml-4 flex-1">
-              <Text className="text-slate-50 text-lg font-bold">{fullName}</Text>
-              <Text className="text-slate-400 mt-1">App ID: {appIdDisplay}</Text>
+              <Text className="text-slate-50 text-lg font-bold">
+                {fullName}
+              </Text>
+              <Text className="text-slate-400 mt-1">
+                App ID: {appIdDisplay}
+              </Text>
             </View>
           </View>
 
@@ -293,21 +362,26 @@ export default function MyProfileScreen() {
                 // View Mode
                 <View className="flex-1 ml-3">
                   <Text className="text-slate-50 text-base font-medium">
-                    {profile.phone_number || 'Add phone number'}
+                    {profile.phone_number || "Add phone number"}
                   </Text>
                 </View>
               )}
 
               {/* Action Button */}
               {editingPhone ? (
-                <TouchableOpacity onPress={handleSavePhone} disabled={savingPhone}>
+                <TouchableOpacity
+                  onPress={handleSavePhone}
+                  disabled={savingPhone}
+                >
                   <Text className="text-sky-400 text-xs font-semibold">
-                    {savingPhone ? 'Saving...' : 'SAVE'}
+                    {savingPhone ? "Saving..." : "SAVE"}
                   </Text>
                 </TouchableOpacity>
               ) : (
-                <TouchableOpacity onPress={() => router.push('/update_phone')}>
-                  <Text className="text-sky-400 text-xs font-semibold">CHANGE</Text>
+                <TouchableOpacity onPress={() => router.push("/update_phone")}>
+                  <Text className="text-sky-400 text-xs font-semibold">
+                    CHANGE
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -335,15 +409,16 @@ export default function MyProfileScreen() {
                   Merchant Mode
                 </Text>
                 <Text className="text-slate-400 text-[11px] mt-1 leading-4">
-                  Turn on Merchant Mode to manage daily sales and track performance.
+                  Turn on Merchant Mode to manage daily sales and track
+                  performance.
                 </Text>
               </View>
 
               <Switch
                 value={merchantEnabled}
                 onValueChange={handleToggleMerchant}
-                thumbColor={merchantEnabled ? '#22C55E' : '#E5E7EB'}
-                trackColor={{ false: '#4B5563', true: '#16A34A' }}
+                thumbColor={merchantEnabled ? "#22C55E" : "#E5E7EB"}
+                trackColor={{ false: "#4B5563", true: "#16A34A" }}
               />
             </View>
           </View>
@@ -359,7 +434,7 @@ export default function MyProfileScreen() {
             <ProfileRow
               icon="mail-outline"
               label="Email"
-              value={profile.email || ''}
+              value={profile.email || ""}
             />
 
             <View className="h-px bg-slate-800 -mx-3" />
@@ -367,7 +442,7 @@ export default function MyProfileScreen() {
             <ProfileRow
               icon="person-outline"
               label="First Name"
-              value={profile.first_name || ''}
+              value={profile.first_name || ""}
             />
 
             <View className="h-px bg-slate-800 -mx-3" />
@@ -375,7 +450,7 @@ export default function MyProfileScreen() {
             <ProfileRow
               icon="person-outline"
               label="Last Name"
-              value={profile.last_name || ''}
+              value={profile.last_name || ""}
             />
 
             <View className="h-px bg-slate-800 -mx-3" />
@@ -383,7 +458,7 @@ export default function MyProfileScreen() {
             <ProfileRow
               icon="call-outline"
               label="Phone"
-              value={profile.phone_number || ''}
+              value={profile.phone_number || ""}
             />
           </View>
         </ScrollView>
@@ -406,7 +481,7 @@ function ProfileRow({ icon, label, value }: RowProps) {
         <Ionicons name={icon} size={18} color="#9CA3AF" />
         <Text className="ml-2 text-[12px] text-slate-400">{label}</Text>
       </View>
-      <Text className="text-[14px] text-slate-50">{value || '-'}</Text>
+      <Text className="text-[14px] text-slate-50">{value || "-"}</Text>
     </View>
   );
 }
@@ -414,9 +489,9 @@ function ProfileRow({ icon, label, value }: RowProps) {
 // Date formatting helper
 function formatDate(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }

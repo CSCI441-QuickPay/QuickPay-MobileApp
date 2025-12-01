@@ -158,7 +158,7 @@ export default class UserModel {
       if (userData.firstName !== undefined) updateData.first_name = userData.firstName;
       if (userData.lastName !== undefined) updateData.last_name = userData.lastName;
       if (userData.phoneNumber !== undefined) updateData.phone_number = userData.phoneNumber;
-      if (userData.profilePicture !== undefined) updateData.profile_picture = userData.profilePicture;
+
       if (userData.balance !== undefined) updateData.balance = userData.balance;
       if (userData.isActive !== undefined) updateData.is_active = userData.isActive;
       if (userData.verified !== undefined) updateData.verified = userData.verified;

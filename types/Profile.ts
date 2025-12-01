@@ -1,6 +1,6 @@
 // types/Profile.ts
-export type Profile = {
-  id: string;                 // uuid
+export interface Profile {
+  id?: string;                 // uuid
   clerk_id: string | null;    // text
   email: string | null;
 

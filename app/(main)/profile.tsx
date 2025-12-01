@@ -1,19 +1,23 @@
-import React from "react";
+import BottomNav from "@/components/BottomNav";
+import { getFavoritesCount } from "@/data/favorites";
+import { getUserStats } from "@/data/user";
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useCallback, useState } from "react";
 import {
-  View,
+  Alert,
+  Image,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Alert,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useUser, useAuth } from "@clerk/clerk-expo";
-import { LinearGradient } from "expo-linear-gradient";
-import BottomNav from "@/components/BottomNav";
-import { userCards, getUserStats } from "@/data/user";
-import { getFavoritesCount } from "@/data/favorites";
+import { fetchProfile } from "../../services/profileService";
+import { Profile as SupaProfile } from "../../types/Profile";
 
 // Get initials from name
 const getInitials = (name: string) => {
@@ -28,6 +32,39 @@ export default function Profile() {
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
 
+  const [supabaseProfile, setSupabaseProfile] = useState<SupaProfile | null>(
+    null
+  );
+
+  // Load Supabase profile whenever this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadProfile = async () => {
+        if (!isLoaded || !user?.id) return;
+
+        try {
+          const p = await fetchProfile(user.id);
+          console.log("PROFILE HEADER from Supabase (focus):", p);
+
+          if (isActive) {
+            setSupabaseProfile(p || null);
+          }
+        } catch (err) {
+          console.log("Profile header fetchProfile error:", err);
+        }
+      };
+
+      loadProfile();
+
+      // cleanup when screen loses focus
+      return () => {
+        isActive = false;
+      };
+    }, [isLoaded, user?.id])
+  );
+
   if (!isLoaded) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
@@ -36,13 +73,24 @@ export default function Profile() {
     );
   }
 
-  const fullName = user
-    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User"
-    : "Guest";
-  const userEmail = user?.primaryEmailAddress?.emailAddress || "Not provided";
-  const userId = user?.id?.slice(0, 8) || "Unknown";
+  // Prefer Supabase name/email first, then Clerk fallback
+  const fullName =
+    (supabaseProfile
+      ? `${supabaseProfile.first_name ?? ""} ${
+          supabaseProfile.last_name ?? ""
+        }`.trim()
+      : user
+      ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+      : "") || "User";
 
-  // Get synced stats
+  const userEmail =
+    supabaseProfile?.email ||
+    user?.primaryEmailAddress?.emailAddress ||
+    "Not provided";
+
+  // If you want, you can also show Supabase app_id/ID here instead of raw Clerk id
+  const userId = supabaseProfile?.app_id || user?.id?.slice(0, 8) || "Unknown";
+
   const stats = getUserStats(getFavoritesCount());
 
   const handleLogout = () => {
@@ -102,11 +150,25 @@ export default function Profile() {
             style={{ padding: 20 }}
           >
             <View className="flex-row items-center mb-4">
-              {/* Avatar with Initials */}
-              <View className="w-16 h-16 rounded-full bg-white items-center justify-center mr-4">
-                <Text className="text-2xl font-extrabold text-primary">
-                  {getInitials(fullName)}
-                </Text>
+              {/* Avatar with Initials/After Upload */}
+              <View className="w-16 h-16 rounded-full bg-white items-center justify-center mr-4 overflow-hidden">
+                {supabaseProfile?.profile_picture ? (
+                  <Image
+                    source={{ uri: supabaseProfile.profile_picture }}
+                    className="w-16 h-16 rounded-full"
+                    resizeMode="cover"
+                    onError={() => {
+                      console.log(
+                        "Header avatar failed to load:",
+                        supabaseProfile.profile_picture
+                      );
+                    }}
+                  />
+                ) : (
+                  <Text className="text-2xl font-extrabold text-primary">
+                    {getInitials(fullName)}
+                  </Text>
+                )}
               </View>
 
               <View className="flex-1">
@@ -382,7 +444,9 @@ export default function Profile() {
           },
           {
             label: "Scan",
-            icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
+            icon: (color) => (
+              <AntDesign name="qrcode" size={40} color={color} />
+            ),
             onPress: () => console.log("Go Scan"),
             special: true,
           },
