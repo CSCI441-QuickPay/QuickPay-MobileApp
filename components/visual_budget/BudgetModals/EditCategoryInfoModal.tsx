@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { availableIcons, availableColors } from '@/data/budget';
 import { TreeBudgetCategory } from '@/models/BudgetModel';
@@ -7,15 +7,19 @@ import { TreeBudgetCategory } from '@/models/BudgetModel';
 interface EditCategoryInfoModalProps {
   visible: boolean;
   category: TreeBudgetCategory | null;
+  categories: TreeBudgetCategory[];
   onClose: () => void;
   onSave: (updated: { name: string; budget: string; icon: string; color: string }) => void;
+  onDelete: () => void;
 }
 
 export default function EditCategoryInfoModal({
   visible,
   category,
+  categories,
   onClose,
   onSave,
+  onDelete,
 }: EditCategoryInfoModalProps) {
   const [name, setName] = useState('');
   const [budget, setBudget] = useState('');
@@ -32,30 +36,92 @@ export default function EditCategoryInfoModal({
   }, [category]);
 
   const handleSave = () => {
-    if (!name.trim() || !budget.trim()) return;
-    onSave({ name, budget, icon, color });
+    // Validate category name
+    if (!name.trim()) {
+      Alert.alert('Validation Error', 'Please enter a category name');
+      return;
+    }
+    if (name.trim().length < 2) {
+      Alert.alert('Invalid Input', 'Category name must be at least 2 characters long');
+      return;
+    }
+    if (name.trim().length > 50) {
+      Alert.alert('Invalid Input', 'Category name cannot exceed 50 characters');
+      return;
+    }
+
+    // Validate budget amount
+    if (!budget.trim()) {
+      Alert.alert('Validation Error', 'Please enter a budget amount');
+      return;
+    }
+
+    const numericBudget = parseFloat(budget.replace(/,/g, ''));
+    if (isNaN(numericBudget)) {
+      Alert.alert('Invalid Input', 'Please enter a valid number for budget amount');
+      return;
+    }
+    if (numericBudget < 0) {
+      Alert.alert('Invalid Input', 'Budget amount cannot be negative');
+      return;
+    }
+    if (numericBudget > 1000000) {
+      Alert.alert('Invalid Input', 'Budget amount cannot exceed $1,000,000');
+      return;
+    }
+
+    onSave({ name: name.trim(), budget, icon, color });
     onClose();
   };
 
   if (!category) return null;
+
+  // Get parent category name if exists
+  const parentCategory = category.parentId
+    ? categories.find(c => c.id === category.parentId)
+    : null;
+
+  // Determine if this is a bank, budget block, or category
+  const getSubtitle = () => {
+    if (category.type === 'bank') {
+      return 'Manage your bank account settings';
+    } else if (category.type === 'budget' && category.id === 'total') {
+      const connectedBanks = categories
+        .filter(c => c.type === 'bank' && c.children?.includes('total'))
+        .map(c => c.name)
+        .join(', ');
+      return connectedBanks ? `Connected banks: ${connectedBanks}` : 'Main budget block';
+    } else if (parentCategory) {
+      return `Sub-category of ${parentCategory.name}`;
+    }
+    return 'Edit category information';
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View className="flex-1 bg-black/50 justify-end">
         <View className="bg-white rounded-t-3xl p-6 max-h-[85%]">
           {/* Header */}
-          <View className="flex-row justify-between items-center mb-6">
-            <View>
-              <Text className="text-3xl font-bold text-black">Edit Category</Text>
-              <Text className="text-sm text-gray-500 mt-1">Modify category details</Text>
+          <View className="flex-row items-center justify-between mb-6">
+            <View
+              className="w-12 h-12 rounded-full items-center justify-center mr-3"
+              style={{ backgroundColor: '#F3F4F6' }}
+            >
+              <Ionicons name="create-outline" size={24} color="#00332d" />
             </View>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close-circle" size={36} color="#9CA3AF" />
+
+            <View className="flex-1">
+              <Text className="text-xl font-bold text-black">Edit Category</Text>
+              <Text className="text-xs text-gray-500 mt-0.5">{getSubtitle()}</Text>
+            </View>
+
+            <TouchableOpacity onPress={onClose} className="ml-2">
+              <Ionicons name="close-circle" size={32} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
 
           {/* Form */}
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <View>
             {/* Category Name */}
             <View className="mb-5">
               <Text className="text-base font-semibold text-gray-700 mb-2">Category Name</Text>
@@ -64,7 +130,14 @@ export default function EditCategoryInfoModal({
                   placeholder="e.g., Groceries"
                   placeholderTextColor="#9CA3AF"
                   value={name}
-                  onChangeText={setName}
+                  onChangeText={(text) => {
+                    // Allow letters, numbers, spaces, and common punctuation
+                    const sanitized = text.replace(/[^a-zA-Z0-9\s&'-]/g, '');
+                    if (sanitized.length <= 50) {
+                      setName(sanitized);
+                    }
+                  }}
+                  maxLength={50}
                 />
               </View>
             </View>
@@ -80,9 +153,20 @@ export default function EditCategoryInfoModal({
                   keyboardType="decimal-pad"
                   value={budget}
                   onChangeText={(v) => {
-                    const cleaned = v.replace(/[^0-9.,]/g, '');
+                    // Allow digits, one dot, and commas - but only one decimal point
+                    let cleaned = v.replace(/[^0-9.,]/g, '');
+                    // Ensure only one decimal point
+                    const parts = cleaned.split('.');
+                    if (parts.length > 2) {
+                      cleaned = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    // Limit to 2 decimal places
+                    if (parts.length === 2 && parts[1].length > 2) {
+                      cleaned = parts[0] + '.' + parts[1].substring(0, 2);
+                    }
                     setBudget(cleaned);
                   }}
+                  maxLength={12}
                 />
               </View>
             </View>
@@ -185,15 +269,32 @@ export default function EditCategoryInfoModal({
             </View>
 
 
-            {/* Save Button */}
-            <TouchableOpacity
-              onPress={handleSave}
-              activeOpacity={0.8}
-              className="bg-primary rounded-2xl py-4 items-center mb-4"
-            >
-              <Text className="text-secondary font-bold text-xl">Save Changes</Text>
-            </TouchableOpacity>
-          </ScrollView>
+            {/* Action Buttons */}
+            <View className="flex-row gap-2 pb-6">
+              {/* Save Button */}
+              <TouchableOpacity
+                onPress={handleSave}
+                activeOpacity={0.8}
+                className="flex-1 bg-primary rounded-xl items-center justify-center"
+                style={{ height: 44 }}
+              >
+                <Text className="text-secondary font-semibold text-sm">Save Changes</Text>
+              </TouchableOpacity>
+
+              {/* Delete Button */}
+              <TouchableOpacity
+                onPress={onDelete}
+                activeOpacity={0.8}
+                className="flex-1 bg-red-50 border border-red-200 rounded-xl items-center justify-center"
+                style={{ height: 44 }}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name="trash-outline" size={16} color="#DC2626" style={{ marginRight: 4 }} />
+                  <Text className="text-red-600 font-semibold text-sm">Delete</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </View>
     </Modal>

@@ -156,6 +156,7 @@ export default function BudgetModals({
       <EditCategoryInfoModal
         visible={modalState.edit}
         category={selectedCategory}
+        categories={categories}
         onClose={() => setModalState((s: any) => ({ ...s, edit: false }))}
         onSave={(updated: any) => {
           setCategories((prev: any) =>
@@ -165,11 +166,50 @@ export default function BudgetModals({
           );
           setModalState((s: any) => ({ ...s, edit: false }));
         }}
+        onDelete={() => {
+          // ✅ Remove category and reposition remaining siblings
+          setCategories((prev: any) => {
+            const categoryToDelete = prev.find((c: any) => c.id === selectedCategory.id);
+            const parentId = categoryToDelete?.parentId;
+
+            // Remove category and update parent's children array
+            const withoutDeleted = prev
+              .filter((c: any) => c.id !== selectedCategory.id)
+              .map((c: any) => {
+                // Remove deleted category from parent's children
+                if (categoryToDelete && c.id === categoryToDelete.parentId) {
+                  return {
+                    ...c,
+                    children: c.children.filter((childId: string) => childId !== selectedCategory.id)
+                  };
+                }
+                return c;
+              });
+
+            // Reposition remaining siblings if there was a parent
+            if (parentId) {
+              const positionUpdates = repositionAllChildren(parentId, withoutDeleted);
+
+              // Apply position updates
+              return withoutDeleted.map((c: any) => {
+                const update = positionUpdates.find((u: any) => u.id === c.id);
+                if (update) {
+                  return { ...c, position: update.position };
+                }
+                return c;
+              });
+            }
+
+            return withoutDeleted;
+          });
+          setModalState((s: any) => ({ ...s, edit: false }));
+        }}
       />
 
       <TransactionModal
         visible={modalState.transaction}
         category={selectedCategory}
+        categories={categories}
         onClose={() => setModalState((s: any) => ({ ...s, transaction: false }))}
         onEdit={() => {
           setModalState((s: any) => ({ ...s, transaction: false, edit: true }));
