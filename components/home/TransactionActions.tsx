@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons} from '@expo/vector-icons';
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SplitTransactionModal } from './SplitTransaction';
@@ -27,15 +27,13 @@ export default function TransactionActions({ visible, transaction }: { visible: 
         <ActionButton
           icon="share-outline"
           label="Export"
-          onPress={() => setExportModalVisible(true)}
-        />
+          onPress={() => setExportModalVisible(true)} disabled={undefined} active={undefined}        />
 
         {/* 2️⃣ Return Transaction */}
         <ActionButton
           icon="refresh-outline"
           label="Return"
-          onPress={() => setReturnModalVisible(true)}
-        />
+          onPress={() => setReturnModalVisible(true)} disabled={undefined} active={undefined}        />
 
         {/* 3️⃣ Split Transaction */}
         <ActionButton
@@ -51,8 +49,7 @@ export default function TransactionActions({ visible, transaction }: { visible: 
         <ActionButton
           icon="ellipsis-horizontal"
           label="More"
-          onPress={() => setDetailModalVisible(true)}
-        />
+          onPress={() => setDetailModalVisible(true)} disabled={undefined} active={undefined}        />
       </View>
 
       {/* Modals */}
