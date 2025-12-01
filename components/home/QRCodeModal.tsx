@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,12 @@ import {
   Alert,
   Modal,
   Clipboard,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useUser } from "@clerk/clerk-expo";
 import QRCode from "react-native-qrcode-svg";
+import UserModel from "@/models/UserModel";
 
 interface QRCodeModalProps {
   visible: boolean;
@@ -20,28 +22,52 @@ interface QRCodeModalProps {
 export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
   const { user } = useUser();
   const [showDetails, setShowDetails] = useState(false);
+  const [accountNumber, setAccountNumber] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
-  const paymentId = user?.id || "USER_ID";
   const userName =
     `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
   const userEmail = user?.primaryEmailAddress?.emailAddress || "";
 
+  // Load account number from database
+  useEffect(() => {
+    const loadAccountNumber = async () => {
+      if (!user) return;
+
+      try {
+        setLoading(true);
+        const dbUser = await UserModel.getByClerkId(user.id);
+        if (dbUser && dbUser.accountNumber) {
+          setAccountNumber(dbUser.accountNumber);
+        }
+      } catch (error) {
+        console.error("Error loading account number:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (visible) {
+      loadAccountNumber();
+    }
+  }, [user, visible]);
+
   const qrData = JSON.stringify({
-    id: paymentId,
+    accountNumber: accountNumber,
     name: userName,
     email: userEmail,
     type: "payment",
   });
 
   const handleCopyId = async () => {
-    Clipboard.setString(paymentId);
-    Alert.alert("Copied!", "Payment ID copied to clipboard");
+    Clipboard.setString(accountNumber);
+    Alert.alert("Copied!", "Account Number copied to clipboard");
   };
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Send money to ${userName}\nPayment ID: ${paymentId}`,
+        message: `Send money to ${userName}\nAccount Number: ${accountNumber}`,
       });
     } catch (error) {
       console.error(error);
@@ -63,7 +89,7 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
             onPress={onClose}
             className="w-10 h-10 items-center justify-center -ml-2"
           >
-            <Ionicons name="close" size={28} color="#000" />
+            <Ionicons name="close" size={28} color="#9CA3AF" />
           </TouchableOpacity>
           <Text className="text-lg font-bold text-gray-900">My QR Code</Text>
           <TouchableOpacity
@@ -100,20 +126,24 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
               />
             </View>
 
-            {/* Payment ID */}
+            {/* Account Number */}
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={handleCopyId}
               className="bg-gray-100 rounded-xl px-4 py-3 w-full flex-row items-center justify-between mt-6"
             >
               <View className="flex-1">
-                <Text className="text-xs text-gray-600 mb-1">Payment ID</Text>
-                <Text
-                  className="text-sm font-semibold text-gray-900"
-                  numberOfLines={1}
-                >
-                  {paymentId}
-                </Text>
+                <Text className="text-xs text-gray-600 mb-1">Account Number</Text>
+                {loading ? (
+                  <ActivityIndicator size="small" color="#00332d" />
+                ) : (
+                  <Text
+                    className="text-sm font-semibold text-gray-900"
+                    numberOfLines={1}
+                  >
+                    {accountNumber || "Loading..."}
+                  </Text>
+                )}
               </View>
               <Ionicons name="copy-outline" size={20} color="#00332d" />
             </TouchableOpacity>
@@ -144,8 +174,8 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
                   },
                   {
                     step: "2",
-                    title: "Share Payment ID",
-                    desc: "Or share your unique Payment ID via text or email.",
+                    title: "Share Account Number",
+                    desc: "Or share your unique Account Number via text or email.",
                   },
                   {
                     step: "3",
