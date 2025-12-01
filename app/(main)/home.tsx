@@ -67,7 +67,14 @@ export default function Home() {
       console.error("❌ Failed to fetch Plaid data:", error);
       // Fallback to mock data on error
       setPlaidTransactions(mockTransactions);
-      setTotalBalance(mockTransactions.reduce((sum, t) => sum + t.amount, 0));
+      // Get balance from database instead of mock data
+      try {
+        const userData = await UserModel.getByClerkId(user.id);
+        setTotalBalance(userData?.balance || 0);
+      } catch (err) {
+        console.error("Failed to get user balance:", err);
+        setTotalBalance(0);
+      }
     } finally {
       setLoadingPlaidData(false);
     }
@@ -102,10 +109,12 @@ export default function Home() {
               router.replace("/plaid-onboarding-hosted");
               return;
             } else {
-              // User skipped - use mock data
+              // User skipped - use mock data for transactions but get balance from database
               console.log("ℹ️ User skipped Plaid - using mock data");
               setPlaidTransactions(mockTransactions);
-              setTotalBalance(mockTransactions.reduce((sum, t) => sum + t.amount, 0));
+              // Get balance from database
+              const userData = await UserModel.getByClerkId(user.id);
+              setTotalBalance(userData?.balance || 0);
             }
           } else {
             // Fetch Plaid data if linked
