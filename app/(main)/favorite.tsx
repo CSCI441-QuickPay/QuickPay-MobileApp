@@ -1,6 +1,3 @@
-import BottomNav from "@/components/BottomNav";
-import AddFavoriteModal from "@/components/favorite/AddFavoriteModal";
-import EditFavoriteModal from "@/components/favorite/EditFavoriteModal";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -14,6 +11,22 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import BottomNav from "@/components/BottomNav";
+import AddFavoriteModal from "@/components/favorite/AddFavoriteModal";
+import EditFavoriteModal from "@/components/favorite/EditFavoriteModal";
+
+// Minimal shared type to cover both shapes used across code
+type FavoriteContact = {
+  id: string;
+  name?: string;
+  email?: string;
+  phoneNumber?: string;
+  nickname?: string;
+  accountNumber?: string;
+  accountHolderName?: string;
+  accountHolderProfile?: string;
+};
+
 // Get initials from name
 const getInitials = (name: string) => {
   const names = name.split(" ");
@@ -23,7 +36,7 @@ const getInitials = (name: string) => {
   return name.slice(0, 2).toUpperCase();
 };
 
-// Get random pastel color for avatar
+// Get random pastel color for avatar (safe parseInt)
 const getAvatarColor = (id: string) => {
   const colors = [
     { bg: "#DBEAFE", text: "#2563EB" },
@@ -33,7 +46,8 @@ const getAvatarColor = (id: string) => {
     { bg: "#E0E7FF", text: "#4F46E5" },
     { bg: "#FED7AA", text: "#EA580C" },
   ];
-  const index = parseInt(id) % colors.length;
+  const parsed = parseInt(id, 10);
+  const index = Number.isFinite(parsed) && !Number.isNaN(parsed) ? Math.abs(parsed) % colors.length : 0;
   return colors[index];
 };
 
@@ -72,30 +86,30 @@ export default function FavoriteScreen() {
     },
   ]);
 
-  // Filter favorites based on search
+  // Filter favorites based on search (supports both shapes)
   const filteredFavorites = favorites.filter(
     (fav) =>
-      fav.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      fav.nickname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      fav.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      fav.phoneNumber?.includes(searchQuery)
+      (fav.name || fav.accountHolderName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (fav.nickname || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ((fav.email || "").toLowerCase().includes(searchQuery.toLowerCase())) ||
+      ((fav.phoneNumber || fav.accountNumber || "").includes(searchQuery))
   );
 
   const handleAddFavorite = (newFavorite: FavoriteContact) => {
     setFavorites([...favorites, newFavorite]);
-    Alert.alert("Success", `${newFavorite.name} has been added to your favorites`);
+    Alert.alert("Success", `${newFavorite.name || newFavorite.nickname || "Contact"} has been added to your favorites`);
   };
 
   const handleUpdateFavorite = (updatedFavorite: FavoriteContact) => {
     setFavorites(favorites.map((f) => (f.id === updatedFavorite.id ? updatedFavorite : f)));
-    Alert.alert("Success", `${updatedFavorite.name} has been updated`);
+    Alert.alert("Success", `${updatedFavorite.name || updatedFavorite.accountHolderName || updatedFavorite.nickname} has been updated`);
   };
 
   const handleDeleteFavorite = (id: string) => {
     const favorite = favorites.find((f) => f.id === id);
     Alert.alert(
       "Remove Contact",
-      `Are you sure you want to remove ${favorite?.nickname || favorite?.name}?`,
+      `Are you sure you want to remove ${favorite?.nickname || favorite?.name || favorite?.accountHolderName || "this contact"}?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -118,7 +132,7 @@ export default function FavoriteScreen() {
     }
 
     // Normal mode: Navigate to transfer/send money screen
-    const displayName = favorite.nickname || favorite.accountHolderName || favorite.name || "recipient";
+    const displayName = favorite.nickname || favorite.name || favorite.accountHolderName || "recipient";
 
     Alert.alert(
       "Send Money",
@@ -133,7 +147,7 @@ export default function FavoriteScreen() {
               pathname: "/transfer",
               params: {
                 contactId: favorite.id,
-                contactName: favorite.accountHolderName || favorite.nickname || favorite.name || "",
+                contactName: favorite.name || favorite.nickname || favorite.accountHolderName || "",
               },
             });
           },
@@ -160,7 +174,7 @@ export default function FavoriteScreen() {
             </View>
           </View>
 
-          {/* Edit Button (Standard iOS/Android position) */}
+          {/* Edit Button */}
           <TouchableOpacity activeOpacity={0.7} onPress={() => setIsEditMode(!isEditMode)} className="px-3 py-1.5">
             <Text className={`font-semibold text-lg ${isEditMode ? "text-green-600" : "text-primary"}`}>
               {isEditMode ? "Done" : "Edit"}
@@ -208,7 +222,7 @@ export default function FavoriteScreen() {
         {filteredFavorites.length > 0 ? (
           <View className="gap-3">
             {filteredFavorites.map((fav) => {
-              const avatarColor = getAvatarColor(fav.id);
+              const avatarColor = getAvatarColor(fav.id || "0");
               return (
                 <TouchableOpacity
                   key={fav.id}
@@ -224,53 +238,33 @@ export default function FavoriteScreen() {
                   }}
                 >
                   {/* Avatar with Initials */}
-                  <View
-                    className="w-12 h-12 rounded-full items-center justify-center mr-3"
-                    style={{ backgroundColor: avatarColor.bg }}
-                  >
-                    <Text
-                      className="text-lg font-extrabold"
-                      style={{ color: avatarColor.text }}
-                    >
-                      {getInitials(fav.name)}
+                  <View className="w-12 h-12 rounded-full items-center justify-center mr-3" style={{ backgroundColor: avatarColor.bg }}>
+                    <Text className="text-lg font-extrabold" style={{ color: avatarColor.text }}>
+                      {getInitials(fav.name || fav.accountHolderName || "")}
                     </Text>
                   </View>
 
                   {/* Contact Info */}
                   <View className="flex-1">
                     <Text className="text-base font-bold text-primary mb-0.5">
-                      {fav.nickname || fav.name}
+                      {fav.nickname || fav.name || fav.accountHolderName}
                     </Text>
-                    {fav.nickname && (
+                    {(fav.name || fav.accountHolderName) && (
                       <Text className="text-sm text-gray-600 font-medium mb-1">
-                        {fav.name}
+                        {fav.name || fav.accountHolderName}
                       </Text>
                     )}
                     <View className="flex-row items-center flex-wrap">
-                      {fav.phoneNumber && (
+                      {(fav.phoneNumber || fav.accountNumber) && (
                         <View className="flex-row items-center mr-2">
-                          <Ionicons
-                            name="call-outline"
-                            size={12}
-                            color="#9CA3AF"
-                            style={{ marginRight: 3 }}
-                          />
-                          <Text className="text-xs text-gray-500 font-medium">
-                            {fav.phoneNumber}
-                          </Text>
+                          <Ionicons name="call-outline" size={12} color="#9CA3AF" style={{ marginRight: 3 }} />
+                          <Text className="text-xs text-gray-500 font-medium">{fav.phoneNumber || fav.accountNumber}</Text>
                         </View>
                       )}
                       {fav.email && (
                         <View className="flex-row items-center">
-                          <Ionicons
-                            name="mail-outline"
-                            size={12}
-                            color="#9CA3AF"
-                            style={{ marginRight: 3 }}
-                          />
-                          <Text className="text-xs text-gray-500 font-medium">
-                            {fav.email}
-                          </Text>
+                          <Ionicons name="mail-outline" size={12} color="#9CA3AF" style={{ marginRight: 3 }} />
+                          <Text className="text-xs text-gray-500 font-medium">{fav.email}</Text>
                         </View>
                       )}
                     </View>
@@ -301,69 +295,25 @@ export default function FavoriteScreen() {
         )}
       </ScrollView>
 
-      {/* Floating Action Button (FAB) - Standard position */}
+      {/* Floating Action Button (FAB) */}
       {!isEditMode && (
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => setModalVisible(true)}
-          className="absolute bottom-24 right-6 w-14 h-14 bg-[#00332d] rounded-full items-center justify-center shadow-lg"
-          style={{
-            shadowColor: "#00332d",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }}
-        >
+        <TouchableOpacity activeOpacity={0.9} onPress={() => setModalVisible(true)} className="absolute bottom-24 right-6 w-14 h-14 bg-[#00332d] rounded-full items-center justify-center shadow-lg" style={{ shadowColor: "#00332d", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 }}>
           <Ionicons name="add" size={28} color="white" />
         </TouchableOpacity>
       )}
 
-      {/* Add Favorite Modal */}
+      {/* Add & Edit Modals */}
       <AddFavoriteModal visible={modalVisible} onClose={() => setModalVisible(false)} onAdd={handleAddFavorite} />
-
-      {/* Edit Favorite Modal */}
-      <EditFavoriteModal
-        visible={editModalVisible}
-        onClose={() => {
-          setEditModalVisible(false);
-          setEditingContact(null);
-        }}
-        onUpdate={handleUpdateFavorite}
-        onDelete={handleDeleteFavorite}
-        contact={editingContact}
-      />
+      <EditFavoriteModal visible={editModalVisible} onClose={() => { setEditModalVisible(false); setEditingContact(null); }} onUpdate={handleUpdateFavorite} onDelete={handleDeleteFavorite} contact={editingContact} />
 
       {/* Bottom Navigation */}
       <BottomNav
         items={[
-          {
-            label: "Home",
-            icon: (color) => <Ionicons name="home" size={34} color={color} />,
-            onPress: () => router.push("/home"),
-          },
-          {
-            label: "Budget",
-            icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />,
-            onPress: () => router.push("/visual_budget"),
-          },
-          {
-            label: "Scan",
-            icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
-            onPress: () => console.log("Go Scan"),
-            special: true,
-          },
-          {
-            label: "Favorite",
-            icon: (color) => <AntDesign name="star" size={34} color={color} />,
-            onPress: () => router.push("/favorite"),
-            active: true,
-          },
-          {
-            label: "Profile",
-            icon: (color) => <Ionicons name="person" size={34} color={color} />,
-            onPress: () => router.push("/profile"),
-          },
+          { label: "Home", icon: (color) => <Ionicons name="home" size={34} color={color} />, onPress: () => router.push("/home") },
+          { label: "Budget", icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />, onPress: () => router.push("/visual_budget") },
+          { label: "Scan", icon: (color) => <AntDesign name="qrcode" size={40} color={color} />, onPress: () => console.log("Go Scan"), special: true },
+          { label: "Favorite", icon: (color) => <AntDesign name="star" size={34} color={color} />, onPress: () => router.push("/favorite"), active: true },
+          { label: "Profile", icon: (color) => <Ionicons name="person" size={34} color={color} />, onPress: () => router.push("/profile") },
         ]}
       />
     </SafeAreaView>

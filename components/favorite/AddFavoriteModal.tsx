@@ -1,6 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import { FavoriteContact } from "@/data/favorites"; // <- use shared type
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Modal,
@@ -11,9 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { FavoriteContact } from "@/data/favorites"; // <- use shared type
 
 interface AddFavoriteModalProps {
   visible: boolean;

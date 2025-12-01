@@ -5,18 +5,38 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Button, KeyboardAvoidingView, Platform, Text, TextInput, View } from "react-native";
 
 /**
- * Minimal Transfer screen — minimal code only, no UI layout changes elsewhere.
- * - Expects params: contactId, contactName
- * - POSTS to BACKEND_URL with { amount: cents, currency, favoriteId, favoriteName }
- * - Opens returned session.url in system browser
+ * Transfer screen (no-webhook flow)
  *
- * Update BACKEND_URL for local device/emulator:
- *  - Local host for iOS simulator: http://localhost:4242/create-checkout-session
- *  - Android emulator: http://10.0.2.2:4242/create-checkout-session
- *  - Deployed: https://your-domain/create-checkout-session
+ * NOTE: BACKEND_BASE resolves correctly for Android emulator (10.0.2.2)
+ * - iOS simulator / local web: http://localhost:4242
+ * - Android emulator (AVD):   http://10.0.2.2:4242
+ * - Physical device:          http://<your-host-ip>:4242
+ *
+ * Also: if you're testing in Expo Go, deep links (quickpay://...) won't open the Expo Go app.
+ * Use a dev client or a standalone build to test automatic return via quickpay://...
  */
 
-const BACKEND_URL = "http://localhost:4242/create-checkout-session"; // <-- update as needed
+const HOST_PORT = 4242;
+
+// Dev-friendly host resolution
+const getBackendBase = () => {
+  // if running on Android emulator (classic AVD), use 10.0.2.2 to reach host machine
+  if (Platform.OS === "android") {
+    return `http://10.0.2.2:${HOST_PORT}`;
+  }
+  // iOS simulator (and desktop web) can use localhost
+  return `http://localhost:${HOST_PORT}`;
+};
+
+const BACKEND_BASE = getBackendBase();
+const api = axios.create({
+  baseURL: BACKEND_BASE,
+  headers: { "Content-Type": "application/json" },
+  timeout: 15000,
+});
+
+const CREATE_URL = `/create-checkout-session`;
+const VERIFY_URL = `/verify-checkout-session`;
 
 export default function TransferScreen() {
   const params = useLocalSearchParams() as { contactId?: string; contactName?: string };
@@ -26,14 +46,28 @@ export default function TransferScreen() {
   const router = useRouter();
   const [amountText, setAmountText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     if (!contactId) {
       Alert.alert("No recipient", "No contact was selected");
       router.replace("/favorite");
     }
+
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    (async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) handleDeepLink(initialUrl);
+    })();
+
+    return () => {
+      subscription.remove();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contactId]);
+  }, []);
 
   const parseAmountToCents = (text: string): number | null => {
     const cleaned = text.replace(/[^0-9.]/g, "");
@@ -51,11 +85,16 @@ export default function TransferScreen() {
 
     try {
       setLoading(true);
-      const resp = await axios.post(BACKEND_URL, {
+
+      // Provide a deep link return_url so Stripe redirects back into the app after payment
+      const returnUrlScheme = "quickpay://transfer/success"; // app.json should include "scheme": "quickpay"
+
+      const resp = await api.post(CREATE_URL, {
         amount: cents,
         currency: "usd",
         favoriteId: contactId,
         favoriteName: contactName,
+        return_url: returnUrlScheme,
       });
 
       const url = resp.data?.url;
@@ -63,13 +102,39 @@ export default function TransferScreen() {
         throw new Error(resp.data?.error || "No checkout URL returned from backend");
       }
 
+      // Open Stripe Checkout in system browser
       Linking.openURL(url);
     } catch (err: any) {
-      console.error("Checkout session error:", err);
+      console.error("Checkout session error:", err?.response || err?.message || err);
       const msg = err?.response?.data?.error || err?.message || "Failed to create checkout session";
       Alert.alert("Payment error", String(msg));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeepLink = async (url: string) => {
+    try {
+      if (!url) return;
+      const parsed = Linking.parse(url);
+      const sessionId = (parsed.queryParams && (parsed.queryParams as any).session_id) || (parsed.queryParams && (parsed.queryParams as any).sessionId);
+      if (!sessionId) return;
+
+      setVerifying(true);
+      const resp = await api.get(`${VERIFY_URL}?session_id=${encodeURIComponent(sessionId)}`);
+      const payment_status = resp.data?.payment_status;
+      if (payment_status === "paid") {
+        Alert.alert("Payment success", "Payment was successful — transfer completed.");
+        // TODO: mark in-app state / DB if needed, then navigate
+        router.replace("/home");
+      } else {
+        Alert.alert("Payment not completed", `Payment status: ${payment_status}`);
+      }
+    } catch (err) {
+      console.error("Error verifying session:", err);
+      Alert.alert("Verification error", "Failed to verify payment session");
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -101,6 +166,13 @@ export default function TransferScreen() {
       <View style={{ height: 12 }} />
 
       <Button title="Back" color="#666" onPress={() => router.back()} />
+
+      {verifying && (
+        <View style={{ marginTop: 16 }}>
+          <ActivityIndicator />
+          <Text style={{ marginTop: 8, textAlign: "center" }}>Verifying payment...</Text>
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
