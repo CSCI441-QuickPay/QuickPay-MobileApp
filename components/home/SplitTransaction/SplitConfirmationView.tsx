@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SplitTransactionHeader from './SplitTransactionHeader';
 import SplitShareSection from './SplitShareSection';
@@ -25,9 +25,7 @@ export default function SplitConfirmationView({ transaction, splitData, onClose,
       <SplitTransactionHeader
         title="Split Status"
         subtitle={transaction?.title}
-        onEdit={onEdit}
         onClose={onClose}
-        canEdit
       />
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -56,6 +54,35 @@ export default function SplitConfirmationView({ transaction, splitData, onClose,
           <SplitTransactionsList splits={[]} />
         </View>
       </ScrollView>
+
+      {/* Action Buttons Row */}
+      <View className="flex-row gap-2 pb-6">
+        {/* Edit Button */}
+        <TouchableOpacity
+          onPress={onEdit}
+          activeOpacity={0.85}
+          className="flex-1 bg-primary rounded-xl items-center justify-center"
+          style={{ height: 44 }}
+        >
+          <View className="flex-row items-center">
+            <Ionicons name="create-outline" size={16} color="#ccf8f1" style={{ marginRight: 4 }} />
+            <Text className="text-secondary font-semibold text-sm">Edit Split</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Cancel Button */}
+        <TouchableOpacity
+          onPress={onClose}
+          activeOpacity={0.9}
+          className="flex-1 rounded-xl bg-red-50 border border-red-200 items-center justify-center"
+          style={{ height: 44 }}
+        >
+          <View className="flex-row items-center">
+            <Ionicons name="close-circle-outline" size={16} color="#DC2626" style={{ marginRight: 4 }} />
+            <Text className="text-red-600 font-semibold text-sm">Cancel</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     </>
   );
 }
