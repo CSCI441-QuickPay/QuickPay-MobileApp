@@ -5,6 +5,7 @@ export interface User {
   id?: string;
   clerkId: string;
   email: string;
+  accountNumber?: string;
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
@@ -23,6 +24,7 @@ interface DBUser {
   id: string;
   clerk_id: string;
   email: string;
+  account_number?: string;
   first_name?: string;
   last_name?: string;
   phone_number?: string;
@@ -44,6 +46,7 @@ export default class UserModel {
       id: dbUser.id,
       clerkId: dbUser.clerk_id,
       email: dbUser.email,
+      accountNumber: dbUser.account_number,
       firstName: dbUser.first_name,
       lastName: dbUser.last_name,
       phoneNumber: dbUser.phone_number,
