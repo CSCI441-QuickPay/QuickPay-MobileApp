@@ -45,19 +45,26 @@ export default function Header() {
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => setShowQRModal(true)}
-            className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+            className="w-12 h-12 rounded-full bg-[#FB2C36] items-center justify-center"
+            style={{
+              shadowColor: "#00332d",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+
+            }}
           >
-            <Ionicons name="qr-code-outline" size={22} color="#00332d" />
+            <Ionicons name="qr-code-outline" size={24} color="white" />
           </TouchableOpacity>
 
-          {/* Settings Button */}
+          {/* Settings Button
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => router.push("/(main)/profile")}
             className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
           >
             <Ionicons name="settings-outline" size={22} color="#00332d" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
 
