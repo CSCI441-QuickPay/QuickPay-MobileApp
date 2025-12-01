@@ -7,7 +7,6 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   Alert,
   ActivityIndicator,
 } from "react-native";
@@ -16,6 +15,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import FavoriteModel from "@/models/FavoriteModel";
 import UserModel from "@/models/UserModel";
 import { useUser } from "@clerk/clerk-expo";
+import { getInitials, getProfileColor } from "@/utils/profileUtils";
+import { supabase } from "@/config/supabaseConfig";
 
 export interface FavoriteContact {
   id: string;
@@ -71,27 +72,67 @@ export default function AddFavoriteModal({
     setVerified(false);
   };
 
+  // Helper function to get user's database UUID from Clerk ID
+  const getUserDatabaseId = async (clerkId: string): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', clerkId)
+        .single();
+
+      if (error || !data) {
+        console.error('Error fetching user database ID:', error);
+        return null;
+      }
+
+      return data.id;
+    } catch (err) {
+      console.error('Error in getUserDatabaseId:', err);
+      return null;
+    }
+  };
+
   // Verify account number and fetch account holder details
   const handleVerifyAccount = async () => {
+    // Validate account number is not empty
     if (!accountNumber.trim()) {
-      Alert.alert("Error", "Please enter an account number");
+      Alert.alert("Validation Error", "Please enter an account number");
+      return;
+    }
+
+    // Validate account number contains only digits
+    if (!/^\d+$/.test(accountNumber.trim())) {
+      Alert.alert("Invalid Input", "Account number must contain only numbers (0-9)");
+      return;
+    }
+
+    // Validate account number length (assuming reasonable length between 6-20 digits)
+    const trimmedAccount = accountNumber.trim();
+    if (trimmedAccount.length < 6) {
+      Alert.alert("Invalid Input", "Account number must be at least 6 digits long");
+      return;
+    }
+    if (trimmedAccount.length > 20) {
+      Alert.alert("Invalid Input", "Account number cannot exceed 20 digits");
       return;
     }
 
     setLoading(true);
     try {
-      const accountHolder = await FavoriteModel.getAccountHolderByAccountNumber(accountNumber.trim());
+      const accountHolder = await FavoriteModel.getAccountHolderByAccountNumber(trimmedAccount);
 
       if (!accountHolder) {
-        Alert.alert("Account Not Found", "No user found with this account number");
+        Alert.alert("Account Not Found", "No user found with this account number. Please verify the number and try again.");
         setVerified(false);
         setAccountHolderName("");
       } else {
         setAccountHolderName(accountHolder.name);
         setVerified(true);
-        Alert.alert("Account Verified", `Account holder: ${accountHolder.name}`);
-        // Auto-focus nickname field
-        nicknameRef.current?.focus();
+        // No popup - just auto-focus nickname field for smooth UX
+        setTimeout(() => {
+          nicknameRef.current?.focus();
+        }, 100);
       }
     } catch (err: any) {
       Alert.alert("Error", err.message || "Failed to verify account");
@@ -119,8 +160,17 @@ export default function AddFavoriteModal({
 
     setLoading(true);
     try {
+      // Get user's database UUID from Clerk ID
+      const userDatabaseId = await getUserDatabaseId(user.id);
+      if (!userDatabaseId) {
+        Alert.alert("Error", "Could not find your user account. Please try logging in again.");
+        setLoading(false);
+        return;
+      }
+
       if (editingContact && onUpdate) {
         // Update existing favorite
+        console.log("Updating favorite...", editingContact.id);
         await FavoriteModel.updateNickname(editingContact.id, nickname.trim());
 
         const updatedFavorite: FavoriteContact = {
@@ -130,9 +180,11 @@ export default function AddFavoriteModal({
           nickname: nickname.trim() || undefined,
         };
         onUpdate(updatedFavorite);
+        console.log("Favorite updated successfully");
       } else {
         // Check for duplicates before creating
-        const isDuplicate = await FavoriteModel.isFavorite(user.id, accountNumber.trim());
+        console.log("Checking for duplicates...", { userDatabaseId, accountNumber: accountNumber.trim() });
+        const isDuplicate = await FavoriteModel.isFavorite(userDatabaseId, accountNumber.trim());
         if (isDuplicate) {
           Alert.alert("Duplicate", "This contact is already in your favorites");
           setLoading(false);
@@ -140,11 +192,14 @@ export default function AddFavoriteModal({
         }
 
         // Create new favorite
+        console.log("Creating new favorite...", { userDatabaseId, accountNumber: accountNumber.trim(), nickname: nickname.trim() });
         const favorite = await FavoriteModel.create(
-          user.id,
+          userDatabaseId,
           accountNumber.trim(),
           nickname.trim() || undefined
         );
+
+        console.log("Favorite created:", favorite);
 
         const newFavorite: FavoriteContact = {
           id: favorite.id!,
@@ -153,14 +208,19 @@ export default function AddFavoriteModal({
           accountHolderProfile: favorite.accountHolderProfile,
           nickname: favorite.nickname,
         };
+
+        console.log("Calling onAdd with:", newFavorite);
         onAdd(newFavorite);
+        console.log("onAdd completed");
       }
 
       resetForm();
       onClose();
     } catch (err: any) {
-      console.error("Error saving favorite:", err);
-      Alert.alert("Error", err.message || "Failed to save favorite");
+      console.error("Error saving favorite - Full error:", err);
+      console.error("Error message:", err.message);
+      console.error("Error stack:", err.stack);
+      Alert.alert("Save Failed", err.message || "Failed to save favorite. Please check the console for details.");
     } finally {
       setLoading(false);
     }
@@ -179,25 +239,29 @@ export default function AddFavoriteModal({
           className="bg-white rounded-t-3xl"
           style={{ maxHeight: "85%" }}
         >
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {/* Header */}
-            <View className="px-6 pt-6 pb-4 border-b border-gray-200">
-              <View className="flex-row items-center justify-between mb-2">
-                <View className="flex-row items-center">
-                  <View className="w-12 h-12 rounded-full bg-[#f0fdf4] items-center justify-center mr-3">
-                    <Ionicons name="person-add-outline" size={24} color="#00332d" />
-                  </View>
-                  <Text className="text-2xl font-extrabold text-primary">
-                    {editingContact ? "Edit Contact" : "Add Contact"}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={handleClose} activeOpacity={0.7}>
-                  <Ionicons name="close" size={28} color="#9CA3AF" />
-                </TouchableOpacity>
+          {/* Header */}
+          <View className="px-6 pt-6 pb-4">
+            <View className="flex-row items-center justify-between">
+              <View className="w-12 h-12 rounded-full bg-[#F3F4F6] items-center justify-center mr-3">
+                <Ionicons name="person-add-outline" size={24} color="#00332d" />
               </View>
-            </View>
 
-            <View className="px-6 py-6">
+              <View className="flex-1">
+                <Text className="text-xl font-bold text-black">
+                  {editingContact ? "Edit Contact" : "Add Contact"}
+                </Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  {editingContact ? "Update contact information" : "Add a new contact to your favorites"}
+                </Text>
+              </View>
+
+              <TouchableOpacity onPress={handleClose} activeOpacity={0.7} className="ml-2">
+                <Ionicons name="close-circle" size={32} color="#9CA3AF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View className="px-6 pb-6">
               {/* Account Number */}
               <View className="mb-5">
                 <Text className="text-sm font-semibold text-gray-700 mb-2">Account Number *</Text>
@@ -217,7 +281,9 @@ export default function AddFavoriteModal({
                       placeholderTextColor="#9CA3AF"
                       value={accountNumber}
                       onChangeText={(text) => {
-                        setAccountNumber(text);
+                        // Only allow numeric input
+                        const numericOnly = text.replace(/[^0-9]/g, '');
+                        setAccountNumber(numericOnly);
                         setVerified(false);
                         setAccountHolderName("");
                       }}
@@ -225,6 +291,7 @@ export default function AddFavoriteModal({
                       returnKeyType="done"
                       onSubmitEditing={handleVerifyAccount}
                       editable={!editingContact}
+                      maxLength={20}
                       style={{
                         flex: 1,
                         fontSize: 17,
@@ -256,16 +323,28 @@ export default function AddFavoriteModal({
                 </View>
                 {verified && accountHolderName && (
                   <View className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3 flex-row items-center">
-                    <Ionicons name="checkmark-circle" size={20} color="#10B981" style={{ marginRight: 8 }} />
-                    <Text className="text-sm font-semibold text-green-700">
-                      Account holder: {accountHolderName}
-                    </Text>
+                    {/* Profile Image */}
+                    <View
+                      className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                      style={{ backgroundColor: getProfileColor(accountHolderName) }}
+                    >
+                      <Text className="text-white text-sm font-bold">
+                        {getInitials(accountHolderName)}
+                      </Text>
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-xs text-green-600 mb-0.5">Verified Account</Text>
+                      <Text className="text-sm font-semibold text-green-700">
+                        {accountHolderName}
+                      </Text>
+                    </View>
+                    <Ionicons name="checkmark-circle" size={20} color="#10B981" />
                   </View>
                 )}
               </View>
 
               {/* Nickname */}
-              <View className="mb-6">
+              <View className="mb-5">
                 <Text className="text-sm font-semibold text-gray-700 mb-2">Nickname (Optional)</Text>
                 <View
                   className={`flex-row items-center border-2 rounded-2xl px-4 ${
@@ -284,10 +363,17 @@ export default function AddFavoriteModal({
                     placeholder="e.g., Mom, Dad, Friend"
                     placeholderTextColor="#9CA3AF"
                     value={nickname}
-                    onChangeText={setNickname}
+                    onChangeText={(text) => {
+                      // Allow letters, spaces, and common characters, limit length
+                      const sanitized = text.replace(/[^a-zA-Z0-9\s'-]/g, '');
+                      if (sanitized.length <= 30) {
+                        setNickname(sanitized);
+                      }
+                    }}
                     returnKeyType="done"
                     onFocus={() => setNicknameFocused(true)}
                     onBlur={() => setNicknameFocused(false)}
+                    maxLength={30}
                     style={{
                       flex: 1,
                       fontSize: 17,
@@ -299,34 +385,41 @@ export default function AddFavoriteModal({
               </View>
 
               {/* Save Button */}
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={handleSave}
-                className="rounded-2xl overflow-hidden shadow-lg"
-                style={{ height: 56 }}
-              >
-                <LinearGradient
-                  colors={["#00332d", "#005248"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text className="text-white font-bold text-base tracking-wide">
-                    {editingContact ? "Save Changes" : "Add Favorite"}
+              <View className="pb-6">
+                {!verified && !editingContact && (
+                  <Text className="text-xs text-gray-500 mb-2 text-center">
+                    Please verify the account number first
                   </Text>
-                </LinearGradient>
-              </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={handleSave}
+                  disabled={!verified || loading}
+                  className="rounded-2xl overflow-hidden shadow-lg"
+                  style={{ height: 56, opacity: (!verified || loading) ? 0.5 : 1 }}
+                >
+                  <LinearGradient
+                    colors={(!verified || loading) ? ["#9CA3AF", "#9CA3AF"] : ["#00332d", "#005248"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    {loading ? (
+                      <ActivityIndicator color="white" />
+                    ) : (
+                      <Text className="text-white font-bold text-base tracking-wide">
+                        {editingContact ? "Save Changes" : "Add Favorite"}
+                      </Text>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
 
-              {/* Cancel Button */}
-              <TouchableOpacity onPress={handleClose} className="items-center py-4 mt-2" activeOpacity={0.7}>
-                <Text className="text-gray-600 text-base font-semibold">Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+          </View>
         </KeyboardAvoidingView>
       </View>
     </Modal>

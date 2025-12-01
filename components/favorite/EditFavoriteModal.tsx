@@ -7,7 +7,6 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -102,48 +101,52 @@ export default function EditFavoriteModal({
           className="bg-white rounded-t-3xl"
           style={{ maxHeight: "85%" }}
         >
-          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {/* Header */}
-            <View className="px-6 pt-6 pb-4 border-b border-gray-200">
-              <UnifiedModalHeader
-                title="Edit Contact"
-                subtitle={contact.nickname || contact.accountHolderName}
-                onClose={handleClose}
-                customIcon={
-                  <View
-                    className="w-12 h-12 rounded-full items-center justify-center"
-                    style={{ backgroundColor: profileColor }}
-                  >
-                    <Text className="text-white text-lg font-bold">{initials}</Text>
-                  </View>
-                }
-              />
-            </View>
+          
+          {/* Header */}
+          <View className="px-6 pt-6 pb-4">
+            <UnifiedModalHeader
+              title="Edit Contact"
+              subtitle="Update contact nickname and information"
+              icon="create-outline"
+              onClose={handleClose}
+            />
+          </View>
 
-            <View className="px-6 py-6">
-              {/* Contact Info - Read Only */}
-              <View className="mb-5 bg-gray-50 rounded-2xl p-4 border-2 border-gray-200">
-                <View className="mb-3">
-                  <Text className="text-xs text-gray-500 mb-1">Account Holder</Text>
-                  <Text className="text-base font-bold text-gray-900">
+          <View className="px-6 pb-6">
+            {/* Contact Info - Read Only */}
+            <View className="mb-5 bg-gray-50 rounded-2xl p-4 border-2 border-gray-200">
+              <View className="flex-row items-center">
+                {/* Profile Image - Larger */}
+                <View
+                  className="w-14 h-14 rounded-full items-center justify-center mr-3"
+                  style={{ backgroundColor: profileColor }}
+                >
+                  <Text className="text-white text-lg font-extrabold">
+                    {initials}
+                  </Text>
+                </View>
+                {/* Account Holder Info */}
+                <View className="flex-1">
+                  <Text className="text-base font-bold text-gray-900 mb-1">
                     {contact.accountHolderName}
                   </Text>
-                </View>
-                <View className="flex-row items-center">
-                  <Ionicons
-                    name="card-outline"
-                    size={16}
-                    color="#6B7280"
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text className="text-sm text-gray-600 font-medium">
-                    {contact.accountNumber}
-                  </Text>
+                  <View className="flex-row items-center">
+                    <Ionicons
+                      name="card-outline"
+                      size={14}
+                      color="#6B7280"
+                      style={{ marginRight: 4 }}
+                    />
+                    <Text className="text-sm text-gray-600 font-medium">
+                      {contact.accountNumber}
+                    </Text>
+                  </View>
                 </View>
               </View>
+            </View>
 
               {/* Nickname - Editable */}
-              <View className="mb-6">
+              <View className="mb-5">
                 <Text className="text-sm font-semibold text-gray-700 mb-2">
                   Nickname (Optional)
                 </Text>
@@ -164,11 +167,18 @@ export default function EditFavoriteModal({
                     placeholder="e.g., Mom, Dad, Friend"
                     placeholderTextColor="#9CA3AF"
                     value={nickname}
-                    onChangeText={setNickname}
+                    onChangeText={(text) => {
+                      // Allow letters, spaces, and common characters, limit length
+                      const sanitized = text.replace(/[^a-zA-Z0-9\s'-]/g, '');
+                      if (sanitized.length <= 30) {
+                        setNickname(sanitized);
+                      }
+                    }}
                     returnKeyType="done"
                     onFocus={() => setNicknameFocused(true)}
                     onBlur={() => setNicknameFocused(false)}
                     onSubmitEditing={handleSave}
+                    maxLength={30}
                     style={{
                       flex: 1,
                       fontSize: 17,
@@ -179,43 +189,52 @@ export default function EditFavoriteModal({
                 </View>
               </View>
 
-              {/* Save Button */}
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={handleSave}
-                className="rounded-2xl overflow-hidden shadow-lg mb-3"
-                style={{ height: 56 }}
-              >
-                <LinearGradient
-                  colors={["#00332d", "#005248"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text className="text-white font-bold text-base tracking-wide">
-                    Save Changes
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              {/* Delete Button */}
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={handleDelete}
-                className="rounded-2xl bg-red-50 border-2 border-red-200 items-center justify-center"
-                style={{ height: 56 }}
-              >
-                <View className="flex-row items-center">
-                  <Ionicons name="trash-outline" size={20} color="#DC2626" style={{ marginRight: 8 }} />
-                  <Text className="text-red-600 font-bold text-base">Delete Contact</Text>
-                </View>
-              </TouchableOpacity>
+              <View className="flex-row gap-2 pb-6">
+        {/* Save Button */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={handleSave}
+          className="flex-1 rounded-xl overflow-hidden"
+          style={{ height: 44 }}
+        >
+          <LinearGradient
+            colors={["#00332d", "#005248"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <View className="flex-row items-center">
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={16}
+                color="#ccf8f1"
+                style={{ marginRight: 4 }}
+              />
+              <Text className="text-white font-semibold text-sm">Save Changes</Text>
             </View>
-          </ScrollView>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Delete Button */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={handleDelete}
+          className="flex-1 rounded-xl bg-red-50 border border-red-200 items-center justify-center"
+          style={{ height: 44 }}
+        >
+          <View className="flex-row items-center">
+            <Ionicons
+              name="trash-outline"
+              size={16}
+              color="#DC2626"
+              style={{ marginRight: 4 }}
+            />
+            <Text className="text-red-600 font-semibold text-sm">Delete</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
+          </View>
         </KeyboardAvoidingView>
       </View>
     </Modal>
