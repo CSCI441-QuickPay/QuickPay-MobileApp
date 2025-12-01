@@ -13,7 +13,12 @@ export default function EditBudgetBlockModal({ visible, onClose }: any) {
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View className="flex-1 bg-black/50 justify-end">
         <View className="bg-white rounded-t-3xl p-6 max-h-[70%]">
-          <TransactionModalHeader title="Edit Budget Block" onClose={onClose} />
+          <TransactionModalHeader
+            title="Edit Budget Block"
+            subtitle="Assign this transaction to a budget category"
+            icon="wallet-outline"
+            onClose={onClose}
+          />
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {BLOCKS.map((block) => (

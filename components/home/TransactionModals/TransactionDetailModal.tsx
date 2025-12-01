@@ -23,6 +23,33 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
   const [editingNote, setEditingNote] = useState(false);
 
   const publicRemark = transaction?.remark || '';
+  const isCharge = transaction?.amount < 0;
+
+  // Parse bank sources from subtitle
+  const parseBankSources = () => {
+    if (!transaction?.subtitle || !transaction.subtitle.includes('SOURCE:')) {
+      return null;
+    }
+
+    const sourceMatch = transaction.subtitle.match(/SOURCE:\s*(.+)/);
+    if (!sourceMatch) return null;
+
+    const sourcesText = sourceMatch[1];
+    const sourceItems = sourcesText.split(',').map((item: string) => {
+      const match = item.trim().match(/(.+?)\((-?\$[\d.]+)\)/);
+      if (match) {
+        return {
+          bank: match[1].trim(),
+          amount: match[2].trim()
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
+    return sourceItems.length > 0 ? sourceItems : null;
+  };
+
+  const bankSources = parseBankSources();
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -33,7 +60,8 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
         >
           <TransactionModalHeader
             title="Transaction Details"
-            subtitle={transaction.title}
+            subtitle="View and manage transaction information"
+            icon="information-circle-outline"
             onClose={onClose}
           />
 
@@ -76,12 +104,47 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
                 <Text style={modalStyles.fieldLabel}>Country</Text>
                 <Text style={modalStyles.fieldValue}>{transaction.country || 'N/A'}</Text>
               </View>
-              <View style={modalStyles.fieldRow}>
-                <Text style={modalStyles.fieldLabel}>Banks</Text>
-                <Text style={modalStyles.fieldValue}>
-                  {transaction.bankList?.join(', ') || 'N/A'}
-                </Text>
-              </View>
+
+              {/* Bank Sources - Show detailed breakdown for charges */}
+              {isCharge && bankSources && bankSources.length > 0 ? (
+                <View style={{ marginTop: 8, marginBottom: 8 }}>
+                  <Text style={[modalStyles.fieldLabel, { marginBottom: 8 }]}>
+                    Bank Sources Deducted
+                  </Text>
+                  {bankSources.map((source: any, index: number) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        backgroundColor: '#F9FAFB',
+                        padding: 12,
+                        borderRadius: 8,
+                        marginBottom: index < bankSources.length - 1 ? 8 : 0
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Ionicons name="card-outline" size={18} color="#00332d" />
+                        <Text style={{ fontSize: 14, color: '#111827', marginLeft: 8, fontWeight: '500' }}>
+                          {source.bank}
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 14, fontWeight: '600', color: '#DC2626' }}>
+                        {source.amount}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={modalStyles.fieldRow}>
+                  <Text style={modalStyles.fieldLabel}>Banks</Text>
+                  <Text style={modalStyles.fieldValue}>
+                    {transaction.bankList?.join(', ') || 'N/A'}
+                  </Text>
+                </View>
+              )}
+
               <View style={modalStyles.fieldRow}>
                 <Text style={modalStyles.fieldLabel}>Budget Block</Text>
                 <TouchableOpacity onPress={() => setBudgetVisible(true)}>
@@ -98,10 +161,16 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
               <TextInput
                 style={modalStyles.noteInput}
                 value={internalNote}
-                onChangeText={setInternalNote}
+                onChangeText={(text) => {
+                  // Limit to 1000 characters for notes
+                  if (text.length <= 1000) {
+                    setInternalNote(text);
+                  }
+                }}
                 multiline
                 placeholder="Write your private note..."
                 placeholderTextColor="#9CA3AF"
+                maxLength={1000}
               />
               <View style={modalStyles.remarkBox}>
                 <Text style={modalStyles.fieldLabel}>Public Remark</Text>
