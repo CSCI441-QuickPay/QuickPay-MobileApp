@@ -22,6 +22,12 @@ export default function TransactionModal({
 }: TransactionModalProps) {
   if (!visible || !category) return null;
 
+  // Check if delete button should be shown
+  const canDelete = category.type !== 'bank' && category.id !== 'total';
+
+  // Check if edit button should be shown
+  const canEdit = category.type !== 'bank' && category.id !== 'total';
+
   const remaining = category.budget - category.spent;
   const progress =
     category.budget > 0 ? Math.min((category.spent / category.budget) * 100, 100) : 0;
@@ -107,31 +113,35 @@ export default function TransactionModal({
 
           {/* Action Buttons */}
           <View className="flex-row gap-2 mb-6">
-            {/* Edit Button */}
-            <TouchableOpacity
-              onPress={onEdit}
-              activeOpacity={0.85}
-              className="flex-1 bg-primary rounded-xl items-center justify-center"
-              style={{ height: 44 }}
-            >
-              <View className="flex-row items-center">
-                <Ionicons name="create-outline" size={16} color="#ccf8f1" style={{ marginRight: 6 }} />
-                <Text className="text-secondary font-semibold text-sm">Edit</Text>
-              </View>
-            </TouchableOpacity>
+            {/* Edit Button - Only show for editable categories */}
+            {canEdit && (
+              <TouchableOpacity
+                onPress={onEdit}
+                activeOpacity={0.85}
+                className="flex-1 bg-primary rounded-xl items-center justify-center"
+                style={{ height: 44 }}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name="create-outline" size={16} color="#ccf8f1" style={{ marginRight: 6 }} />
+                  <Text className="text-secondary font-semibold text-sm">Edit</Text>
+                </View>
+              </TouchableOpacity>
+            )}
 
-            {/* Delete Button */}
-            <TouchableOpacity
-              onPress={onDelete}
-              activeOpacity={0.9}
-              className="flex-1 rounded-xl bg-red-50 border border-red-200 items-center justify-center"
-              style={{ height: 44 }}
-            >
-              <View className="flex-row items-center">
-                <Ionicons name="trash-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
-                <Text className="text-red-600 font-semibold text-sm">Delete</Text>
-              </View>
-            </TouchableOpacity>
+            {/* Delete Button - Only show for deletable categories */}
+            {canDelete && (
+              <TouchableOpacity
+                onPress={onDelete}
+                activeOpacity={0.9}
+                className="flex-1 rounded-xl bg-red-50 border border-red-200 items-center justify-center"
+                style={{ height: 44 }}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons name="trash-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
+                  <Text className="text-red-600 font-semibold text-sm">Delete</Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Transactions */}
