@@ -39,7 +39,7 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
       try {
         setLoading(true);
         const dbUser = await UserModel.getByClerkId(user.id);
-        if (dbUser && dbUser.accountNumber) {
+        if (dbUser) {
           setAccountNumber(dbUser.accountNumber);
         }
       } catch (error) {

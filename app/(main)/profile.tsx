@@ -41,7 +41,7 @@ export default function Profile() {
       try {
         setLoadingAccount(true);
         const dbUser = await UserModel.getByClerkId(user.id);
-        if (dbUser && dbUser.accountNumber) {
+        if (dbUser) {
           setAccountNumber(dbUser.accountNumber);
         }
       } catch (error) {
