@@ -88,12 +88,12 @@ export default function Profile() {
         if (isDemoMode) {
           console.log("🎭 Demo Mode ON - Merging real + mock data");
 
-          const BankAccountModel = (await import("@/models/BankAccountModel")).default;
           const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+          const { fetchPlaidAccounts } = await import("@/services/PlaidService");
 
           // Get real data
-          const [bankAccounts, realFavorites] = await Promise.all([
-            BankAccountModel.getByUserId(dbUser?.id || ""),
+          const [plaidAccounts, realFavorites] = await Promise.all([
+            fetchPlaidAccounts(user.id).catch(() => []),
             FavoriteModel.getByUserId(dbUser?.id || "")
           ]);
 
@@ -102,7 +102,7 @@ export default function Profile() {
           const totalFavorites = realFavorites.length + mockFavoritesCount;
 
           setStats({
-            activeCards: getUserStats(mockFavoritesCount).activeCards, // 4 from mock
+            activeCards: plaidAccounts.length + getUserStats(mockFavoritesCount).activeCards, // Plaid + mock
             totalFavorites: totalFavorites, // Real + Mock combined
           });
 
@@ -115,7 +115,7 @@ export default function Profile() {
           return;
         }
 
-        // Real Mode - fetch from database
+        // Real Mode - fetch from Plaid and database
         if (!dbUser) {
           setStats({ activeCards: 0, totalFavorites: 0 });
           setLoadingAccount(false);
@@ -126,17 +126,17 @@ export default function Profile() {
           setAccountNumber(dbUser.accountNumber);
         }
 
-        // Fetch real stats from database
-        const BankAccountModel = (await import("@/models/BankAccountModel")).default;
+        // Fetch real stats from Plaid and database
         const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+        const { fetchPlaidAccounts } = await import("@/services/PlaidService");
 
-        const [bankAccounts, favorites] = await Promise.all([
-          BankAccountModel.getByUserId(dbUser.id!),
+        const [plaidAccounts, favorites] = await Promise.all([
+          fetchPlaidAccounts(user.id).catch(() => []),
           FavoriteModel.getByUserId(dbUser.id!)
         ]);
 
         setStats({
-          activeCards: bankAccounts.filter(acc => acc.isActive).length,
+          activeCards: plaidAccounts.length, // Count of connected Plaid banks
           totalFavorites: favorites.length,
         });
       } catch (error) {
@@ -408,7 +408,7 @@ export default function Profile() {
               </View>
               <View className="flex-1">
                 <Text className="text-base font-semibold text-gray-900">
-                  My Cards
+                  My Banks
                 </Text>
                 <Text className="text-xs text-gray-500 mt-0.5">
                   {stats.activeCards} active

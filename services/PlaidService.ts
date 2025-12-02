@@ -41,6 +41,11 @@ export interface PlaidTransaction {
   category?: string[];          // Plaid's categorization (e.g., ["Food and Drink", "Restaurants"])
   pending: boolean;             // Whether transaction is still pending or completed
   payment_channel: string;      // How payment was made (online, in store, etc.)
+  logo_url?: string;            // Merchant logo URL from Plaid
+  personal_finance_category?: { // Enhanced category information
+    primary: string;            // Primary category (e.g., "TRANSPORTATION")
+    detailed: string;           // Detailed category (e.g., "TRANSPORTATION_TAXIS_AND_RIDE_SHARES")
+  };
 }
 
 /**
@@ -147,12 +152,39 @@ export async function fetchPlaidAccounts(clerkId: string): Promise<PlaidAccount[
 
 /**
  * Calculate total balance from all accounts
+ * Note: Plaid returns balances in cents, so we divide by 100 to get dollars
  */
 export function calculateTotalBalance(accounts: PlaidAccount[]): number {
-  return accounts.reduce((total, account) => {
+  const totalCents = accounts.reduce((total, account) => {
     const balance = account.balances.current || account.balances.available || 0;
     return total + balance;
   }, 0);
+
+  // Convert cents to dollars
+  return totalCents / 100;
+}
+
+/**
+ * Format category name from UPPERCASE_SNAKE_CASE to Title Case
+ * Example: "FOOD_AND_DRINK" -> "Food and Drink"
+ *          "TRANSPORTATION" -> "Transportation"
+ */
+function formatCategoryName(category: string): string {
+  return category
+    .split('_')
+    .map((word, index) => {
+      // Lowercase words like "and", "or", "of" unless they're the first word
+      const lowercaseWords = ['and', 'or', 'of', 'the'];
+      const lowerWord = word.toLowerCase();
+
+      if (index > 0 && lowercaseWords.includes(lowerWord)) {
+        return lowerWord;
+      }
+
+      // Capitalize first letter, lowercase the rest
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
 }
 
 /**
@@ -169,17 +201,22 @@ export function transformPlaidTransaction(plaidTx: PlaidTransaction, accounts: P
   // So we flip the sign
   const appAmount = -plaidTx.amount;
 
+  // Get category and format it nicely
+  const rawCategory = plaidTx.personal_finance_category?.primary || plaidTx.category?.[0] || 'Other';
+  const formattedCategory = rawCategory !== 'Other' ? formatCategoryName(rawCategory) : 'Other';
+
   return {
     id: plaidTx.transaction_id,
     title: plaidTx.merchant_name || plaidTx.name,
     amount: appAmount, // Now properly negative for expenses, positive for income
     date: plaidTx.date,
     type: appAmount < 0 ? 'expense' : 'income',
-    category: plaidTx.category?.[0] || 'Other',
+    category: formattedCategory, // Formatted as "Transportation", "Food and Drink", etc.
     bank: account?.name || 'Unknown Bank',
     status: plaidTx.pending ? 'pending' : 'completed',
     description: plaidTx.name,
     subtitle: `${account?.name || 'Unknown Bank'}`, // Add bank name as subtitle
+    logo_url: plaidTx.logo_url, // Merchant logo from Plaid
   };
 }
 

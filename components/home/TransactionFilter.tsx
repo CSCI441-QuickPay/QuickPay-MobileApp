@@ -23,9 +23,10 @@ interface FilterState {
 
 interface TransactionFilterProps {
   onFilterChange?: (filters: FilterState) => void;
+  connectedBanks?: string[];
 }
 
-export default function TransactionFilter({ onFilterChange }: TransactionFilterProps) {
+export default function TransactionFilter({ onFilterChange, connectedBanks = [] }: TransactionFilterProps) {
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
   const [showSortModal, setShowSortModal] = useState(false);
@@ -43,12 +44,13 @@ export default function TransactionFilter({ onFilterChange }: TransactionFilterP
     { label: "Last Month", value: "last_month" as FilterType },
   ];
 
+  // Generate bank options dynamically from connected banks
   const bankOptions = [
     { label: "All Banks", value: "all" as BankFilter },
-    { label: "Chase", value: "chase" as BankFilter },
-    { label: "Bank of America", value: "boa" as BankFilter },
-    { label: "Wells Fargo", value: "wells" as BankFilter },
-    { label: "Citi", value: "citi" as BankFilter },
+    ...connectedBanks.map(bankName => ({
+      label: bankName,
+      value: bankName.toLowerCase().replace(/\s+/g, '_') as BankFilter
+    }))
   ];
 
   const sortOptions = [

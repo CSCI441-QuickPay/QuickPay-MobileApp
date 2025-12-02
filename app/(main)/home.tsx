@@ -223,7 +223,10 @@ export default function Home() {
       )}
 
       {/* Fixed Transaction Filter */}
-      <TransactionFilter onFilterChange={setFilterState} />
+      <TransactionFilter
+        onFilterChange={setFilterState}
+        connectedBanks={plaidAccounts.map(acc => acc.name)}
+      />
 
       {/* Scrollable Transaction List with Pull-to-Refresh */}
       <ScrollView

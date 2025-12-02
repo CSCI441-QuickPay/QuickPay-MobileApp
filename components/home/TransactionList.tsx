@@ -41,18 +41,14 @@ function filterByTime(transactions: Transaction[], timeFilter: string): Transact
 function filterByBank(transactions: Transaction[], bankFilter: string): Transaction[] {
   if (bankFilter === "all") return transactions;
 
-  const bankMap: { [key: string]: string[] } = {
-    chase: ["COMMERCE", "Chase"],
-    boa: ["BOA", "Bank of America"],
-    wells: ["Wells Fargo", "WELLS"],
-    citi: ["Citi", "CITI"],
-  };
+  // Convert filter value back to bank name (e.g., "plaid_checking" -> "Plaid Checking")
+  const bankName = bankFilter.split('_').map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1)
+  ).join(' ');
 
-  const bankKeywords = bankMap[bankFilter] || [];
-  
   return transactions.filter((tx) => {
-    const subtitle = tx.subtitle?.toUpperCase() || "";
-    return bankKeywords.some((keyword) => subtitle.includes(keyword.toUpperCase()));
+    const txBank = tx.bank || tx.subtitle || "";
+    return txBank.toLowerCase().includes(bankName.toLowerCase());
   });
 }
 
@@ -160,10 +156,10 @@ export default function TransactionList({ filters, transactions: transactionsPro
                     activeOpacity={0.7}
                   >
                     {/* Icon/Logo */}
-                    {tx.logo ? (
+                    {(tx.logo || tx.logo_url) ? (
                       <View className="w-12 h-12 rounded-full bg-gray-100 items-center justify-center mr-3 overflow-hidden">
                         <Image
-                          source={tx.logo}
+                          source={tx.logo || { uri: tx.logo_url }}
                           className="w-full h-full"
                           resizeMode="contain"
                         />
@@ -207,15 +203,27 @@ export default function TransactionList({ filters, transactions: transactionsPro
                         )}
                       </View>
 
-                      {/* Subtitle */}
-                      {tx.subtitle && (
-                        <Text
-                          className="text-xs text-gray-500 font-medium"
-                          numberOfLines={1}
-                        >
-                          {tx.subtitle}
-                        </Text>
-                      )}
+                      {/* Subtitle with Category */}
+                      <View className="flex-row items-center gap-1">
+                        {tx.category && tx.category !== 'Other' && (
+                          <>
+                            <View className="bg-blue-50 px-2 py-0.5 rounded">
+                              <Text className="text-xs text-blue-700 font-semibold">
+                                {tx.category}
+                              </Text>
+                            </View>
+                            {tx.subtitle && <Text className="text-xs text-gray-400">•</Text>}
+                          </>
+                        )}
+                        {tx.subtitle && (
+                          <Text
+                            className="text-xs text-gray-500 font-medium flex-1"
+                            numberOfLines={1}
+                          >
+                            {tx.subtitle}
+                          </Text>
+                        )}
+                      </View>
                     </View>
 
                     {/* Amount */}
