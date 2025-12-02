@@ -6,10 +6,12 @@ import {
   ExportReceiptModal,
   ReturnTransactionModal,
   TransactionDetailModal,
+  WithdrawModal,
 } from './TransactionModals';
 
 export default function TransactionActions({ visible, transaction }: { visible: boolean; transaction: any }) {
   const [splitModalVisible, setSplitModalVisible] = useState(false);
+  const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [returnModalVisible, setReturnModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
@@ -18,7 +20,8 @@ export default function TransactionActions({ visible, transaction }: { visible: 
   if (!visible) return null;
 
   const isSplit = localTransaction?.splitData?.splits?.length > 0;
-  const canSplit = localTransaction.amount < 0;
+  const canSplit = localTransaction.amount < 0; // Red/expense transactions
+  const canWithdraw = localTransaction.amount > 0; // Green/receiving transactions
 
   const handleSplitCreated = (splitData: any) => {
     setLocalTransaction((prev: any) => ({
@@ -50,15 +53,26 @@ export default function TransactionActions({ visible, transaction }: { visible: 
           label="Return"
           onPress={() => setReturnModalVisible(true)} disabled={undefined} active={undefined}        />
 
-        {/* 3️⃣ Split Transaction */}
-        <ActionButton
-          icon="pie-chart-outline"
-          label="Split"
-          onPress={() => setSplitModalVisible(true)}
-          active={isSplit}
-          disabled={!canSplit}
-          activeColor="#10B981"
-        />
+        {/* 3️⃣ Split Transaction OR Withdraw (for green transactions) */}
+        {canWithdraw ? (
+          <ActionButton
+            icon="cash-outline"
+            label="Withdraw"
+            onPress={() => setWithdrawModalVisible(true)}
+            active={false}
+            disabled={false}
+            activeColor="#10B981"
+          />
+        ) : (
+          <ActionButton
+            icon="pie-chart-outline"
+            label="Split"
+            onPress={() => setSplitModalVisible(true)}
+            active={isSplit}
+            disabled={!canSplit}
+            activeColor="#10B981"
+          />
+        )}
 
         {/* 4️⃣ More */}
         <ActionButton
@@ -88,6 +102,11 @@ export default function TransactionActions({ visible, transaction }: { visible: 
       <TransactionDetailModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
+        transaction={transaction}
+      />
+      <WithdrawModal
+        visible={withdrawModalVisible}
+        onClose={() => setWithdrawModalVisible(false)}
         transaction={transaction}
       />
     </>

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Camera, CameraView } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
@@ -21,6 +21,9 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SCAN_FRAME_SIZE = SCREEN_WIDTH * 0.7;
 
 export default function QRScan() {
+  const params = useLocalSearchParams();
+  const returnTo = params.returnTo as string | undefined;
+
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
@@ -36,35 +39,47 @@ export default function QRScan() {
 
   const handleBarCodeScanned = ({ data }: { type: string; data: string }) => {
     setScanned(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     // Try to parse the QR code data
     const parsedData = QRCodeModel.parseQRData(data);
 
     if (parsedData && parsedData.type === 'quickpay_payment') {
-      // Valid QuickPay QR code
-      Alert.alert(
-        "Payment QR Code Scanned",
-        `Account: ${parsedData.accountNumber}\n${
-          parsedData.amount ? `Amount: $${parsedData.amount.toFixed(2)}\n` : ''
-        }${parsedData.description ? `Description: ${parsedData.description}` : ''}`,
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-            onPress: () => setScanned(false),
-          },
-          {
-            text: "Proceed to Payment",
-            onPress: () => {
-              // TODO: Navigate to payment confirmation page
-              setScanned(false);
-              Alert.alert("Payment", "Payment flow will be implemented here");
+      // Valid QuickPay QR code - navigate to send page with scanned data
+      if (returnTo === 'send') {
+        // Coming from send page - go back with the scanned account number
+        router.replace({
+          pathname: '/send',
+          params: { scannedAccountNumber: parsedData.accountNumber },
+        });
+      } else {
+        // Regular scan - show alert and navigate to send page
+        Alert.alert(
+          "Payment QR Code Scanned",
+          `Account: ${parsedData.accountNumber}\n${
+            parsedData.amount ? `Amount: $${parsedData.amount.toFixed(2)}\n` : ''
+          }${parsedData.description ? `Description: ${parsedData.description}` : ''}`,
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => setScanned(false),
             },
-          },
-        ]
-      );
+            {
+              text: "Send Payment",
+              onPress: () => {
+                router.push({
+                  pathname: '/send',
+                  params: { scannedAccountNumber: parsedData.accountNumber },
+                });
+              },
+            },
+          ]
+        );
+      }
     } else {
       // Invalid or unrecognized QR code
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert(
         "Invalid QR Code",
         "This QR code is not a valid QuickPay payment code. Please scan a QuickPay QR code.",
