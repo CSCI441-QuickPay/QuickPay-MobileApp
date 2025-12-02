@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { availableIcons, availableColors } from '@/data/budget';
+import { availableIcons, availableColors } from '@/constants/budgetConfig';
 import { TreeBudgetCategory } from '@/models/BudgetModel';
 
 interface EditCategoryInfoModalProps {
@@ -281,7 +281,7 @@ export default function EditCategoryInfoModal({
                 <Text className="text-secondary font-semibold text-sm">Save Changes</Text>
               </TouchableOpacity>
 
-              {/* Delete Button */}
+              {/* Delete Button
               <TouchableOpacity
                 onPress={onDelete}
                 activeOpacity={0.8}
@@ -292,7 +292,7 @@ export default function EditCategoryInfoModal({
                   <Ionicons name="trash-outline" size={16} color="#DC2626" style={{ marginRight: 4 }} />
                   <Text className="text-red-600 font-semibold text-sm">Delete</Text>
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </View>
