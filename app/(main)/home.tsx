@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -34,48 +34,57 @@ export default function Home() {
   const [loadingPlaidData, setLoadingPlaidData] = useState(false);
   const [totalBalance, setTotalBalance] = useState(0);
   const [hasPlaidLinked, setHasPlaidLinked] = useState<boolean | null>(null);
+  const [plaidError, setPlaidError] = useState<string | null>(null);
 
   // Fetch Plaid transactions and accounts
   const fetchPlaidData = async () => {
     if (!user) return;
 
-    setLoadingPlaidData(true);
-    try {
-      console.log("🏦 Fetching Plaid data...");
+    // Skip Plaid fetch in Demo Mode
+    if (isDemoMode) {
+      console.log("🎭 Demo Mode ON - Skipping Plaid fetch");
+      return;
+    }
 
-      // Fetch accounts and transactions in parallel
+    setLoadingPlaidData(true);
+    setPlaidError(null);
+
+    try {
+      console.log("🏦 Fetching Plaid data for user:", user.id);
+
       const [accountsData, transactionsData] = await Promise.all([
         fetchPlaidAccounts(user.id),
         fetchPlaidTransactions(user.id)
       ]);
 
-      console.log("📊 Accounts:", accountsData);
-      console.log("📊 Transactions:", transactionsData);
+      console.log("✅ Received accounts:", accountsData.length);
+      console.log("✅ Received transactions:", transactionsData.transactions.length);
 
       setPlaidAccounts(accountsData);
 
-      // Transform Plaid transactions to app format
       const transformedTransactions = transactionsData.transactions.map((tx: PlaidTransaction) =>
         transformPlaidTransaction(tx, accountsData)
       );
 
+      console.log("✅ Transformed transactions:", transformedTransactions.length);
       setPlaidTransactions(transformedTransactions);
 
-      // Calculate total balance
       const balance = calculateTotalBalance(accountsData);
+      console.log("✅ Total balance:", balance);
       setTotalBalance(balance);
 
-      console.log("✅ Plaid data loaded successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Failed to fetch Plaid data:", error);
-      // Fallback to mock data on error
+      console.error("❌ Error message:", error.message);
+
+      setPlaidError(error.message || "Failed to load bank data");
       setPlaidTransactions(mockTransactions);
-      // Get balance from database instead of mock data
+
       try {
         const userData = await UserModel.getByClerkId(user.id);
         setTotalBalance(userData?.balance || 0);
       } catch (err) {
-        console.error("Failed to get user balance:", err);
+        console.error("❌ Failed to get user balance:", err);
         setTotalBalance(0);
       }
     } finally {
@@ -174,13 +183,41 @@ export default function Home() {
         }}
       />
 
+      {/* Error Banner */}
+      {plaidError && (
+        <View className="mx-4 mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-red-800 font-semibold">Unable to load bank data</Text>
+              <Text className="text-red-600 text-sm mt-1">{plaidError}</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => fetchPlaidData()}
+              className="ml-3 bg-red-600 px-4 py-2 rounded-lg"
+            >
+              <Text className="text-white font-semibold">Retry</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       {/* Fixed Transaction Filter */}
       <TransactionFilter onFilterChange={setFilterState} />
 
-      {/* Scrollable Transaction List */}
-      <View className="flex-1 mt-2">
+      {/* Scrollable Transaction List with Pull-to-Refresh */}
+      <ScrollView
+        className="flex-1 mt-2"
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingPlaidData}
+            onRefresh={fetchPlaidData}
+            colors={["#00332d"]}
+            tintColor="#00332d"
+          />
+        }
+      >
         {loadingPlaidData ? (
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center justify-center py-20">
             <ActivityIndicator size="large" color="#00332d" />
             <Text className="text-gray-500 mt-4">Loading transactions...</Text>
           </View>
@@ -190,7 +227,7 @@ export default function Home() {
             transactions={isDemoMode ? mockTransactions : plaidTransactions}
           />
         )}
-      </View>
+      </ScrollView>
 
       {/* Bottom Navigation */}
       <BottomNav

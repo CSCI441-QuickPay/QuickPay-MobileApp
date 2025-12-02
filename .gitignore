@@ -2,8 +2,6 @@
 
 # Dependencies
 node_modules/
-package-lock.json
-yarn.lock
 
 # Expo / Build
 .expo/
@@ -47,3 +45,7 @@ app-example
 # IDE / Misc
 .vscode/
 .idea/
+
+# Builds
+/android/
+/ios/

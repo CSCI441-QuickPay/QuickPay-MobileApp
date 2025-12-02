@@ -121,10 +121,6 @@ android {
         jniLibs {
             useLegacyPackaging (findProperty('expo.useLegacyPackaging')?.toBoolean() ?: false)
         }
-        // Exclude duplicate classes from react-native-worklets
-        // since react-native-reanimated already includes them
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
     }
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
@@ -148,12 +144,6 @@ android {
         options.each {
             android.packagingOptions[prop] += it
         }
-    }
-}
-
-configurations {
-    all {
-        exclude group: 'com.swmansion.worklets', module: 'worklets'
     }
 }
 
