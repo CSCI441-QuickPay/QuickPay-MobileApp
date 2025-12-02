@@ -13,11 +13,26 @@ export default function TransactionActions({ visible, transaction }: { visible: 
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [returnModalVisible, setReturnModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [localTransaction, setLocalTransaction] = useState(transaction);
 
   if (!visible) return null;
 
-  const isSplit = transaction?.splitData?.splits?.length > 0;
-  const canSplit = transaction.amount < 0;
+  const isSplit = localTransaction?.splitData?.splits?.length > 0;
+  const canSplit = localTransaction.amount < 0;
+
+  const handleSplitCreated = (splitData: any) => {
+    setLocalTransaction((prev: any) => ({
+      ...prev,
+      splitData,
+    }));
+  };
+
+  const handleSplitCanceled = () => {
+    setLocalTransaction((prev: any) => ({
+      ...prev,
+      splitData: undefined,
+    }));
+  };
 
   return (
     <>
@@ -56,7 +71,9 @@ export default function TransactionActions({ visible, transaction }: { visible: 
       <SplitTransactionModal
         visible={splitModalVisible}
         onClose={() => setSplitModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
+        onSplitCreated={handleSplitCreated}
+        onSplitCanceled={handleSplitCanceled}
       />
       <ExportReceiptModal
         visible={exportModalVisible}
