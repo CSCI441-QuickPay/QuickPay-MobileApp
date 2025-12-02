@@ -4,7 +4,8 @@
 node_modules/
 /android/
 /ios/
-
+android/app/src/main/res/mipmap-*
+ios/**/build/
 # Expo / Build
 .expo/
 dist/
