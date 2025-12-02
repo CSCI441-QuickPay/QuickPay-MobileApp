@@ -2,8 +2,13 @@ import NumberPad from "@/components/request/NumberPad";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
-import { TextInput } from "react-native";
+import {
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function RequestAmount() {
   const { initialAmount } = useLocalSearchParams();
@@ -79,7 +84,7 @@ export default function RequestAmount() {
         </TouchableOpacity>
 
         <Text className="flex-1 text-center text-lg font-semibold text-white">
-          Enter Amount
+          Request for Payment
         </Text>
 
         <View className="w-6" />
@@ -88,11 +93,11 @@ export default function RequestAmount() {
       {/* Amount Display */}
       <View className="flex-1 items-center justify-center">
         <Text className="text-gray-300 text-sm tracking-widest">
-          REQUEST AMOUNT
+          ENTER AMOUNT
         </Text>
 
         {/* Centered $ + amount */}
-        <View className="flex-row items-center justify-center mt-3">
+        <View className="flex-row items-center justify-center mt-10">
           <Text
             className="text-6xl font-extrabold text-white"
             style={{ letterSpacing: 0.5 }}
@@ -130,19 +135,19 @@ export default function RequestAmount() {
 
             {/* ACTUAL input */}
             <TextInput
-              value={formattedAmount} // <-- Always show formatted number
+              value={amount === "0" ? "" : formattedAmount} // hide value when it's zero
+              placeholder=""
               onChangeText={handleKeyboardChange}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
               keyboardType="numeric"
               style={{
-                fontSize: 54,
+                fontSize: 55,
                 fontWeight: "800",
-                color: amount === "0" ? "rgba(255,255,255,0)" : "white", // Hide real text under placeholder
-                includeFontPadding: false,
-                lineHeight: 61,
+                color: "white",
+                marginLeft: 8,
+                minWidth: 120,
+                textAlign: "left",
                 padding: 0,
-                minWidth: 90,
+                lineHeight: 63,
               }}
             />
           </View>
