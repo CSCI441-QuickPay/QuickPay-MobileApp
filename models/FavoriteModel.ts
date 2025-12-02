@@ -8,6 +8,7 @@ export interface Favorite {
   nickname?: string;
   accountHolderName?: string;
   accountHolderProfile?: string;
+  avatarColor?: string;
   createdAt?: Date;
 }
 
@@ -16,6 +17,7 @@ interface DBFavorite {
   user_id: string;
   account_number: string;
   nickname?: string;
+  avatar_color?: string;
   created_at: string;
 }
 
@@ -26,6 +28,7 @@ export default class FavoriteModel {
       userId: dbFav.user_id,
       accountNumber: dbFav.account_number,
       nickname: dbFav.nickname,
+      avatarColor: dbFav.avatar_color,
       createdAt: new Date(dbFav.created_at),
     };
   }
