@@ -11,8 +11,10 @@ import Header from "@/components/home/Header";
 import TransactionFilter from "@/components/home/TransactionFilter";
 import TransactionList from "@/components/home/TransactionList";
 import { transactions as mockTransactions } from "@/data/transaction";
+import { banks } from "@/data/budget";
 import UserSyncService from "@/services/UserSyncService";
 import UserModel from "@/models/UserModel";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import {
   fetchPlaidTransactions,
   fetchPlaidAccounts,
@@ -24,6 +26,7 @@ import {
 
 export default function Home() {
   const { user } = useUser();
+  const { isDemoMode } = useDemoMode();
 
   // Plaid data state
   const [plaidAccounts, setPlaidAccounts] = useState<PlaidAccount[]>([]);
@@ -85,6 +88,18 @@ export default function Home() {
     async function initializeUser() {
       if (user) {
         try {
+          // If Demo Mode is ON, use mock data
+          if (isDemoMode) {
+            console.log("🎭 Demo Mode ON - Using mock data");
+            setPlaidTransactions(mockTransactions);
+            // Calculate total balance from mock banks
+            const mockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
+            setTotalBalance(mockBalance);
+            setHasPlaidLinked(false);
+            return;
+          }
+
+          // Real Mode - sync user and fetch real data
           console.log("🔄 Syncing user to Supabase from home...", user.id);
           await UserSyncService.syncCurrentUser(user);
           console.log("✅ User synced successfully");
@@ -109,9 +124,9 @@ export default function Home() {
               router.replace("/plaid-onboarding-hosted");
               return;
             } else {
-              // User skipped - use mock data for transactions but get balance from database
-              console.log("ℹ️ User skipped Plaid - using mock data");
-              setPlaidTransactions(mockTransactions);
+              // User skipped - show empty state (no data)
+              console.log("ℹ️ User skipped Plaid - showing empty state");
+              setPlaidTransactions([]);
               // Get balance from database
               const userData = await UserModel.getByClerkId(user.id);
               setTotalBalance(userData?.balance || 0);
@@ -127,7 +142,7 @@ export default function Home() {
     }
     initializeUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, isDemoMode]);
 
   const [filterState, setFilterState] = useState({
     timeFilter: "all",
@@ -172,7 +187,7 @@ export default function Home() {
         ) : (
           <TransactionList
             filters={filterState}
-            transactions={plaidTransactions.length > 0 ? plaidTransactions : mockTransactions}
+            transactions={isDemoMode ? mockTransactions : plaidTransactions}
           />
         )}
       </View>
