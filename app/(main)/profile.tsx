@@ -393,7 +393,7 @@ export default function Profile() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to Cards")}
+              onPress={() => router.push("/my_bank")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
