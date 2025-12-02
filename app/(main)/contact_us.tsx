@@ -30,7 +30,7 @@ export default function ContactUs() {
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView
+      <View
         className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -212,7 +212,7 @@ export default function ContactUs() {
             </Text>
           </View>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
