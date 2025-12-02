@@ -157,20 +157,29 @@ export function calculateTotalBalance(accounts: PlaidAccount[]): number {
 
 /**
  * Transform Plaid transaction to app transaction format
+ *
+ * Note: Plaid uses positive amounts for money OUT (expenses) and negative for money IN (income)
+ * We flip this to match typical accounting: negative for expenses, positive for income
  */
 export function transformPlaidTransaction(plaidTx: PlaidTransaction, accounts: PlaidAccount[]) {
   const account = accounts.find(acc => acc.account_id === plaidTx.account_id);
 
+  // Plaid: positive = money out, negative = money in
+  // App:   negative = money out, positive = money in
+  // So we flip the sign
+  const appAmount = -plaidTx.amount;
+
   return {
     id: plaidTx.transaction_id,
     title: plaidTx.merchant_name || plaidTx.name,
-    amount: Math.abs(plaidTx.amount),
+    amount: appAmount, // Now properly negative for expenses, positive for income
     date: plaidTx.date,
-    type: plaidTx.amount < 0 ? 'expense' : 'income',
+    type: appAmount < 0 ? 'expense' : 'income',
     category: plaidTx.category?.[0] || 'Other',
     bank: account?.name || 'Unknown Bank',
     status: plaidTx.pending ? 'pending' : 'completed',
     description: plaidTx.name,
+    subtitle: `${account?.name || 'Unknown Bank'}`, // Add bank name as subtitle
   };
 }
 

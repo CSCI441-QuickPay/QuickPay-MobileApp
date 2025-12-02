@@ -67,6 +67,15 @@ export default function Home() {
       );
 
       console.log("✅ Transformed transactions:", transformedTransactions.length);
+
+      // Log sample transaction data for debugging
+      if (transactionsData.transactions.length > 0) {
+        console.log("\n========== SAMPLE PLAID TRANSACTION DATA ==========");
+        console.log("Raw Plaid Transaction (first):", JSON.stringify(transactionsData.transactions[0], null, 2));
+        console.log("\nTransformed Transaction (first):", JSON.stringify(transformedTransactions[0], null, 2));
+        console.log("====================================================\n");
+      }
+
       setPlaidTransactions(transformedTransactions);
 
       const balance = calculateTotalBalance(accountsData);
