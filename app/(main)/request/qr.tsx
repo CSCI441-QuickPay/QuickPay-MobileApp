@@ -49,7 +49,7 @@ export default function RequestQR() {
       </View>
 
       {/* Main Card */}
-      <View className="mx-6 mt-4 bg-white p-6 rounded-3xl shadow-lg">
+      <View className="mx-6 mt-8 bg-white p-6 rounded-3xl shadow-lg">
         {/* Avatar */}
         <View className="items-center">
           <View className="w-16 h-16 rounded-full bg-[#00332d] items-center justify-center overflow-hidden">
