@@ -12,15 +12,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNav from "@/components/BottomNav";
 import AddFavoriteModal, { FavoriteContact } from "@/components/favorite/AddFavoriteModal";
 import EditFavoriteModal from "@/components/favorite/EditFavoriteModal";
 import FavoriteModel from "@/models/FavoriteModel";
 import UserModel from "@/models/UserModel";
 import { getInitials, getProfileColor } from "@/utils/profileUtils";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import { favoriteContacts } from "@/data/favorites";
 
 export default function FavoriteScreen() {
   const { user } = useUser();
+  const { isDemoMode } = useDemoMode();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -33,13 +37,15 @@ export default function FavoriteScreen() {
   // Load favorites from database
   useEffect(() => {
     loadFavorites();
-  }, [user]);
+  }, [user, isDemoMode]);
 
   const loadFavorites = async () => {
     if (!user) return;
 
     try {
       setLoading(true);
+      console.log(`🔍 Favorites: isDemoMode = ${isDemoMode}`);
+
       // Get database user UUID from Clerk ID
       const dbUser = await UserModel.getByClerkId(user.id);
       if (!dbUser || !dbUser.id) {
@@ -59,7 +65,37 @@ export default function FavoriteScreen() {
         nickname: fav.nickname,
       }));
 
-      setFavorites(mappedFavorites);
+      // If Demo Mode is ON, merge real favorites + mock favorites
+      if (isDemoMode) {
+        console.log("🎭 Demo Mode ON - Merging real + mock favorites");
+
+        // Convert mock favorites to match FavoriteContact format used in this component
+        // Load cached nicknames from AsyncStorage for each mock favorite
+        const mockFavorites: FavoriteContact[] = await Promise.all(
+          favoriteContacts.map(async (contact) => {
+            const mockId = `mock-${contact.id}`;
+            const cacheKey = `mock_favorite_nickname_${mockId}`;
+            const cachedNickname = await AsyncStorage.getItem(cacheKey);
+
+            return {
+              id: mockId, // Prefix to avoid ID conflicts
+              accountNumber: contact.accountNumber,
+              accountHolderName: contact.name,
+              accountHolderProfile: undefined,
+              nickname: cachedNickname || contact.nickname, // Use cached nickname if available
+            };
+          })
+        );
+
+        // Merge: real favorites + mock favorites
+        const allFavorites = [...mappedFavorites, ...mockFavorites];
+        console.log(`✅ Demo Mode: Total favorites = ${allFavorites.length} (${mappedFavorites.length} real + ${mockFavorites.length} mock)`);
+        setFavorites(allFavorites);
+      } else {
+        // Real Mode - only show database favorites
+        console.log(`📊 Real Mode: Showing ${mappedFavorites.length} database favorites only`);
+        setFavorites(mappedFavorites);
+      }
     } catch (error) {
       console.error("Error loading favorites:", error);
       Alert.alert("Error", "Failed to load favorites");
@@ -90,8 +126,18 @@ export default function FavoriteScreen() {
 
   const handleDeleteFavorite = async (id: string) => {
     const favorite = favorites.find((f) => f.id === id);
+
+    // Prevent deletion of mock favorites
+    if (id.startsWith("mock-")) {
+      Alert.alert(
+        "Cannot Delete",
+        "This is a demo account and cannot be deleted. Turn off Demo Mode to manage real accounts only."
+      );
+      return;
+    }
+
     Alert.alert(
-      "Remove Contact",
+      "Remove Favorite",
       `Are you sure you want to remove ${favorite?.nickname || favorite?.accountHolderName}?`,
       [
         { text: "Cancel", style: "cancel" },
@@ -102,7 +148,7 @@ export default function FavoriteScreen() {
             try {
               await FavoriteModel.delete(id);
               await loadFavorites();
-              Alert.alert("Success", "Contact removed from favorites");
+              Alert.alert("Success", "Account removed from favorites");
             } catch (error) {
               console.error("Error deleting favorite:", error);
               Alert.alert("Error", "Failed to delete favorite");
@@ -122,7 +168,7 @@ export default function FavoriteScreen() {
       // Normal mode: Navigate to transfer/send money screen
       Alert.alert(
         "Send Money",
-        `Send money to ${favorite.nickname || favorite.name}?`,
+        `Send money to ${favorite.nickname || favorite.accountHolderName}?`,
         [
           { text: "Cancel", style: "cancel" },
           {
@@ -153,7 +199,7 @@ export default function FavoriteScreen() {
                 Favorites
               </Text>
               <Text className="text-gray-500 text-sm mt-0.5">
-                {favorites.length} {favorites.length === 1 ? "contact" : "contacts"}
+                {favorites.length} {favorites.length === 1 ? "account" : "accounts"}
               </Text>
             </View>
           </View>
