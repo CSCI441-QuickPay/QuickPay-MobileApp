@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
   Alert,
+  Image,
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
   ActivityIndicator,
   Switch,
 } from "react-native";
@@ -19,7 +21,8 @@ import { userCards, getUserStats } from "@/data/user";
 import { getFavoritesCount } from "@/data/favorites";
 import UserModel from "@/models/UserModel";
 import { useDemoMode } from "@/contexts/DemoModeContext";
-
+import { fetchProfile } from "../../services/profileService";
+import { Profile as SupaProfile } from "../../types/Profile";
 // Get initials from name
 const getInitials = (name: string) => {
   const names = name.split(" ");
@@ -32,6 +35,39 @@ const getInitials = (name: string) => {
 export default function Profile() {
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
+
+  const [supabaseProfile, setSupabaseProfile] = useState<SupaProfile | null>(
+    null
+  );
+
+  // Load Supabase profile whenever this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadProfile = async () => {
+        if (!isLoaded || !user?.id) return;
+
+        try {
+          const p = await fetchProfile(user.id);
+          console.log("PROFILE HEADER from Supabase (focus):", p);
+
+          if (isActive) {
+            setSupabaseProfile(p || null);
+          }
+        } catch (err) {
+          console.log("Profile header fetchProfile error:", err);
+        }
+      };
+
+      loadProfile();
+
+      // cleanup when screen loses focus
+      return () => {
+        isActive = false;
+      };
+    }, [isLoaded, user?.id])
+  );
   const { isDemoMode, toggleDemoMode } = useDemoMode();
   const [accountNumber, setAccountNumber] = useState<string>("");
   const [loadingAccount, setLoadingAccount] = useState(true);
@@ -194,11 +230,25 @@ export default function Profile() {
             style={{ padding: 20 }}
           >
             <View className="flex-row items-center mb-4">
-              {/* Avatar with Initials */}
-              <View className="w-16 h-16 rounded-full bg-white items-center justify-center mr-4">
-                <Text className="text-2xl font-extrabold text-primary">
-                  {getInitials(fullName)}
-                </Text>
+              {/* Avatar with Initials/After Upload */}
+              <View className="w-16 h-16 rounded-full bg-white items-center justify-center mr-4 overflow-hidden">
+                {supabaseProfile?.profile_picture ? (
+                  <Image
+                    source={{ uri: supabaseProfile.profile_picture }}
+                    className="w-16 h-16 rounded-full"
+                    resizeMode="cover"
+                    onError={() => {
+                      console.log(
+                        "Header avatar failed to load:",
+                        supabaseProfile.profile_picture
+                      );
+                    }}
+                  />
+                ) : (
+                  <Text className="text-2xl font-extrabold text-primary">
+                    {getInitials(fullName)}
+                  </Text>
+                )}
               </View>
 
               <View className="flex-1">
@@ -297,7 +347,7 @@ export default function Profile() {
           <View className="gap-2">
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to My Profile")}
+              onPress={() => router.push("/my_profile")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
@@ -536,7 +586,9 @@ export default function Profile() {
           },
           {
             label: "Scan",
-            icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
+            icon: (color) => (
+              <AntDesign name="qrcode" size={40} color={color} />
+            ),
             onPress: () => console.log("Go Scan"),
             special: true,
           },

@@ -10,19 +10,19 @@ import BottomNav from "@/components/BottomNav";
 import Header from "@/components/home/Header";
 import TransactionFilter from "@/components/home/TransactionFilter";
 import TransactionList from "@/components/home/TransactionList";
-import { transactions as mockTransactions } from "@/data/transaction";
-import { banks } from "@/data/budget";
-import UserSyncService from "@/services/UserSyncService";
-import UserModel from "@/models/UserModel";
 import { useDemoMode } from "@/contexts/DemoModeContext";
+import { banks } from "@/data/budget";
+import { transactions as mockTransactions } from "@/data/transaction";
+import UserModel from "@/models/UserModel";
 import {
-  fetchPlaidTransactions,
-  fetchPlaidAccounts,
   calculateTotalBalance,
-  transformPlaidTransaction,
+  fetchPlaidAccounts,
+  fetchPlaidTransactions,
   PlaidAccount,
-  PlaidTransaction
+  PlaidTransaction,
+  transformPlaidTransaction,
 } from "@/services/PlaidService";
+import UserSyncService from "@/services/UserSyncService";
 
 export default function Home() {
   const { user } = useUser();
@@ -54,7 +54,7 @@ export default function Home() {
 
       const [accountsData, transactionsData] = await Promise.all([
         fetchPlaidAccounts(user.id),
-        fetchPlaidTransactions(user.id)
+        fetchPlaidTransactions(user.id),
       ]);
 
       console.log("✅ Received accounts:", accountsData.length);
@@ -102,7 +102,10 @@ export default function Home() {
             console.log("🎭 Demo Mode ON - Using mock data");
             setPlaidTransactions(mockTransactions);
             // Calculate total balance from mock banks
-            const mockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
+            const mockBalance = banks.reduce(
+              (sum, bank) => sum + (bank.budget || bank.amount),
+              0
+            );
             setTotalBalance(mockBalance);
             setHasPlaidLinked(false);
             return;
@@ -129,7 +132,9 @@ export default function Home() {
 
             if (hasSkipped !== "true") {
               // First-time user - redirect to full-screen Plaid onboarding page
-              console.log("⚠️ First-time user, redirecting to plaid-onboarding-hosted...");
+              console.log(
+                "⚠️ First-time user, redirecting to plaid-onboarding-hosted..."
+              );
               router.replace("/plaid-onboarding-hosted");
               return;
             } else {
@@ -163,13 +168,18 @@ export default function Home() {
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       {/* Fixed Header */}
       <View className="bg-white">
-        <Header/>
+        <Header />
       </View>
 
       {/* Fixed Balance Card */}
       <BalanceCard
         balance={totalBalance}
-        onRequest={() => console.log("Request Money")}
+        onRequest={() =>
+          router.push({
+            pathname: "/request",
+            params: { initialAmount: "0" },
+          })
+        }
         onSend={() => router.push("/favorite")}
         showLinkAccount={hasPlaidLinked === false}
         onLinkAccount={async () => {
@@ -177,7 +187,9 @@ export default function Home() {
             // Clear skip flag and navigate to Plaid onboarding
             const skipKey = `plaid_onboarding_skipped_${user.id}`;
             await AsyncStorage.removeItem(skipKey);
-            console.log("🔄 Cleared skip flag, navigating to Plaid onboarding...");
+            console.log(
+              "🔄 Cleared skip flag, navigating to Plaid onboarding..."
+            );
             router.push("/plaid-onboarding-hosted");
           }
         }}
@@ -247,7 +259,9 @@ export default function Home() {
           },
           {
             label: "Scan",
-            icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
+            icon: (color) => (
+              <AntDesign name="qrcode" size={40} color={color} />
+            ),
             onPress: () => console.log("Go Scan"),
             special: true,
           },
