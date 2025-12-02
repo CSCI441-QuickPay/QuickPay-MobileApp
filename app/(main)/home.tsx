@@ -262,7 +262,7 @@ export default function Home() {
             icon: (color) => (
               <AntDesign name="qrcode" size={40} color={color} />
             ),
-            onPress: () => console.log("Go Scan"),
+            onPress: () => router.push("/qr_scan"),
             special: true,
           },
           {
