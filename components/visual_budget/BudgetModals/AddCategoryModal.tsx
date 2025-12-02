@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { availableIcons, availableColors } from '@/data/budget';
+import { availableIcons, availableColors } from '@/constants/budgetConfig';
 
 interface AddCategoryModalProps {
   visible: boolean;

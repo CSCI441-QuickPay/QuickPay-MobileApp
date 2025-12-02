@@ -6,6 +6,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Switch,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +18,7 @@ import BottomNav from "@/components/BottomNav";
 import { userCards, getUserStats } from "@/data/user";
 import { getFavoritesCount } from "@/data/favorites";
 import UserModel from "@/models/UserModel";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 
 // Get initials from name
 const getInitials = (name: string) => {
@@ -30,31 +32,90 @@ const getInitials = (name: string) => {
 export default function Profile() {
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
+  const { isDemoMode, toggleDemoMode } = useDemoMode();
   const [accountNumber, setAccountNumber] = useState<string>("");
   const [loadingAccount, setLoadingAccount] = useState(true);
+  const [stats, setStats] = useState({ activeCards: 0, totalFavorites: 0 });
 
-  // Load account number from database
+  // Load account number and stats from database or mock data
   useEffect(() => {
-    const loadAccountNumber = async () => {
+    const loadProfileData = async () => {
       if (!user) return;
 
       try {
         setLoadingAccount(true);
+
+        // Fetch real data from database first
         const dbUser = await UserModel.getByClerkId(user.id);
-        if (dbUser) {
+
+        // If Demo Mode is ON, merge real data with mock data
+        if (isDemoMode) {
+          console.log("🎭 Demo Mode ON - Merging real + mock data");
+
+          const BankAccountModel = (await import("@/models/BankAccountModel")).default;
+          const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+
+          // Get real data
+          const [bankAccounts, realFavorites] = await Promise.all([
+            BankAccountModel.getByUserId(dbUser?.id || ""),
+            FavoriteModel.getByUserId(dbUser?.id || "")
+          ]);
+
+          // Merge: real favorites + mock favorites
+          const mockFavoritesCount = getFavoritesCount();
+          const totalFavorites = realFavorites.length + mockFavoritesCount;
+
+          setStats({
+            activeCards: getUserStats(mockFavoritesCount).activeCards, // 4 from mock
+            totalFavorites: totalFavorites, // Real + Mock combined
+          });
+
+          // Use real account number even in Demo Mode
+          if (dbUser?.accountNumber) {
+            setAccountNumber(dbUser.accountNumber);
+          }
+
+          setLoadingAccount(false);
+          return;
+        }
+
+        // Real Mode - fetch from database
+        if (!dbUser) {
+          setStats({ activeCards: 0, totalFavorites: 0 });
+          setLoadingAccount(false);
+          return;
+        }
+
+        if (dbUser.accountNumber) {
           setAccountNumber(dbUser.accountNumber);
         }
+
+        // Fetch real stats from database
+        const BankAccountModel = (await import("@/models/BankAccountModel")).default;
+        const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+
+        const [bankAccounts, favorites] = await Promise.all([
+          BankAccountModel.getByUserId(dbUser.id!),
+          FavoriteModel.getByUserId(dbUser.id!)
+        ]);
+
+        setStats({
+          activeCards: bankAccounts.filter(acc => acc.isActive).length,
+          totalFavorites: favorites.length,
+        });
       } catch (error) {
-        console.error("Error loading account number:", error);
+        console.error("Error loading profile data:", error);
+        // Fallback to empty stats on error
+        setStats({ activeCards: 0, totalFavorites: 0 });
       } finally {
         setLoadingAccount(false);
       }
     };
 
     if (isLoaded && user) {
-      loadAccountNumber();
+      loadProfileData();
     }
-  }, [user, isLoaded]);
+  }, [user, isLoaded, isDemoMode]);
 
   if (!isLoaded) {
     return (
@@ -68,9 +129,6 @@ export default function Profile() {
     ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User"
     : "Guest";
   const userEmail = user?.primaryEmailAddress?.emailAddress || "Not provided";
-
-  // Get synced stats
-  const stats = getUserStats(getFavoritesCount());
 
   const handleCopyAccountNumber = async () => {
     if (accountNumber) {
@@ -205,7 +263,7 @@ export default function Profile() {
               </Text>
             </View>
             <Text className="text-gray-600 text-sm font-medium">
-              Active Cards
+              Active Banks
             </Text>
           </TouchableOpacity>
 
@@ -365,6 +423,37 @@ export default function Profile() {
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </View>
             </TouchableOpacity>
+
+            {/* Demo Mode Toggle */}
+            <View
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-purple-50 items-center justify-center mr-3">
+                <Ionicons name="flask-outline" size={20} color="#8B5CF6" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-gray-900">
+                  Demo Mode
+                </Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  Use mock data for testing
+                </Text>
+              </View>
+              <Switch
+                value={isDemoMode}
+                onValueChange={toggleDemoMode}
+                trackColor={{ false: "#D1D5DB", true: "#A78BFA" }}
+                thumbColor={isDemoMode ? "#8B5CF6" : "#F3F4F6"}
+                ios_backgroundColor="#D1D5DB"
+              />
+            </View>
           </View>
         </View>
 

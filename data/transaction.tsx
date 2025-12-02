@@ -1,3 +1,14 @@
+/**
+ * ============================================
+ * MOCK DATA - FOR DEMO MODE ONLY
+ * ============================================
+ *
+ * This file contains mock transaction data used when Demo Mode is enabled.
+ * Do not delete - this data is used for testing and demonstrations.
+ *
+ * To enable Demo Mode: Toggle setting in Profile page
+ */
+
 // Split data types
 export type SplitPerson = {
   name?: string;        // Person's name (optional)

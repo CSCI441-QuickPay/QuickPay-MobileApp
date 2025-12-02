@@ -16,23 +16,37 @@ export const CANVAS_CONFIG = {
 };
 
 /**
- * Calculate canvas position to center Total Budget block
+ * Calculate canvas position to center Current Budget block
+ * This ensures blocks are visible on initial load regardless of their position
  */
-export function calculateCenterPosition(screenWidth: number = SCREEN_WIDTH) {
-  const { totalBudgetPosition, totalBudgetSize, viewportHeight } = CANVAS_CONFIG;
-  
-  // Calculate center point of Total Budget block
-  const totalBudgetCenterX = totalBudgetPosition.x + (totalBudgetSize.width / 2);
-  const totalBudgetCenterY = totalBudgetPosition.y + (totalBudgetSize.height / 2);
-  
+export function calculateCenterPosition(
+  screenWidth: number = SCREEN_WIDTH,
+  categories?: TreeBudgetCategory[]
+) {
+  const { viewportHeight, totalBudgetSize } = CANVAS_CONFIG;
+
+  // Find the Current Budget block position dynamically
+  // Works for both Real Mode (60, 230) and Demo Mode (360, 240)
+  let currentBudgetPosition = { x: 360, y: 240 }; // Default Demo Mode position
+
+  if (categories) {
+    const totalBlock = categories.find(c => c.id === 'total');
+    if (totalBlock) {
+      currentBudgetPosition = totalBlock.position;
+    }
+  }
+
+  const currentBudgetCenterX = currentBudgetPosition.x + (totalBudgetSize.width / 2);
+  const currentBudgetCenterY = currentBudgetPosition.y + (totalBudgetSize.height / 2);
+
   // Calculate viewport center
   const viewportCenterX = screenWidth / 2;
   const viewportCenterY = viewportHeight / 2;
-  
-  // Return offset needed to center the block
+
+  // Return offset needed to center the Current Budget block
   return {
-    x: viewportCenterX - totalBudgetCenterX,
-    y: viewportCenterY - totalBudgetCenterY,
+    x: viewportCenterX - currentBudgetCenterX,
+    y: viewportCenterY - currentBudgetCenterY,
   };
 }
 

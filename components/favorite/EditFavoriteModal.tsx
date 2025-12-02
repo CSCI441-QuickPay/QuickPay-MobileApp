@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FavoriteContact } from "./AddFavoriteModal";
 import FavoriteModel from "@/models/FavoriteModel";
 import UnifiedModalHeader from "@/components/shared/UnifiedModalHeader";
@@ -45,8 +46,16 @@ export default function EditFavoriteModal({
     if (!contact) return;
 
     try {
-      // Update nickname in database
-      await FavoriteModel.updateNickname(contact.id, nickname.trim());
+      // Check if this is a mock favorite (ID starts with "mock-")
+      if (contact.id.startsWith("mock-")) {
+        // Save to AsyncStorage cache
+        const cacheKey = `mock_favorite_nickname_${contact.id}`;
+        await AsyncStorage.setItem(cacheKey, nickname.trim());
+        console.log(`💾 Saved mock favorite nickname to cache: ${cacheKey} = ${nickname.trim()}`);
+      } else {
+        // Update real favorite in database
+        await FavoriteModel.updateNickname(contact.id, nickname.trim());
+      }
 
       const updatedFavorite: FavoriteContact = {
         id: contact.id,
