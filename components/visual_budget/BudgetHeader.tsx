@@ -1,34 +1,28 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import PlaidService from '@/services/PlaidService';
+import { router } from 'expo-router';
 
 /**
  * BudgetHeader Component
- * 
+ *
  * Props:
- * - totalBalance: Sum of all bank budgets (should be $1,348.17)
- * - banks: Array of bank objects from budget.tsx
+ * - totalBalance: Sum of all bank budgets
+ * - banks: Array of ALL bank objects (including QuickPay) for display in expansion
+ * - externalBankCount: Number of external banks connected (excluding QuickPay)
  * - summary: Object with totalSpent (sum of all category.spent values)
- * 
+ *
  * Expected calculation in parent:
  * const totalBalance = banks.reduce((sum, bank) => sum + bank.budget, 0);
  * const totalSpent = categories.filter(c => c.type === 'category').reduce((sum, cat) => sum + cat.spent, 0);
  */
-export default function BudgetHeader({ totalBalance, banks, summary }: any) {
+export default function BudgetHeader({ totalBalance, banks, externalBankCount, summary }: any) {
   const [showBanks, setShowBanks] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
 
-  const handleConnectBank = async () => {
-    try {
-      setIsConnecting(true);
-      await PlaidService.linkBank();
-      // After successful connection, banks will be updated automatically
-    } catch (error) {
-      console.error('Failed to connect bank:', error);
-    } finally {
-      setIsConnecting(false);
-    }
+  const handleConnectBank = () => {
+    // Navigate to Plaid onboarding page (same as "Link Bank" button on home page)
+    console.log('🔗 Navigating to Plaid onboarding from Budget page...');
+    router.push('/plaid-onboarding-hosted');
   };
 
   return (
@@ -64,7 +58,7 @@ export default function BudgetHeader({ totalBalance, banks, summary }: any) {
             />
           </View>
           <Text className="text-3xl font-bold text-secondary">${totalBalance.toFixed(2)}</Text>
-          <Text className="text-xs text-secondary/70 mt-1">{banks?.length || 0} banks connected</Text>
+          <Text className="text-xs text-secondary/70 mt-1">{externalBankCount || 0} banks connected</Text>
         </TouchableOpacity>
 
         {/* Total Spent Card */}
@@ -115,32 +109,18 @@ export default function BudgetHeader({ totalBalance, banks, summary }: any) {
             {/* Add Bank Button */}
             <TouchableOpacity
               onPress={handleConnectBank}
-              disabled={isConnecting}
               activeOpacity={0.7}
               className="bg-gray-50 rounded-xl p-4 border-2 border-dashed border-gray-300 min-w-[140px] items-center justify-center"
             >
-              {isConnecting ? (
-                <>
-                  <View className="w-8 h-8 rounded-lg bg-gray-200 items-center justify-center mb-2">
-                    <Ionicons name="hourglass-outline" size={18} color="#6B7280" />
-                  </View>
-                  <Text className="text-xs text-gray-500 font-medium">
-                    Connecting...
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <View className="w-8 h-8 rounded-lg bg-primary items-center justify-center mb-2">
-                    <Ionicons name="add" size={20} color="#ccf8f1" />
-                  </View>
-                  <Text className="text-xs text-gray-700 font-semibold mb-1">
-                    Add Bank
-                  </Text>
-                  <Text className="text-xs text-gray-500 text-center">
-                    Connect via Plaid
-                  </Text>
-                </>
-              )}
+              <View className="w-8 h-8 rounded-lg bg-primary items-center justify-center mb-2">
+                <Ionicons name="add" size={20} color="#ccf8f1" />
+              </View>
+              <Text className="text-xs text-gray-700 font-semibold mb-1">
+                Add Bank
+              </Text>
+              <Text className="text-xs text-gray-500 text-center">
+                Connect via Plaid
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
