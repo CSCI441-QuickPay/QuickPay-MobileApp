@@ -1,26 +1,26 @@
-import React, { useState, useEffect, useCallback } from "react";
+import BottomNav from "@/components/BottomNav";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import { getFavoritesCount } from "@/data/favorites";
+import { getUserStats } from "@/data/user";
+import UserModel from "@/models/UserModel";
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import * as Clipboard from "expo-clipboard";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   ScrollView,
-  Text,
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
   Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useUser, useAuth } from "@clerk/clerk-expo";
-import { LinearGradient } from "expo-linear-gradient";
-import BottomNav from "@/components/BottomNav";
-import { userCards, getUserStats } from "@/data/user";
-import { getFavoritesCount } from "@/data/favorites";
-import UserModel from "@/models/UserModel";
-import { useDemoMode } from "@/contexts/DemoModeContext";
 import { fetchProfile } from "../../services/profileService";
 import { Profile as SupaProfile } from "../../types/Profile";
 // Get initials from name
@@ -536,7 +536,7 @@ export default function Profile() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to Terms")}
+              onPress={() => router.push("/term_condition")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
