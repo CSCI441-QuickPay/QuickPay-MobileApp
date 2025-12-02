@@ -189,7 +189,7 @@ export default function Home() {
             params: { initialAmount: "0" },
           })
         }
-        onSend={() => router.push("/favorite")}
+        onSend={() => router.push("/send")}
         showLinkAccount={hasPlaidLinked === false}
         onLinkAccount={async () => {
           if (user) {

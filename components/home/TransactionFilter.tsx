@@ -87,8 +87,8 @@ export default function TransactionFilter({ onFilterChange }: TransactionFilterP
       {/* Title with Clear Button */}
       <View className="flex-row items-center justify-between mb-3">
         <Text className="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">
-            Transactions
-          </Text>        {hasActiveFilters && (
+            Transactions</Text>        
+          {hasActiveFilters && (
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => {
