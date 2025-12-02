@@ -121,10 +121,10 @@ export default function TransactionList({ filters, transactions: transactionsPro
   const groupedTransactions = groupTransactionsByDate(filteredTransactions);
 
   return (
-    <ScrollView 
-      className="flex-1" 
+    <ScrollView
+      className="flex-1"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
+      contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}
     >
       {Object.keys(groupedTransactions).map((date) => (
         <View key={date} className="mb-4">
