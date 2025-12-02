@@ -1,19 +1,18 @@
-
 // React / Expo imports
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 // Navigation hook from Expo Router
@@ -28,11 +27,11 @@ import { useUser } from "@clerk/clerk-expo";
 // Your Supabase service functions + types
 // NOTE: ../../ because profile.tsx is inside app/main/
 import {
-    fetchProfile,
-    updateMerchantMode,
-    updatePhoneNumber,
-    uploadAvatar,
-    upsertProfile,
+  fetchProfile,
+  updateMerchantMode,
+  updatePhoneNumber,
+  uploadAvatar,
+  upsertProfile,
 } from "../../services/profileService";
 
 import { Profile } from "../../types/Profile";
@@ -211,53 +210,50 @@ export default function MyProfileScreen() {
   const merchantEnabled = profile.merchant_mode ?? false;
 
   //Handle change avatar
- const handleChangeAvatar = async () => {
-  if (!clerkUserId) return;
+  const handleChangeAvatar = async () => {
+    if (!clerkUserId) return;
 
-  try {
-    setErrorText(null);
-    setAvatarError(false);
+    try {
+      setErrorText(null);
+      setAvatarError(false);
 
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      setErrorText("Permission to access photos was denied.");
-      return;
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        setErrorText("Permission to access photos was denied.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (result.canceled) return;
+
+      const uri = result.assets[0]?.uri;
+      if (!uri) return;
+
+      setUploadingAvatar(true);
+
+      // Upload to Supabase
+      await uploadAvatar(clerkUserId, uri);
+
+      // Refetch updated full row from DB
+      const fresh = await fetchProfile(clerkUserId);
+      if (fresh) setProfile(fresh);
+    } catch (err) {
+      console.log("Avatar upload error:", err);
+      setErrorText("Failed to update profile picture.");
+    } finally {
+      setUploadingAvatar(false);
     }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-
-    if (result.canceled) return;
-
-    const uri = result.assets[0]?.uri;
-    if (!uri) return;
-
-    setUploadingAvatar(true);
-
-    // Upload to Supabase
-    await uploadAvatar(clerkUserId, uri);
-
-    // Refetch updated full row from DB
-    const fresh = await fetchProfile(clerkUserId);
-    if (fresh) setProfile(fresh);
-
-  } catch (err) {
-    console.log("Avatar upload error:", err);
-    setErrorText("Failed to update profile picture.");
-  } finally {
-    setUploadingAvatar(false);
-  }
-};
-
-  
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#050816]">
-      {/* Handles iOS keyboard nicely */}
+    <SafeAreaView className="flex-1" style={{ backgroundColor: "#00332d" }}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -266,149 +262,209 @@ export default function MyProfileScreen() {
           className="flex-1"
           contentContainerStyle={{ paddingBottom: 24 }}
         >
-          {/* -------------------------------------- */}
           {/* Top Bar */}
-          {/* -------------------------------------- */}
           <View className="flex-row items-center px-4 py-2">
             <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="chevron-back" size={24} color="#F9FAFB" />
+              <Ionicons name="chevron-back" size={24} color="#ffffff" />
             </TouchableOpacity>
-            <Text className="flex-1 text-center text-slate-50 text-lg font-semibold">
+
+            <Text
+              className="flex-1 text-center text-lg font-semibold"
+              style={{ color: "white" }}
+            >
               My Profile
             </Text>
+
             <View className="w-6" />
           </View>
 
           {/* Error Banner */}
           {errorText && (
-            <View className="mx-4 mt-1 mb-1 rounded-xl bg-red-500/10 border border-red-500/40 px-3 py-2">
-              <Text className="text-[11px] text-red-300">{errorText}</Text>
+            <View
+              style={{
+                backgroundColor: "rgba(255,0,0,0.1)",
+                borderColor: "rgba(255,0,0,0.3)",
+              }}
+              className="mx-4 mt-1 mb-1 rounded-xl border px-3 py-2"
+            >
+              <Text className="text-[11px]" style={{ color: "#ffb3b3" }}>
+                {errorText}
+              </Text>
             </View>
           )}
 
-          {/* -------------------------------------- */}
-          {/* Profile Header (avatar + name + app ID) */}
-          {/* -------------------------------------- */}
-          <View className="mx-4 mt-3 mb-6 rounded-2xl bg-slate-900/80 flex-row items-center p-5">
+          {/* Profile Header Card */}
+          <View
+            className="mx-4 mt-3 mb-6 rounded-2xl flex-row items-center p-5"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
+          >
             {/* Avatar */}
             <View className="relative">
-                <View className="w-20 h-20 rounded-full border-2 border-emerald-500/70 bg-slate-900 overflow-hidden items-center justify-center">
-                    {!avatarError && profile.profile_picture ? (
-                    <Image
-                        source={{ uri: profile.profile_picture }}
-                        className="w-20 h-20"
-                        resizeMode="cover"
-                        onError={() => {
-                        console.log("AVATAR FAILED:", profile.profile_picture);
-                        setAvatarError(true);
-                        }}
-                    />
-                    ) : (
-                    <Ionicons name="person" size={40} color="#9CA3AF" />
-                    )}
-                </View>
+              <View
+                className="w-20 h-20 rounded-full overflow-hidden items-center justify-center"
+                style={{
+                  backgroundColor: "#003d35",
+                  borderWidth: 2,
+                  borderColor: "#22C55E",
+                }}
+              >
+                {!avatarError && profile.profile_picture ? (
+                  <Image
+                    source={{ uri: profile.profile_picture }}
+                    className="w-20 h-20"
+                    resizeMode="cover"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <Ionicons name="person" size={40} color="#9CA3AF" />
+                )}
+              </View>
 
-                <TouchableOpacity
-                    onPress={handleChangeAvatar}
-                    disabled={uploadingAvatar}
-                    className="absolute -bottom-1 right-0 w-7 h-7 rounded-full bg-emerald-500 items-center justify-center"
-                >
-                    {uploadingAvatar ? (
-                    <ActivityIndicator size="small" color="#F9FAFB" />
-                    ) : (
-                    <Ionicons name="camera" size={16} color="#F9FAFB" />
-                    )}
-                </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleChangeAvatar}
+                disabled={uploadingAvatar}
+                className="absolute -bottom-1 right-0 w-7 h-7 rounded-full items-center justify-center"
+                style={{ backgroundColor: "#22C55E" }}
+              >
+                {uploadingAvatar ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Ionicons name="camera" size={16} color="white" />
+                )}
+              </TouchableOpacity>
             </View>
-
 
             {/* Name + App ID */}
             <View className="ml-4 flex-1">
-              <Text className="text-slate-50 text-lg font-bold">
+              <Text style={{ color: "white" }} className="text-lg font-bold">
                 {fullName}
               </Text>
-              <Text className="text-slate-400 mt-1">
+              <Text style={{ color: "#b5c8c3" }} className="mt-1">
                 App ID: {appIdDisplay}
               </Text>
             </View>
           </View>
 
-          {/* -------------------------------------- */}
           {/* Phone Number Section */}
-          {/* -------------------------------------- */}
-          <Text className="mt-8 mb-2 px-4 text-[11px] tracking-[1px] text-slate-400">
+          <Text
+            className="mt-8 mb-2 px-4 text-[11px] tracking-[1px]"
+            style={{ color: "#b5c8c3" }}
+          >
             REGISTERED PHONE NUMBER
           </Text>
 
-          <View className="mx-4 rounded-2xl bg-slate-950/70 border border-slate-800 px-4 py-4 mt-2 mb-4">
+          <View
+            className="mx-4 rounded-2xl px-4 py-4 mt-2 mb-4"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
+          >
             <View className="flex-row items-start">
-              <View className="w-8 h-8 rounded-full bg-slate-900 items-center justify-center">
+              <View
+                className="w-8 h-8 rounded-full items-center justify-center"
+                style={{ backgroundColor: "#003d35" }}
+              >
                 <Ionicons name="call-outline" size={18} color="#22C55E" />
               </View>
 
-              {/* Editing Mode */}
+              {/* EDITING MODE */}
               {editingPhone ? (
                 <View className="flex-1 ml-3">
                   <TextInput
-                    className="border-b border-slate-700 text-slate-50 text-base pb-1"
+                    className="border-b text-base pb-1"
                     placeholder="+1..."
-                    placeholderTextColor="#6B7280"
+                    placeholderTextColor="#8fa7a1"
                     keyboardType="phone-pad"
                     value={phoneInput}
                     onChangeText={setPhoneInput}
+                    style={{
+                      borderColor: "rgba(255,255,255,0.2)",
+                      color: "white",
+                    }}
                   />
                 </View>
               ) : (
-                // View Mode
                 <View className="flex-1 ml-3">
-                  <Text className="text-slate-50 text-base font-medium">
+                  <Text
+                    style={{ color: "white" }}
+                    className="text-base font-medium"
+                  >
                     {profile.phone_number || "Add phone number"}
                   </Text>
                 </View>
               )}
 
-              {/* Action Button */}
+              {/* SAVE / CHANGE BUTTON */}
               {editingPhone ? (
                 <TouchableOpacity
                   onPress={handleSavePhone}
                   disabled={savingPhone}
                 >
-                  <Text className="text-sky-400 text-xs font-semibold">
+                  <Text
+                    style={{ color: "#4cc3ff" }}
+                    className="text-xs font-semibold"
+                  >
                     {savingPhone ? "Saving..." : "SAVE"}
                   </Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity onPress={() => router.push("/update_phone")}>
-                  <Text className="text-sky-400 text-xs font-semibold">
+                  <Text
+                    style={{ color: "#4cc3ff" }}
+                    className="text-xs font-semibold"
+                  >
                     CHANGE
                   </Text>
                 </TouchableOpacity>
               )}
             </View>
 
-            <Text className="text-slate-400 text-[11px] mt-2">
+            <Text style={{ color: "#b5c8c3" }} className="text-[11px] mt-2">
               Keep your phone number updated to maintain access to QuickPay.
             </Text>
           </View>
 
-          {/* -------------------------------------- */}
-          {/* Merchant Mode Toggle */}
-          {/* -------------------------------------- */}
-          <Text className="mt-5 mb-1 px-4 text-[11px] text-slate-400 tracking-[1px]">
+          {/* Merchant Mode */}
+          <Text
+            className="mt-5 mb-1 px-4 text-[11px] tracking-[1px]"
+            style={{ color: "#b5c8c3" }}
+          >
             QUICKPAY MERCHANT MODE
           </Text>
 
-          <View className="mx-4 rounded-2xl bg-slate-950/70 border border-slate-800 px-3 py-3">
+          <View
+            className="mx-4 rounded-2xl px-3 py-3"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
+          >
             <View className="flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-slate-900 items-center justify-center">
+              <View
+                className="w-8 h-8 rounded-full items-center justify-center"
+                style={{ backgroundColor: "#003d35" }}
+              >
                 <Ionicons name="storefront-outline" size={18} color="#22C55E" />
               </View>
 
               <View className="flex-1 ml-3">
-                <Text className="text-slate-50 text-[15px] font-semibold">
+                <Text
+                  style={{ color: "white" }}
+                  className="text-[15px] font-semibold"
+                >
                   Merchant Mode
                 </Text>
-                <Text className="text-slate-400 text-[11px] mt-1 leading-4">
+                <Text
+                  style={{ color: "#b5c8c3" }}
+                  className="text-[11px] mt-1 leading-4"
+                >
                   Turn on Merchant Mode to manage daily sales and track
                   performance.
                 </Text>
@@ -417,43 +473,57 @@ export default function MyProfileScreen() {
               <Switch
                 value={merchantEnabled}
                 onValueChange={handleToggleMerchant}
-                thumbColor={merchantEnabled ? "#22C55E" : "#E5E7EB"}
-                trackColor={{ false: "#4B5563", true: "#16A34A" }}
+                thumbColor={merchantEnabled ? "#22C55E" : "#e5e7eb"}
+                trackColor={{ false: "#4B5563", true: "#145c3a" }}
               />
             </View>
           </View>
 
-          {/* -------------------------------------- */}
-          {/* Personal Details Section */}
-          {/* -------------------------------------- */}
-          <Text className="mt-5 mb-1 px-4 text-[11px] text-slate-400 tracking-[1px]">
+          {/* Personal Details */}
+          <Text
+            className="mt-5 mb-1 px-4 text-[11px] tracking-[1px]"
+            style={{ color: "#b5c8c3" }}
+          >
             PERSONAL DETAILS
           </Text>
 
-          <View className="mx-4 rounded-2xl bg-slate-950/70 border border-slate-800 px-3 py-3">
+          <View
+            className="mx-4 rounded-2xl px-3 py-3"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.05)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.08)",
+            }}
+          >
             <ProfileRow
               icon="mail-outline"
               label="Email"
               value={profile.email || ""}
             />
-
-            <View className="h-px bg-slate-800 -mx-3" />
+            <View
+              className="h-px"
+              style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+            />
 
             <ProfileRow
               icon="person-outline"
               label="First Name"
               value={profile.first_name || ""}
             />
-
-            <View className="h-px bg-slate-800 -mx-3" />
+            <View
+              className="h-px"
+              style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+            />
 
             <ProfileRow
               icon="person-outline"
               label="Last Name"
               value={profile.last_name || ""}
             />
-
-            <View className="h-px bg-slate-800 -mx-3" />
+            <View
+              className="h-px"
+              style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+            />
 
             <ProfileRow
               icon="call-outline"

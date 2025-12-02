@@ -1,22 +1,22 @@
 // app/main/update-phone.tsx
-import React, { useRef, useState } from "react";
+import { useUser } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
   ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 import PhoneInput from "react-native-phone-number-input";
-import { useUser } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
 
 import { updatePhoneNumber } from "../../services/profileService";
 
@@ -224,7 +224,7 @@ export default function UpdatePhoneScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* TOP BAR WITH CHEVRON (fixed at top) */}
-          <View className="pt-12 px-4 pb-2">
+          <View className="pt-12 px-4 pb-2 mt-12">
             <TouchableOpacity onPress={handleBack}>
               <Ionicons name="chevron-back" size={26} color="#111827" />
             </TouchableOpacity>
