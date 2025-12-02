@@ -75,10 +75,10 @@ export default function UpdatePhoneScreen() {
       setPhoneObjId(newPhoneObj.id);
 
       // 4. Send SMS with verification code
-      await newPhoneObj.prepareVerification({ strategy: "phone_code" as any });
-
+      await newPhoneObj.prepareVerification();
+      
       setOtpSent(true);
-
+      
       setTimeout(() => {
         otpRefs.current[0]?.focus();
       }, 300);
