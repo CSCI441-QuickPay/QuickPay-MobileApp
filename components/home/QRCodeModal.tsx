@@ -14,6 +14,7 @@ import QRCode from "react-native-qrcode-svg";
 import * as Sharing from "expo-sharing";
 import ViewShot from "react-native-view-shot";
 import UserModel from "@/models/UserModel";
+import { supabase } from "@/config/supabaseConfig";
 
 interface QRCodeModalProps {
   visible: boolean;
@@ -38,12 +39,36 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
 
       try {
         setLoading(true);
-        const dbUser = await UserModel.getByClerkId(user.id);
-        if (dbUser) {
-          setAccountNumber(dbUser.accountNumber);
+        console.log("🔍 QRCodeModal: Fetching user for Clerk ID:", user.id);
+
+        // Direct Supabase query to bypass any caching
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('clerk_id', user.id)
+          .single();
+
+        console.log("🔍 QRCodeModal: Raw Supabase response:");
+        console.log("   - Has data:", !!data);
+        console.log("   - Error:", error?.message || "none");
+        console.log("   - Email:", data?.email);
+        console.log("   - account_number field:", data?.account_number);
+        console.log("   - Type of account_number:", typeof data?.account_number);
+        console.log("   - Full data:", JSON.stringify(data, null, 2));
+
+        if (error) {
+          console.error("❌ Supabase query error:", error);
+        }
+
+        if (data?.account_number) {
+          console.log("✅ Account number FOUND:", data.account_number);
+          setAccountNumber(data.account_number);
+        } else {
+          console.warn("⚠️ Account number is NULL/undefined in database");
+          console.warn("   Check Supabase dashboard to confirm the value exists");
         }
       } catch (error) {
-        console.error("Error loading account number:", error);
+        console.error("❌ Error loading account number:", error);
       } finally {
         setLoading(false);
       }
