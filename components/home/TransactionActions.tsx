@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons} from '@expo/vector-icons';
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SplitTransactionModal } from './SplitTransaction';
@@ -13,11 +13,26 @@ export default function TransactionActions({ visible, transaction }: { visible: 
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [returnModalVisible, setReturnModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [localTransaction, setLocalTransaction] = useState(transaction);
 
   if (!visible) return null;
 
-  const isSplit = transaction?.splitData?.splits?.length > 0;
-  const canSplit = transaction.amount < 0;
+  const isSplit = localTransaction?.splitData?.splits?.length > 0;
+  const canSplit = localTransaction.amount < 0;
+
+  const handleSplitCreated = (splitData: any) => {
+    setLocalTransaction((prev: any) => ({
+      ...prev,
+      splitData,
+    }));
+  };
+
+  const handleSplitCanceled = () => {
+    setLocalTransaction((prev: any) => ({
+      ...prev,
+      splitData: undefined,
+    }));
+  };
 
   return (
     <>
@@ -27,15 +42,13 @@ export default function TransactionActions({ visible, transaction }: { visible: 
         <ActionButton
           icon="share-outline"
           label="Export"
-          onPress={() => setExportModalVisible(true)}
-        />
+          onPress={() => setExportModalVisible(true)} disabled={undefined} active={undefined}        />
 
         {/* 2️⃣ Return Transaction */}
         <ActionButton
           icon="refresh-outline"
           label="Return"
-          onPress={() => setReturnModalVisible(true)}
-        />
+          onPress={() => setReturnModalVisible(true)} disabled={undefined} active={undefined}        />
 
         {/* 3️⃣ Split Transaction */}
         <ActionButton
@@ -51,15 +64,16 @@ export default function TransactionActions({ visible, transaction }: { visible: 
         <ActionButton
           icon="ellipsis-horizontal"
           label="More"
-          onPress={() => setDetailModalVisible(true)}
-        />
+          onPress={() => setDetailModalVisible(true)} disabled={undefined} active={undefined}        />
       </View>
 
       {/* Modals */}
       <SplitTransactionModal
         visible={splitModalVisible}
         onClose={() => setSplitModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
+        onSplitCreated={handleSplitCreated}
+        onSplitCanceled={handleSplitCanceled}
       />
       <ExportReceiptModal
         visible={exportModalVisible}

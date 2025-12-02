@@ -5,6 +5,7 @@ export interface User {
   id?: string;
   clerkId: string;
   email: string;
+  accountNumber: string;
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
@@ -23,6 +24,7 @@ interface DBUser {
   id: string;
   clerk_id: string;
   email: string;
+  account_number: string;
   first_name?: string;
   last_name?: string;
   phone_number?: string;
@@ -44,6 +46,7 @@ export default class UserModel {
       id: dbUser.id,
       clerkId: dbUser.clerk_id,
       email: dbUser.email,
+      accountNumber: dbUser.account_number,
       firstName: dbUser.first_name,
       lastName: dbUser.last_name,
       phoneNumber: dbUser.phone_number,
@@ -252,6 +255,27 @@ export default class UserModel {
       return this.toUser(data as DBUser);
     } catch (err) {
       console.error('❌ Error updating Plaid info:', err);
+      throw err;
+    }
+  }
+
+  /** Get user by account number */
+  static async getByAccountNumber(accountNumber: string): Promise<User | null> {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('account_number', accountNumber)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') return null; // Not found
+        throw error;
+      }
+
+      return this.toUser(data as DBUser);
+    } catch (err) {
+      console.error('❌ Error fetching user by account number:', err);
       throw err;
     }
   }

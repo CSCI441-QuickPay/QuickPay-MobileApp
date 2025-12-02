@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
 import { Slot } from "expo-router";
 import { LogBox } from "react-native";
+import { DemoModeProvider } from "@/contexts/DemoModeContext";
 import "../global.css";
 
 // Suppress specific warnings
@@ -47,7 +48,9 @@ export default function RootLayout() {
 
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} tokenCache={tokenCache}>
-      <Slot />
+      <DemoModeProvider>
+        <Slot />
+      </DemoModeProvider>
     </ClerkProvider>
   );
 }

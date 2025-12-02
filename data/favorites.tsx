@@ -1,13 +1,18 @@
 /**
- * favorites.tsx
- * Static favorites data - synced across the app
+ * ============================================
+ * MOCK DATA - FOR DEMO MODE ONLY
+ * ============================================
+ *
+ * This file contains mock favorites data used when Demo Mode is enabled.
+ * Do not delete - this data is used for testing and demonstrations.
+ *
+ * To enable Demo Mode: Toggle setting in Profile page
  */
 
 export interface FavoriteContact {
   id: string;
   name: string;
-  phoneNumber?: string;
-  email?: string;
+  accountNumber: string;
   nickname?: string;
   addedDate: string;
   lastTransactionDate?: string;
@@ -22,8 +27,7 @@ export const favoriteContacts: FavoriteContact[] = [
   {
     id: "1",
     name: "John Doe",
-    phoneNumber: "(555) 123-4567",
-    email: "john@example.com",
+    accountNumber: "4532123456",
     nickname: "Dad",
     addedDate: "2024-01-15",
     totalTransactions: 12,
@@ -32,8 +36,7 @@ export const favoriteContacts: FavoriteContact[] = [
   {
     id: "2",
     name: "Jane Smith",
-    phoneNumber: "(555) 987-6543",
-    email: "jane@example.com",
+    accountNumber: "4532987654",
     addedDate: "2024-03-22",
     totalTransactions: 8,
     lastTransactionDate: "2025-10-15",
@@ -41,7 +44,7 @@ export const favoriteContacts: FavoriteContact[] = [
   {
     id: "3",
     name: "Michael Johnson",
-    email: "michael@example.com",
+    accountNumber: "4532456789",
     nickname: "Mike",
     addedDate: "2024-06-10",
     totalTransactions: 5,
@@ -50,7 +53,7 @@ export const favoriteContacts: FavoriteContact[] = [
   {
     id: "4",
     name: "Emily Davis",
-    phoneNumber: "(555) 456-7890",
+    accountNumber: "4532678901",
     nickname: "Mom",
     addedDate: "2024-01-20",
     totalTransactions: 15,

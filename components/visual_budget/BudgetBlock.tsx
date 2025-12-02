@@ -91,7 +91,7 @@ export default function BudgetBlock({
   };
 
   const displayAmount = calculateDisplayAmount();
-  
+
   // Calculate the denominator for display (total budget before children allocations)
   const calculateTotalForDisplay = () => {
     if (category.id === 'total' && categories) {
@@ -136,8 +136,8 @@ export default function BudgetBlock({
           </TouchableOpacity>
         )}
 
-        {/* Mini Delete Button */}
-        {category.type === 'category' && !isShaking && onDelete && (
+        {/* Mini Delete Button - only show for subcategories (not main budget block) */}
+        {category.type === 'category' && category.id !== 'total' && !isShaking && onDelete && (
           <TouchableOpacity
             onPress={onDelete}
             style={createMiniButtonStyle('delete', category.color)}
@@ -203,7 +203,7 @@ export default function BudgetBlock({
 
         {category.type === 'bank' && (
           <Text style={{ ...amountStyle, color: category.color }}>
-            ${category.budget}
+            ${category.budget.toFixed(2)}
           </Text>
         )}
       </TouchableOpacity>

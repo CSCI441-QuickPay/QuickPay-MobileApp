@@ -1,6 +1,13 @@
 /**
- * budget.tsx
- * Static data and configuration for budget system
+ * ============================================
+ * MOCK DATA - FOR DEMO MODE ONLY
+ * ============================================
+ *
+ * This file contains mock data used when Demo Mode is enabled.
+ * Do not delete - this data is used for testing and demonstrations.
+ *
+ * To enable Demo Mode: Toggle setting in Profile page
+ *
  * SYNCED with transaction data - Total Balance: $1,348.17
  */
 
@@ -47,7 +54,7 @@ export const banks: Bank[] = [
  * Total Balance: $1,348.17 (synced with transactions)
  */
 export const budgetCategories: TreeBudgetCategory[] = [
-  // Banks (money sources) - Updated to match total balance
+  // Banks (money sources) - QuickPay will be added at x:60, so these are shifted right
   {
     id: 'bank1',
     name: 'Chase',
@@ -57,7 +64,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     budget: 550.00,
     parentId: null,
     children: ['total'],
-    position: { x: 60, y: 30 },
+    position: { x: 260, y: 30 },
     type: 'bank',
   },
   {
@@ -69,7 +76,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     budget: 450.00,
     parentId: null,
     children: ['total'],
-    position: { x: 260, y: 30 },
+    position: { x: 460, y: 30 },
     type: 'bank',
   },
   {
@@ -81,7 +88,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     budget: 200.17,
     parentId: null,
     children: ['total'],
-    position: { x: 460, y: 30 },
+    position: { x: 660, y: 30 },
     type: 'bank',
   },
   {
@@ -93,7 +100,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     budget: 148.00,
     parentId: null,
     children: ['total'],
-    position: { x: 660, y: 30 },
+    position: { x: 860, y: 30 },
     type: 'bank',
   },
   
@@ -102,7 +109,7 @@ export const budgetCategories: TreeBudgetCategory[] = [
     id: 'total',
     name: 'Current Budget',
     icon: 'cash',
-    color: '#1F2937',
+    color: '#6366F1',
     spent: 0, // Container block - spending tracked in categories below
     budget: 1348.17, // Updated to match transaction total
     parentId: null,

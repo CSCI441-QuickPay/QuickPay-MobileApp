@@ -3,6 +3,18 @@ import AddCategoryModal from '@/components/visual_budget/BudgetModals/AddCategor
 import EditCategoryInfoModal from '@/components/visual_budget/BudgetModals/EditCategoryInfoModal';
 import TransactionModal from '@/components/visual_budget/BudgetModals/TransactionModal';
 
+interface BudgetModalsProps {
+  modalState: any;
+  setModalState: any;
+  categories: any[];
+  setCategories: any;
+  selectedCategory: any;
+  setSelectedCategory: any;
+  parentForNewCategory: any;
+  setParentForNewCategory: any;
+  onDeleteCategory?: (category: any) => void;
+}
+
 export default function BudgetModals({
   modalState,
   setModalState,
@@ -12,8 +24,9 @@ export default function BudgetModals({
   setSelectedCategory,
   parentForNewCategory,
   setParentForNewCategory,
-}: any) {
-  
+  onDeleteCategory,
+}: BudgetModalsProps) {
+
   // ✅ Calculate positions for ALL children to maintain symmetry
   const repositionAllChildren = (parentId: string, categories: any[]) => {
     const parent = categories.find((c: any) => c.id === parentId);
@@ -41,6 +54,148 @@ export default function BudgetModals({
     });
 
     return updates;
+  };
+
+  // ✅ Get all descendants of a category (recursive)
+  const getAllDescendants = (categoryId: string, allCategories: any[]): any[] => {
+    const category = allCategories.find((c: any) => c.id === categoryId);
+    if (!category || !category.children || category.children.length === 0) {
+      return [];
+    }
+
+    let descendants: any[] = [];
+    category.children.forEach((childId: string) => {
+      const child = allCategories.find((c: any) => c.id === childId);
+      if (child) {
+        descendants.push(child);
+        // Recursively get children's descendants
+        descendants = descendants.concat(getAllDescendants(childId, allCategories));
+      }
+    });
+
+    return descendants;
+  };
+
+  // ✅ Calculate total remaining balance for a category and all its descendants
+  const calculateTotalRemaining = (category: any, allCategories: any[]): number => {
+    // Remaining for this category (budget - spent - allocated to children)
+    let remaining = category.budget - category.spent;
+
+    // If has children, subtract their allocated budgets
+    if (category.children && category.children.length > 0) {
+      const childrenBudgetSum = category.children.reduce((sum: number, childId: string) => {
+        const child = allCategories.find((c: any) => c.id === childId);
+        return sum + (child?.budget || 0);
+      }, 0);
+      remaining -= childrenBudgetSum;
+    }
+
+    // Add remaining from all descendants
+    const descendants = getAllDescendants(category.id, allCategories);
+    descendants.forEach((descendant: any) => {
+      let descendantRemaining = descendant.budget - descendant.spent;
+      // Subtract children's allocated budgets
+      if (descendant.children && descendant.children.length > 0) {
+        const childrenBudgetSum = descendant.children.reduce((sum: number, childId: string) => {
+          const child = allCategories.find((c: any) => c.id === childId);
+          return sum + (child?.budget || 0);
+        }, 0);
+        descendantRemaining -= childrenBudgetSum;
+      }
+      remaining += descendantRemaining;
+    });
+
+    return remaining;
+  };
+
+  // ✅ Handle category deletion with cascade and balance return
+  const handleDeleteCategory = (category: any) => {
+    // If onDeleteCategory callback is provided, use it (opens DeleteBudgetBlockModal)
+    // Otherwise, fall back to Alert (for backwards compatibility)
+    if (onDeleteCategory) {
+      // Close the current modal
+      setModalState((s: any) => ({ ...s, edit: false, transaction: false }));
+      // Trigger the delete modal
+      onDeleteCategory(category);
+      return;
+    }
+
+    // FALLBACK: Old Alert-based deletion (kept for backwards compatibility)
+    const descendants = getAllDescendants(category.id, categories);
+    const totalRemaining = calculateTotalRemaining(category, categories);
+
+    let confirmMessage = `Are you sure you want to delete "${category.name}"?`;
+
+    if (descendants.length > 0) {
+      confirmMessage += `\n\nThis will also delete ${descendants.length} child ${descendants.length === 1 ? 'category' : 'categories'}:`;
+      descendants.slice(0, 5).forEach((desc: any) => {
+        confirmMessage += `\n• ${desc.name}`;
+      });
+      if (descendants.length > 5) {
+        confirmMessage += `\n• ... and ${descendants.length - 5} more`;
+      }
+    }
+
+    if (totalRemaining > 0) {
+      confirmMessage += `\n\n$${totalRemaining.toFixed(2)} will be returned to Current Budget.`;
+    }
+
+    confirmMessage += '\n\nThis action cannot be undone.';
+
+    Alert.alert(
+      'Delete Budget Block',
+      confirmMessage,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            setCategories((prev: any) => {
+              const categoryToDelete = prev.find((c: any) => c.id === category.id);
+              const parentId = categoryToDelete?.parentId;
+              const idsToDelete = [category.id, ...descendants.map((d: any) => d.id)];
+
+              const withoutDeleted = prev
+                .filter((c: any) => !idsToDelete.includes(c.id))
+                .map((c: any) => {
+                  if (categoryToDelete && c.id === categoryToDelete.parentId) {
+                    return {
+                      ...c,
+                      children: c.children.filter((childId: string) => childId !== category.id)
+                    };
+                  }
+                  if (c.id === 'total' && totalRemaining > 0) {
+                    return {
+                      ...c,
+                      budget: c.budget + totalRemaining
+                    };
+                  }
+                  return c;
+                });
+
+              if (parentId) {
+                const positionUpdates = repositionAllChildren(parentId, withoutDeleted);
+                return withoutDeleted.map((c: any) => {
+                  const update = positionUpdates.find((u: any) => u.id === c.id);
+                  if (update) {
+                    return { ...c, position: update.position };
+                  }
+                  return c;
+                });
+              }
+
+              return withoutDeleted;
+            });
+
+            setModalState((s: any) => ({ ...s, edit: false, transaction: false }));
+          },
+        },
+      ]
+    );
   };
 
   // ✅ Calculate position for new category based on parent
@@ -156,6 +311,7 @@ export default function BudgetModals({
       <EditCategoryInfoModal
         visible={modalState.edit}
         category={selectedCategory}
+        categories={categories}
         onClose={() => setModalState((s: any) => ({ ...s, edit: false }))}
         onSave={(updated: any) => {
           setCategories((prev: any) =>
@@ -165,53 +321,18 @@ export default function BudgetModals({
           );
           setModalState((s: any) => ({ ...s, edit: false }));
         }}
+        onDelete={() => handleDeleteCategory(selectedCategory)}
       />
 
       <TransactionModal
         visible={modalState.transaction}
         category={selectedCategory}
+        categories={categories}
         onClose={() => setModalState((s: any) => ({ ...s, transaction: false }))}
         onEdit={() => {
           setModalState((s: any) => ({ ...s, transaction: false, edit: true }));
         }}
-        onDelete={() => {
-          // ✅ Remove category and reposition remaining siblings
-          setCategories((prev: any) => {
-            const categoryToDelete = prev.find((c: any) => c.id === selectedCategory.id);
-            const parentId = categoryToDelete?.parentId;
-
-            // Remove category and update parent's children array
-            const withoutDeleted = prev
-              .filter((c: any) => c.id !== selectedCategory.id)
-              .map((c: any) => {
-                // Remove deleted category from parent's children
-                if (categoryToDelete && c.id === categoryToDelete.parentId) {
-                  return {
-                    ...c,
-                    children: c.children.filter((childId: string) => childId !== selectedCategory.id)
-                  };
-                }
-                return c;
-              });
-
-            // Reposition remaining siblings if there was a parent
-            if (parentId) {
-              const positionUpdates = repositionAllChildren(parentId, withoutDeleted);
-
-              // Apply position updates
-              return withoutDeleted.map((c: any) => {
-                const update = positionUpdates.find((u: any) => u.id === c.id);
-                if (update) {
-                  return { ...c, position: update.position };
-                }
-                return c;
-              });
-            }
-
-            return withoutDeleted;
-          });
-          setModalState((s: any) => ({ ...s, transaction: false }));
-        }}
+        onDelete={() => handleDeleteCategory(selectedCategory)}
       />
     </>
   );

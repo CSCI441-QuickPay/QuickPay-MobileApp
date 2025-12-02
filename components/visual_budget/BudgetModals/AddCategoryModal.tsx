@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { availableIcons, availableColors } from '@/data/budget';
+import { availableIcons, availableColors } from '@/constants/budgetConfig';
 
 interface AddCategoryModalProps {
   visible: boolean;
@@ -25,8 +25,41 @@ export default function AddCategoryModal({
   const budgetInputRef = useRef<TextInput>(null);
 
   const handleSave = () => {
-    if (!name.trim() || !budget.trim()) return;
-    onSave(name, budget, icon, color);
+    // Validate category name
+    if (!name.trim()) {
+      Alert.alert('Validation Error', 'Please enter a category name');
+      return;
+    }
+    if (name.trim().length < 2) {
+      Alert.alert('Invalid Input', 'Category name must be at least 2 characters long');
+      return;
+    }
+    if (name.trim().length > 50) {
+      Alert.alert('Invalid Input', 'Category name cannot exceed 50 characters');
+      return;
+    }
+
+    // Validate budget amount
+    if (!budget.trim()) {
+      Alert.alert('Validation Error', 'Please enter a budget amount');
+      return;
+    }
+
+    const numericBudget = parseFloat(budget.replace(/,/g, ''));
+    if (isNaN(numericBudget)) {
+      Alert.alert('Invalid Input', 'Please enter a valid number for budget amount');
+      return;
+    }
+    if (numericBudget < 0) {
+      Alert.alert('Invalid Input', 'Budget amount cannot be negative');
+      return;
+    }
+    if (numericBudget > 1000000) {
+      Alert.alert('Invalid Input', 'Budget amount cannot exceed $1,000,000');
+      return;
+    }
+
+    onSave(name.trim(), budget, icon, color);
     setName('');
     setBudget('');
     setIcon('wallet');
@@ -38,20 +71,28 @@ export default function AddCategoryModal({
       <View className="flex-1 bg-black/50 justify-end">
         <View className="bg-white rounded-t-3xl p-6 max-h-[85%]">
           {/* Header */}
-          <View className="flex-row justify-between items-center mb-6">
-            <View>
-              <Text className="text-3xl font-bold text-black">Add Category</Text>
-              {parentName && (
-                <Text className="text-sm text-gray-500 mt-1">Under: {parentName}</Text>
-              )}
+          <View className="flex-row items-center justify-between mb-6">
+            <View
+              className="w-12 h-12 rounded-full items-center justify-center mr-3"
+              style={{ backgroundColor: '#F3F4F6' }}
+            >
+              <Ionicons name="add-circle-outline" size={24} color="#00332d" />
             </View>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close-circle" size={36} color="#9CA3AF" />
+
+            <View className="flex-1">
+              <Text className="text-xl font-bold text-black">Add Category</Text>
+              <Text className="text-xs text-gray-500 mt-0.5">
+                {parentName ? `Sub-category of ${parentName}` : 'Create a new budget category'}
+              </Text>
+            </View>
+
+            <TouchableOpacity onPress={onClose} className="ml-2">
+              <Ionicons name="close-circle" size={32} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
 
           {/* Form */}
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <View>
             {/* Category Name */}
             <View className="mb-5">
               <Text className="text-base font-semibold text-gray-700 mb-2">Category Name</Text>
@@ -60,10 +101,17 @@ export default function AddCategoryModal({
                   placeholder="e.g., Entertainment"
                   placeholderTextColor="#9CA3AF"
                   value={name}
-                  onChangeText={setName}
+                  onChangeText={(text) => {
+                    // Allow letters, numbers, spaces, and common punctuation
+                    const sanitized = text.replace(/[^a-zA-Z0-9\s&'-]/g, '');
+                    if (sanitized.length <= 50) {
+                      setName(sanitized);
+                    }
+                  }}
                   returnKeyType="next"
                   onSubmitEditing={() => budgetInputRef.current?.focus()}
                   blurOnSubmit={false}
+                  maxLength={50}
                 />
               </View>
             </View>
@@ -80,12 +128,22 @@ export default function AddCategoryModal({
                   keyboardType="decimal-pad"
                   value={budget}
                   onChangeText={(v) => {
-                    // Allow digits, one dot, and commas (which we strip later anyway)
-                    const cleaned = v.replace(/[^0-9.,]/g, '');
+                    // Allow digits, one dot, and commas - but only one decimal point
+                    let cleaned = v.replace(/[^0-9.,]/g, '');
+                    // Ensure only one decimal point
+                    const parts = cleaned.split('.');
+                    if (parts.length > 2) {
+                      cleaned = parts[0] + '.' + parts.slice(1).join('');
+                    }
+                    // Limit to 2 decimal places
+                    if (parts.length === 2 && parts[1].length > 2) {
+                      cleaned = parts[0] + '.' + parts[1].substring(0, 2);
+                    }
                     setBudget(cleaned);
                   }}
                   returnKeyType="done"
                   onSubmitEditing={() => budgetInputRef.current?.blur()}
+                  maxLength={12}
                 />
               </View>
             </View>
@@ -189,14 +247,17 @@ export default function AddCategoryModal({
 
 
             {/* Save Button */}
-            <TouchableOpacity
-              onPress={handleSave}
-              activeOpacity={0.8}
-              className="bg-primary rounded-2xl py-4 items-center mb-4"
-            >
-              <Text className="text-secondary font-bold text-xl">Add Category</Text>
-            </TouchableOpacity>
-          </ScrollView>
+            <View className="pb-6">
+              <TouchableOpacity
+                onPress={handleSave}
+                activeOpacity={0.8}
+                className="bg-primary rounded-xl items-center justify-center"
+                style={{ height: 44 }}
+              >
+                <Text className="text-secondary font-semibold text-sm">Add Category</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </View>
     </Modal>

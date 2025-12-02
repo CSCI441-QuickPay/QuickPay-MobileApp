@@ -1,24 +1,28 @@
-import BottomNav from "@/components/BottomNav";
-import { getFavoritesCount } from "@/data/favorites";
-import { getUserStats } from "@/data/user";
-import { useAuth, useUser } from "@clerk/clerk-expo";
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import React, { useState, useEffect, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import { useCallback, useState } from "react";
 import {
   Alert,
   Image,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
+  TouchableOpacity,
+  ActivityIndicator,
+  Switch,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useUser, useAuth } from "@clerk/clerk-expo";
+import { LinearGradient } from "expo-linear-gradient";
+import BottomNav from "@/components/BottomNav";
+import { userCards, getUserStats } from "@/data/user";
+import { getFavoritesCount } from "@/data/favorites";
+import UserModel from "@/models/UserModel";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { fetchProfile } from "../../services/profileService";
 import { Profile as SupaProfile } from "../../types/Profile";
-
 // Get initials from name
 const getInitials = (name: string) => {
   const names = name.split(" ");
@@ -64,6 +68,90 @@ export default function Profile() {
       };
     }, [isLoaded, user?.id])
   );
+  const { isDemoMode, toggleDemoMode } = useDemoMode();
+  const [accountNumber, setAccountNumber] = useState<string>("");
+  const [loadingAccount, setLoadingAccount] = useState(true);
+  const [stats, setStats] = useState({ activeCards: 0, totalFavorites: 0 });
+
+  // Load account number and stats from database or mock data
+  useEffect(() => {
+    const loadProfileData = async () => {
+      if (!user) return;
+
+      try {
+        setLoadingAccount(true);
+
+        // Fetch real data from database first
+        const dbUser = await UserModel.getByClerkId(user.id);
+
+        // If Demo Mode is ON, merge real data with mock data
+        if (isDemoMode) {
+          console.log("🎭 Demo Mode ON - Merging real + mock data");
+
+          const BankAccountModel = (await import("@/models/BankAccountModel")).default;
+          const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+
+          // Get real data
+          const [bankAccounts, realFavorites] = await Promise.all([
+            BankAccountModel.getByUserId(dbUser?.id || ""),
+            FavoriteModel.getByUserId(dbUser?.id || "")
+          ]);
+
+          // Merge: real favorites + mock favorites
+          const mockFavoritesCount = getFavoritesCount();
+          const totalFavorites = realFavorites.length + mockFavoritesCount;
+
+          setStats({
+            activeCards: getUserStats(mockFavoritesCount).activeCards, // 4 from mock
+            totalFavorites: totalFavorites, // Real + Mock combined
+          });
+
+          // Use real account number even in Demo Mode
+          if (dbUser?.accountNumber) {
+            setAccountNumber(dbUser.accountNumber);
+          }
+
+          setLoadingAccount(false);
+          return;
+        }
+
+        // Real Mode - fetch from database
+        if (!dbUser) {
+          setStats({ activeCards: 0, totalFavorites: 0 });
+          setLoadingAccount(false);
+          return;
+        }
+
+        if (dbUser.accountNumber) {
+          setAccountNumber(dbUser.accountNumber);
+        }
+
+        // Fetch real stats from database
+        const BankAccountModel = (await import("@/models/BankAccountModel")).default;
+        const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+
+        const [bankAccounts, favorites] = await Promise.all([
+          BankAccountModel.getByUserId(dbUser.id!),
+          FavoriteModel.getByUserId(dbUser.id!)
+        ]);
+
+        setStats({
+          activeCards: bankAccounts.filter(acc => acc.isActive).length,
+          totalFavorites: favorites.length,
+        });
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+        // Fallback to empty stats on error
+        setStats({ activeCards: 0, totalFavorites: 0 });
+      } finally {
+        setLoadingAccount(false);
+      }
+    };
+
+    if (isLoaded && user) {
+      loadProfileData();
+    }
+  }, [user, isLoaded, isDemoMode]);
 
   if (!isLoaded) {
     return (
@@ -73,25 +161,17 @@ export default function Profile() {
     );
   }
 
-  // Prefer Supabase name/email first, then Clerk fallback
-  const fullName =
-    (supabaseProfile
-      ? `${supabaseProfile.first_name ?? ""} ${
-          supabaseProfile.last_name ?? ""
-        }`.trim()
-      : user
-      ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
-      : "") || "User";
+  const fullName = user
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User"
+    : "Guest";
+  const userEmail = user?.primaryEmailAddress?.emailAddress || "Not provided";
 
-  const userEmail =
-    supabaseProfile?.email ||
-    user?.primaryEmailAddress?.emailAddress ||
-    "Not provided";
-
-  // If you want, you can also show Supabase app_id/ID here instead of raw Clerk id
-  const userId = supabaseProfile?.app_id || user?.id?.slice(0, 8) || "Unknown";
-
-  const stats = getUserStats(getFavoritesCount());
+  const handleCopyAccountNumber = async () => {
+    if (accountNumber) {
+      await Clipboard.setStringAsync(accountNumber);
+      Alert.alert("Copied!", "Account number copied to clipboard");
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -181,11 +261,42 @@ export default function Profile() {
               </View>
             </View>
 
-            <View className="bg-white/10 px-3 py-2 rounded-lg self-start">
-              <Text className="text-white/90 text-xs font-semibold">
-                ID: {userId}
-              </Text>
-            </View>
+            {/* Account Number with Copy */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleCopyAccountNumber}
+              disabled={loadingAccount || !accountNumber}
+              className="bg-white/20 px-4 py-3 rounded-xl flex-row items-center justify-between"
+              style={{
+                minWidth: 200,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 3,
+              }}
+            >
+              <View className="flex-1">
+                <View className="flex-row items-center mb-1">
+                  <Ionicons name="shield-checkmark" size={14} color="#10B981" style={{ marginRight: 4 }} />
+                  <Text className="text-white/80 text-xs font-semibold">
+                    Verified Account
+                  </Text>
+                </View>
+                {loadingAccount ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text className="text-white font-bold text-base tracking-wider">
+                    {accountNumber || "Loading..."}
+                  </Text>
+                )}
+              </View>
+              {!loadingAccount && accountNumber && (
+                <View className="ml-3 w-8 h-8 rounded-full bg-white/20 items-center justify-center">
+                  <Ionicons name="copy-outline" size={16} color="white" />
+                </View>
+              )}
+            </TouchableOpacity>
           </LinearGradient>
         </View>
 
@@ -202,7 +313,7 @@ export default function Profile() {
               </Text>
             </View>
             <Text className="text-gray-600 text-sm font-medium">
-              Active Cards
+              Active Banks
             </Text>
           </TouchableOpacity>
 
@@ -362,6 +473,37 @@ export default function Profile() {
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </View>
             </TouchableOpacity>
+
+            {/* Demo Mode Toggle */}
+            <View
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-purple-50 items-center justify-center mr-3">
+                <Ionicons name="flask-outline" size={20} color="#8B5CF6" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-gray-900">
+                  Demo Mode
+                </Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  Use mock data for testing
+                </Text>
+              </View>
+              <Switch
+                value={isDemoMode}
+                onValueChange={toggleDemoMode}
+                trackColor={{ false: "#D1D5DB", true: "#A78BFA" }}
+                thumbColor={isDemoMode ? "#8B5CF6" : "#F3F4F6"}
+                ios_backgroundColor="#D1D5DB"
+              />
+            </View>
           </View>
         </View>
 

@@ -23,7 +23,8 @@ export const modalStyles = StyleSheet.create({
     borderTopRightRadius: 28,
     paddingHorizontal: 20,
     paddingTop: 20,
-    height: '65%',
+    maxHeight: '85%',
+    minHeight: '60%',
   },
 
   scrollArea: {
@@ -114,5 +115,10 @@ export const modalStyles = StyleSheet.create({
   closeButtonText: {
     fontWeight: '600',
     color: palette.textSecondary,
+  },
+
+  // Consistent button spacing
+  buttonContainer: {
+    paddingBottom: 24,
   },
 });

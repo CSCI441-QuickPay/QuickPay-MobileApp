@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   clerk_id TEXT UNIQUE NOT NULL,
   email TEXT UNIQUE NOT NULL,
+  account_number TEXT UNIQUE,
   first_name TEXT,
   last_name TEXT,
   phone_number TEXT,
