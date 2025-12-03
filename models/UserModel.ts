@@ -74,7 +74,7 @@ export default class UserModel {
           last_name: userData.lastName,
           phone_number: userData.phoneNumber,
           profile_picture: userData.profilePicture,
-          balance: userData.balance ?? 0,
+          balance: userData.balance ?? 500, // Start new users with $500 QuickPay balance
           is_active: userData.isActive ?? true,
           verified: userData.verified ?? false,
         })
