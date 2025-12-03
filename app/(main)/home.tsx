@@ -1,20 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useUser } from "@clerk/clerk-expo";
-import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import BalanceCard from "@/components/home/BalanceCard";
 import BottomNav from "@/components/BottomNav";
+import BalanceCard from "@/components/home/BalanceCard";
 import Header from "@/components/home/Header";
 import TransactionFilter from "@/components/home/TransactionFilter";
 import TransactionList from "@/components/home/TransactionList";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 import { banks } from "@/data/budget";
-import UserModel from "@/models/UserModel";
+import { transactions as mockTransactions } from "@/data/transaction";
 import TransactionModel from "@/models/TransactionModel";
+import UserModel from "@/models/UserModel";
 import {
   fetchPlaidAccounts,
   fetchPlaidTransactions,
@@ -23,6 +16,14 @@ import {
   transformPlaidTransaction,
 } from "@/services/PlaidService";
 import UserSyncService from "@/services/UserSyncService";
+import { useUser } from "@clerk/clerk-expo";
+import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { clearOldDemoTransactions } from "@/utils/clearOldDemoTransactions";
 
 export default function Home() {

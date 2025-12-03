@@ -3,20 +3,24 @@ import type { Profile } from "@/types/Profile";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Image,
   SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
+  Share,
+  Text, TouchableOpacity,
+  View
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { captureRef } from "react-native-view-shot";
 
 export default function RequestQR() {
   const { amount } = useLocalSearchParams();
   const { user } = useUser();
   const [profile, setProfile] = useState<Profile | null>(null);
+
+  // ❗ THIS REF IS REQUIRED
+  const qrRef = useRef(null);
 
   useEffect(() => {
     if (user?.id) fetchProfile(user.id).then(setProfile);
@@ -28,9 +32,38 @@ export default function RequestQR() {
 
   const avatar = profile?.profile_picture ?? null;
 
-  const formatWithCommas = (value: string) => {
-    if (!value) return "0";
-    return Number(value).toLocaleString("en-US");
+  const formatWithCommas = (value: string) =>
+    Number(value || 0).toLocaleString("en-US");
+
+  // 🔥 SHARE QR IMAGE
+  const shareQR = async () => {
+    try {
+      const uri = await captureRef(qrRef, {
+        format: "png",
+        quality: 1,
+      });
+
+      await Share.share({
+        url: uri,
+        title: "My QuickPay QR",
+        message: "Scan to send me money via QuickPay.",
+      });
+    } catch (err) {
+      console.log("shareQR error:", err);
+    }
+  };
+
+  // 🔥 SHARE DEEP LINK
+  const shareLink = async () => {
+    try {
+      const link = `quickpay://request?amount=${amount}&uid=${user?.id}`;
+
+      await Share.share({
+        message: `Send me money via QuickPay:\n${link}`,
+      });
+    } catch (err) {
+      console.log("shareLink error:", err);
+    }
   };
 
   return (
@@ -45,7 +78,9 @@ export default function RequestQR() {
           My QR Code
         </Text>
 
-        <View className="w-6" />
+        <TouchableOpacity onPress={shareQR}>
+          <Ionicons name="share-outline" size={26} color="#00332d" />
+        </TouchableOpacity>
       </View>
 
       {/* Main Card */}
@@ -80,36 +115,30 @@ export default function RequestQR() {
 
         {/* QR Code */}
         <View className="items-center mt-6">
-          <QRCode
-            value={`quickpay://request?amount=${amount}&uid=${user?.id}`}
-            size={220}
-            color="#00332d"
-            backgroundColor="white"
-          />
+          <View ref={qrRef} collapsable={false}>
+            <QRCode
+              value={`quickpay://request?amount=${amount}&uid=${user?.id}`}
+              size={220}
+              color="#00332d"
+              backgroundColor="white"
+            />
+          </View>
         </View>
 
-        {/* CHANGE + RESET Buttons */}
+        {/* CHANGE + RESET */}
         <View className="flex-row justify-between mt-6 gap-3">
-          {/* CHANGE */}
           <TouchableOpacity
             onPress={() =>
-              router.replace({
-                pathname: "/request",
-                params: { initialAmount: amount }, // keep amount
-              })
+              router.replace({ pathname: "/request", params: { initialAmount: amount } })
             }
             className="flex-1 bg-[#00332d]/90 py-3 rounded-xl items-center"
           >
             <Text className="text-white font-semibold">CHANGE</Text>
           </TouchableOpacity>
 
-          {/* RESET */}
           <TouchableOpacity
             onPress={() =>
-              router.replace({
-                pathname: "/request",
-                params: { initialAmount: "0" }, // reset
-              })
+              router.replace({ pathname: "/request", params: { initialAmount: "0" } })
             }
             className="flex-1 bg-gray-200 py-3 rounded-xl items-center"
           >
@@ -117,17 +146,16 @@ export default function RequestQR() {
           </TouchableOpacity>
         </View>
 
+        {/* SHARE BUTTONS */}
         <View className="mt-6 flex-row justify-center gap-10">
-          {/* Share QR */}
-          <TouchableOpacity className="items-center" activeOpacity={0.8}>
+          <TouchableOpacity onPress={shareQR} className="items-center">
             <View className="w-12 h-12 rounded-full bg-[#00332d]/10 items-center justify-center">
               <Ionicons name="qr-code-outline" size={26} color="#00332d" />
             </View>
             <Text className="text-[#00332d] text-xs mt-1">Share QR</Text>
           </TouchableOpacity>
 
-          {/* Share Link */}
-          <TouchableOpacity className="items-center" activeOpacity={0.8}>
+          <TouchableOpacity onPress={shareLink} className="items-center">
             <View className="w-12 h-12 rounded-full bg-[#00332d]/10 items-center justify-center">
               <Ionicons name="link-outline" size={26} color="#00332d" />
             </View>
