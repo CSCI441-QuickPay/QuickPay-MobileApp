@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity, ScrollView, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Contact component
 export default function ContactUs() {
@@ -30,7 +30,7 @@ export default function ContactUs() {
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView
+      <View
         className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
@@ -212,7 +212,7 @@ export default function ContactUs() {
             </Text>
           </View>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

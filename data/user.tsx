@@ -1,6 +1,12 @@
 /**
- * user.tsx
- * Static user data and configuration
+ * ============================================
+ * MOCK DATA - FOR DEMO MODE ONLY
+ * ============================================
+ *
+ * This file contains mock user data used when Demo Mode is enabled.
+ * Do not delete - this data is used for testing and demonstrations.
+ *
+ * To enable Demo Mode: Toggle setting in Profile page
  */
 
 export interface UserStats {

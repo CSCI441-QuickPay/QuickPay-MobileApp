@@ -44,7 +44,12 @@ export default function SplitCreateView({ transaction, existingSplit, onClose, o
 
   return (
     <>
-      <SplitTransactionHeader title="Split Transaction" subtitle={transaction?.title} onClose={onClose} />
+      <SplitTransactionHeader
+        title="Split Transaction"
+        subtitle="Divide this expense among multiple people"
+        icon="pie-chart-outline"
+        onClose={onClose}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="mb-5">
@@ -78,15 +83,17 @@ export default function SplitCreateView({ transaction, existingSplit, onClose, o
           </View>
         </View>
 
-        <TouchableOpacity
-          onPress={handleGenerate}
-          activeOpacity={0.8}
-          disabled={count < 2}
-          className="bg-primary rounded-2xl py-4 items-center mb-4"
-          style={{ opacity: count < 2 ? 0.5 : 1 }}
-        >
-          <Text className="text-secondary font-bold text-xl">Create Split</Text>
-        </TouchableOpacity>
+        <View className="pb-6">
+          <TouchableOpacity
+            onPress={handleGenerate}
+            activeOpacity={0.8}
+            disabled={count < 2}
+            className="bg-primary rounded-2xl py-4 items-center"
+            style={{ opacity: count < 2 ? 0.5 : 1 }}
+          >
+            <Text className="text-secondary font-bold text-xl">Create Split</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </>
   );

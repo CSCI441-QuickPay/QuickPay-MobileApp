@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Modal, View } from 'react-native';
+import { Modal, View, Alert } from 'react-native';
 import SplitCreateView from './SplitCreateView';
 import SplitConfirmationView from './SplitConfirmationView';
 import SplitStatusView from './SplitStatusView';
@@ -9,6 +9,7 @@ type SplitTransactionModalProps = {
   onClose: () => void;
   transaction: any;
   onSplitCreated?: (data: any) => void;
+  onSplitCanceled?: () => void;
 };
 
 export default function SplitTransactionModal({
@@ -16,6 +17,7 @@ export default function SplitTransactionModal({
   onClose,
   transaction,
   onSplitCreated,
+  onSplitCanceled,
 }: SplitTransactionModalProps) {
   const [tempSplit, setTempSplit] = useState<any | null>(null);
   const [showBanner, setShowBanner] = useState(false);
@@ -63,6 +65,28 @@ export default function SplitTransactionModal({
     onClose();
   };
 
+  const handleCancelSplit = () => {
+    Alert.alert(
+      'Cancel Split',
+      'Are you sure you want to cancel this split transaction? This action cannot be undone.',
+      [
+        {
+          text: 'No, Keep Split',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes, Cancel Split',
+          style: 'destructive',
+          onPress: () => {
+            setTempSplit(null);
+            onSplitCanceled?.();
+            handleClose();
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
       <View className="flex-1 bg-black/50 justify-end">
@@ -80,6 +104,7 @@ export default function SplitTransactionModal({
               splitData={effectiveSplit}
               onClose={handleClose}
               onEdit={handleEdit}
+              onCancelSplit={handleCancelSplit}
               showBanner={showBanner}
             />
           ) : (
@@ -88,6 +113,7 @@ export default function SplitTransactionModal({
               splitData={effectiveSplit}
               onClose={handleClose}
               onEdit={handleEdit}
+              onCancelSplit={handleCancelSplit}
             />
           )}
         </View>

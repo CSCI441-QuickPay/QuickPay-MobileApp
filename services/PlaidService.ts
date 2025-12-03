@@ -41,6 +41,11 @@ export interface PlaidTransaction {
   category?: string[];          // Plaid's categorization (e.g., ["Food and Drink", "Restaurants"])
   pending: boolean;             // Whether transaction is still pending or completed
   payment_channel: string;      // How payment was made (online, in store, etc.)
+  logo_url?: string;            // Merchant logo URL from Plaid
+  personal_finance_category?: { // Enhanced category information
+    primary: string;            // Primary category (e.g., "TRANSPORTATION")
+    detailed: string;           // Detailed category (e.g., "TRANSPORTATION_TAXIS_AND_RIDE_SHARES")
+  };
 }
 
 /**
@@ -147,30 +152,71 @@ export async function fetchPlaidAccounts(clerkId: string): Promise<PlaidAccount[
 
 /**
  * Calculate total balance from all accounts
+ * Note: Plaid returns balances in cents, so we divide by 100 to get dollars
  */
 export function calculateTotalBalance(accounts: PlaidAccount[]): number {
-  return accounts.reduce((total, account) => {
+  const totalCents = accounts.reduce((total, account) => {
     const balance = account.balances.current || account.balances.available || 0;
     return total + balance;
   }, 0);
+
+  // Convert cents to dollars
+  return totalCents / 100;
+}
+
+/**
+ * Format category name from UPPERCASE_SNAKE_CASE to Title Case
+ * Example: "FOOD_AND_DRINK" -> "Food and Drink"
+ *          "TRANSPORTATION" -> "Transportation"
+ */
+function formatCategoryName(category: string): string {
+  return category
+    .split('_')
+    .map((word, index) => {
+      // Lowercase words like "and", "or", "of" unless they're the first word
+      const lowercaseWords = ['and', 'or', 'of', 'the'];
+      const lowerWord = word.toLowerCase();
+
+      if (index > 0 && lowercaseWords.includes(lowerWord)) {
+        return lowerWord;
+      }
+
+      // Capitalize first letter, lowercase the rest
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
 }
 
 /**
  * Transform Plaid transaction to app transaction format
+ *
+ * Note: Plaid uses positive amounts for money OUT (expenses) and negative for money IN (income)
+ * We flip this to match typical accounting: negative for expenses, positive for income
  */
 export function transformPlaidTransaction(plaidTx: PlaidTransaction, accounts: PlaidAccount[]) {
   const account = accounts.find(acc => acc.account_id === plaidTx.account_id);
 
+  // Plaid: positive = money out, negative = money in
+  // App:   negative = money out, positive = money in
+  // So we flip the sign
+  const appAmount = -plaidTx.amount;
+
+  // Get category and format it nicely
+  const rawCategory = plaidTx.personal_finance_category?.primary || plaidTx.category?.[0] || 'Other';
+  const formattedCategory = rawCategory !== 'Other' ? formatCategoryName(rawCategory) : 'Other';
+
   return {
     id: plaidTx.transaction_id,
     title: plaidTx.merchant_name || plaidTx.name,
-    amount: Math.abs(plaidTx.amount),
+    amount: appAmount, // Now properly negative for expenses, positive for income
     date: plaidTx.date,
-    type: plaidTx.amount < 0 ? 'expense' : 'income',
-    category: plaidTx.category?.[0] || 'Other',
+    type: appAmount < 0 ? 'expense' : 'income',
+    category: formattedCategory, // Formatted as "Transportation", "Food and Drink", etc.
     bank: account?.name || 'Unknown Bank',
     status: plaidTx.pending ? 'pending' : 'completed',
     description: plaidTx.name,
+    subtitle: `${account?.name || 'Unknown Bank'}`, // Add bank name as subtitle
+    logo_url: plaidTx.logo_url, // Merchant logo from Plaid
   };
 }
 
@@ -193,5 +239,35 @@ export async function isPlaidLinked(clerkId: string): Promise<boolean> {
   } catch (error) {
     console.error('Error checking Plaid link status:', error);
     return false;
+  }
+}
+
+/**
+ * Unlink Plaid account (remove access token from database)
+ */
+export async function unlinkPlaidAccount(clerkId: string): Promise<boolean> {
+  try {
+    console.log('🔓 Unlinking Plaid account for user:', clerkId);
+
+    const response = await fetch(`${FUNCTIONS_URL}/plaid-unlink`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY!,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ clerkId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to unlink Plaid account');
+    }
+
+    console.log('✅ Plaid account unlinked successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Error unlinking Plaid account:', error);
+    throw error;
   }
 }

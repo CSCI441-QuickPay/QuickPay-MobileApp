@@ -6,14 +6,33 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "node": "20.19.4",
       "android": {
         "gradleCommand": ":app:assembleDebug",
         "buildType": "apk"
       }
     },
+
+    "ios-simulator": {
+      "developmentClient": true,
+      "ios": {
+        "simulator": true
+      },
+      "destruction": "internal"
+    },
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "node": "20.19.4"
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "environment": "development"
+    }
   }
 }

@@ -1,39 +1,94 @@
 /**
- * favorites.tsx
- * Shared FavoriteContact type (single source of truth)
+ * ============================================
+ * MOCK DATA - FOR DEMO MODE ONLY
+ * ============================================
+ *
+ * This file contains mock favorites data used when Demo Mode is enabled.
+ * Do not delete - this data is used for testing and demonstrations.
+ *
+ * To enable Demo Mode: Toggle setting in Profile page
  */
 
 export interface FavoriteContact {
   id: string;
-  // display / user-facing fields
-  name?: string; // optional display name
+  name: string;
+  accountNumber: string;
   nickname?: string;
-  // bank/account fields (used by DB mapping)
-  accountNumber?: string;
-  accountHolderName?: string;
-  accountHolderProfile?: string;
-  // contact fields
-  phoneNumber?: string;
-  email?: string;
-  // metadata
-  addedDate?: string;
+  addedDate: string;
   lastTransactionDate?: string;
   totalTransactions?: number;
 }
 
-/* Optional example data used for development */
+/**
+ * Default favorite contacts
+ * This data is shared across favorite.tsx, profile.tsx, and transfer features
+ */
 export const favoriteContacts: FavoriteContact[] = [
-  { id: "1", name: "John Doe", phoneNumber: "(555) 123-4567", nickname: "Dad", addedDate: "2024-01-15" },
-  { id: "2", name: "Jane Smith", phoneNumber: "(555) 987-6543", addedDate: "2024-03-22" },
+  {
+    id: "1",
+    name: "John Doe",
+    accountNumber: "4532123456",
+    nickname: "Dad",
+    addedDate: "2024-01-15",
+    totalTransactions: 12,
+    lastTransactionDate: "2025-10-20",
+  },
+  {
+    id: "2",
+    name: "Jane Smith",
+    accountNumber: "4532987654",
+    addedDate: "2024-03-22",
+    totalTransactions: 8,
+    lastTransactionDate: "2025-10-15",
+  },
+  {
+    id: "3",
+    name: "Michael Johnson",
+    accountNumber: "4532456789",
+    nickname: "Mike",
+    addedDate: "2024-06-10",
+    totalTransactions: 5,
+    lastTransactionDate: "2025-09-30",
+  },
+  {
+    id: "4",
+    name: "Emily Davis",
+    accountNumber: "4532678901",
+    nickname: "Mom",
+    addedDate: "2024-01-20",
+    totalTransactions: 15,
+    lastTransactionDate: "2025-10-25",
+  },
 ];
 
-export const getFavoritesCount = (): number => favoriteContacts.length;
+/**
+ * Get total favorites count
+ */
+export const getFavoritesCount = (): number => {
+  return favoriteContacts.length;
+};
 
-export const getFavoriteById = (id: string): FavoriteContact | undefined =>
-  favoriteContacts.find((fav) => fav.id === id);
+/**
+ * Get favorite by ID
+ */
+export const getFavoriteById = (id: string): FavoriteContact | undefined => {
+  return favoriteContacts.find(fav => fav.id === id);
+};
 
-export const getRecentFavorites = (limit = 3): FavoriteContact[] =>
-  [...favoriteContacts].sort((a, b) => (b.addedDate ? new Date(b.addedDate).getTime() : 0) - (a.addedDate ? new Date(a.addedDate!).getTime() : 0)).slice(0, limit);
+/**
+ * Get recent favorites (last 3 added)
+ */
+export const getRecentFavorites = (limit: number = 3): FavoriteContact[] => {
+  return [...favoriteContacts]
+    .sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime())
+    .slice(0, limit);
+};
 
-export const getMostUsedFavorites = (limit = 3): FavoriteContact[] =>
-  [...favoriteContacts].sort((a, b) => (b.totalTransactions || 0) - (a.totalTransactions || 0)).slice(0, limit);
+/**
+ * Get most used favorites (by transaction count)
+ */
+export const getMostUsedFavorites = (limit: number = 3): FavoriteContact[] => {
+  return [...favoriteContacts]
+    .sort((a, b) => (b.totalTransactions || 0) - (a.totalTransactions || 0))
+    .slice(0, limit);
+};

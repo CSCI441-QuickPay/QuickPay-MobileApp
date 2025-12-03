@@ -1,0 +1,8 @@
+{
+  "ios": {},
+  "android": {
+    "modules": [
+      "!react-native-worklets"
+    ]
+  }
+}

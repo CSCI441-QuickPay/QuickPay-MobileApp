@@ -1,7 +1,9 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import { View, Animated, Easing } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "@clerk/clerk-expo";
+import { router } from "expo-router";
 
 import StepName from "./StepName";
 import StepBirthday from "./StepBirthday";
@@ -11,10 +13,18 @@ import StepPassword from "./StepPassword";
 import StepDone from "./StepDone";
 
 export default function SignupFlow() {
+  const { isLoaded, isSignedIn } = useAuth();
   const [page, setPage] = useState(0);
   const [signupData, setSignupData] = useState({});
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.replace("/home");
+    }
+  }, [isLoaded, isSignedIn]);
 
   // Enhanced animation for transitions
   const animateTo = (callback: () => void, direction: "forward" | "backward" = "forward") => {

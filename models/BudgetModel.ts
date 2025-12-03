@@ -50,6 +50,7 @@ export interface Bank {
   id: string;
   name: string;
   amount: number;
+  budget?: number; // For mock data compatibility
   color: string;
   icon: string;
 }

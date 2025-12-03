@@ -1,23 +1,46 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { Ionicons} from '@expo/vector-icons';
+import { useState, useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SplitTransactionModal } from './SplitTransaction';
 import {
   ExportReceiptModal,
   ReturnTransactionModal,
   TransactionDetailModal,
+  WithdrawModal,
 } from './TransactionModals';
 
 export default function TransactionActions({ visible, transaction }: { visible: boolean; transaction: any }) {
   const [splitModalVisible, setSplitModalVisible] = useState(false);
+  const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
   const [exportModalVisible, setExportModalVisible] = useState(false);
   const [returnModalVisible, setReturnModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [localTransaction, setLocalTransaction] = useState(transaction);
+
+  // Sync localTransaction when transaction prop changes
+  useEffect(() => {
+    setLocalTransaction(transaction);
+  }, [transaction]);
 
   if (!visible) return null;
 
-  const isSplit = transaction?.splitData?.splits?.length > 0;
-  const canSplit = transaction.amount < 0;
+  const isSplit = localTransaction?.splitData?.splits?.length > 0;
+  const canSplit = localTransaction.amount < 0; // Red/expense transactions
+  const canWithdraw = localTransaction.amount > 0; // Green/receiving transactions
+
+  const handleSplitCreated = (splitData: any) => {
+    setLocalTransaction((prev: any) => ({
+      ...prev,
+      splitData,
+    }));
+  };
+
+  const handleSplitCanceled = () => {
+    setLocalTransaction((prev: any) => ({
+      ...prev,
+      splitData: undefined,
+    }));
+  };
 
   return (
     <>
@@ -27,54 +50,69 @@ export default function TransactionActions({ visible, transaction }: { visible: 
         <ActionButton
           icon="share-outline"
           label="Export"
-          onPress={() => setExportModalVisible(true)}
-        />
+          onPress={() => setExportModalVisible(true)} disabled={undefined} active={undefined}        />
 
         {/* 2️⃣ Return Transaction */}
         <ActionButton
           icon="refresh-outline"
           label="Return"
-          onPress={() => setReturnModalVisible(true)}
-        />
+          onPress={() => setReturnModalVisible(true)} disabled={undefined} active={undefined}        />
 
-        {/* 3️⃣ Split Transaction */}
-        <ActionButton
-          icon="pie-chart-outline"
-          label="Split"
-          onPress={() => setSplitModalVisible(true)}
-          active={isSplit}
-          disabled={!canSplit}
-          activeColor="#10B981"
-        />
+        {/* 3️⃣ Split Transaction OR Withdraw (for green transactions) */}
+        {canWithdraw ? (
+          <ActionButton
+            icon="cash-outline"
+            label="Withdraw"
+            onPress={() => setWithdrawModalVisible(true)}
+            active={false}
+            disabled={false}
+            activeColor="#10B981"
+          />
+        ) : (
+          <ActionButton
+            icon="pie-chart-outline"
+            label="Split"
+            onPress={() => setSplitModalVisible(true)}
+            active={isSplit}
+            disabled={!canSplit}
+            activeColor="#10B981"
+          />
+        )}
 
         {/* 4️⃣ More */}
         <ActionButton
           icon="ellipsis-horizontal"
           label="More"
-          onPress={() => setDetailModalVisible(true)}
-        />
+          onPress={() => setDetailModalVisible(true)} disabled={undefined} active={undefined}        />
       </View>
 
-      {/* Modals */}
+      {/* Modals - All use localTransaction for consistency */}
       <SplitTransactionModal
         visible={splitModalVisible}
         onClose={() => setSplitModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
+        onSplitCreated={handleSplitCreated}
+        onSplitCanceled={handleSplitCanceled}
       />
       <ExportReceiptModal
         visible={exportModalVisible}
         onClose={() => setExportModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
       />
       <ReturnTransactionModal
         visible={returnModalVisible}
         onClose={() => setReturnModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
       />
       <TransactionDetailModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
+      />
+      <WithdrawModal
+        visible={withdrawModalVisible}
+        onClose={() => setWithdrawModalVisible(false)}
+        transaction={localTransaction}
       />
     </>
   );

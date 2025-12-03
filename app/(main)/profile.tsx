@@ -1,20 +1,28 @@
-import React from "react";
+import BottomNav from "@/components/BottomNav";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import { getFavoritesCount } from "@/data/favorites";
+import { getUserStats } from "@/data/user";
+import UserModel from "@/models/UserModel";
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import * as Clipboard from "expo-clipboard";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  Switch,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Alert,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useUser, useAuth } from "@clerk/clerk-expo";
-import { LinearGradient } from "expo-linear-gradient";
-import BottomNav from "@/components/BottomNav";
-import { userCards, getUserStats } from "@/data/user";
-import { getFavoritesCount } from "@/data/favorites";
-
+import { fetchProfile } from "../../services/profileService";
+import { Profile as SupaProfile } from "../../types/Profile";
 // Get initials from name
 const getInitials = (name: string) => {
   const names = name.split(" ");
@@ -28,6 +36,123 @@ export default function Profile() {
   const { user, isLoaded } = useUser();
   const { signOut } = useAuth();
 
+  const [supabaseProfile, setSupabaseProfile] = useState<SupaProfile | null>(
+    null
+  );
+
+  // Load Supabase profile whenever this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadProfile = async () => {
+        if (!isLoaded || !user?.id) return;
+
+        try {
+          const p = await fetchProfile(user.id);
+          console.log("PROFILE HEADER from Supabase (focus):", p);
+
+          if (isActive) {
+            setSupabaseProfile(p || null);
+          }
+        } catch (err) {
+          console.log("Profile header fetchProfile error:", err);
+        }
+      };
+
+      loadProfile();
+
+      // cleanup when screen loses focus
+      return () => {
+        isActive = false;
+      };
+    }, [isLoaded, user?.id])
+  );
+  const { isDemoMode, toggleDemoMode } = useDemoMode();
+  const [accountNumber, setAccountNumber] = useState<string>("");
+  const [loadingAccount, setLoadingAccount] = useState(true);
+  const [stats, setStats] = useState({ activeCards: 0, totalFavorites: 0 });
+
+  // Load account number and stats from database or mock data
+  useEffect(() => {
+    const loadProfileData = async () => {
+      if (!user) return;
+
+      try {
+        setLoadingAccount(true);
+
+        // Fetch real data from database first
+        const dbUser = await UserModel.getByClerkId(user.id);
+
+        // If Demo Mode is ON, merge real data with mock data
+        if (isDemoMode) {
+          console.log("🎭 Demo Mode ON - Merging real + mock data");
+
+          const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+          const { fetchPlaidAccounts } = await import("@/services/PlaidService");
+
+          // Get real data
+          const [plaidAccounts, realFavorites] = await Promise.all([
+            fetchPlaidAccounts(user.id).catch(() => []),
+            FavoriteModel.getByUserId(dbUser?.id || "")
+          ]);
+
+          // Merge: real favorites + mock favorites
+          const mockFavoritesCount = getFavoritesCount();
+          const totalFavorites = realFavorites.length + mockFavoritesCount;
+
+          setStats({
+            activeCards: plaidAccounts.length + getUserStats(mockFavoritesCount).activeCards, // Plaid + mock
+            totalFavorites: totalFavorites, // Real + Mock combined
+          });
+
+          // Use real account number even in Demo Mode
+          if (dbUser?.accountNumber) {
+            setAccountNumber(dbUser.accountNumber);
+          }
+
+          setLoadingAccount(false);
+          return;
+        }
+
+        // Real Mode - fetch from Plaid and database
+        if (!dbUser) {
+          setStats({ activeCards: 0, totalFavorites: 0 });
+          setLoadingAccount(false);
+          return;
+        }
+
+        if (dbUser.accountNumber) {
+          setAccountNumber(dbUser.accountNumber);
+        }
+
+        // Fetch real stats from Plaid and database
+        const FavoriteModel = (await import("@/models/FavoriteModel")).default;
+        const { fetchPlaidAccounts } = await import("@/services/PlaidService");
+
+        const [plaidAccounts, favorites] = await Promise.all([
+          fetchPlaidAccounts(user.id).catch(() => []),
+          FavoriteModel.getByUserId(dbUser.id!)
+        ]);
+
+        setStats({
+          activeCards: plaidAccounts.length, // Count of connected Plaid banks
+          totalFavorites: favorites.length,
+        });
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+        // Fallback to empty stats on error
+        setStats({ activeCards: 0, totalFavorites: 0 });
+      } finally {
+        setLoadingAccount(false);
+      }
+    };
+
+    if (isLoaded && user) {
+      loadProfileData();
+    }
+  }, [user, isLoaded, isDemoMode]);
+
   if (!isLoaded) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
@@ -40,10 +165,13 @@ export default function Profile() {
     ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User"
     : "Guest";
   const userEmail = user?.primaryEmailAddress?.emailAddress || "Not provided";
-  const userId = user?.id?.slice(0, 8) || "Unknown";
 
-  // Get synced stats
-  const stats = getUserStats(getFavoritesCount());
+  const handleCopyAccountNumber = async () => {
+    if (accountNumber) {
+      await Clipboard.setStringAsync(accountNumber);
+      Alert.alert("Copied!", "Account number copied to clipboard");
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -102,11 +230,25 @@ export default function Profile() {
             style={{ padding: 20 }}
           >
             <View className="flex-row items-center mb-4">
-              {/* Avatar with Initials */}
-              <View className="w-16 h-16 rounded-full bg-white items-center justify-center mr-4">
-                <Text className="text-2xl font-extrabold text-primary">
-                  {getInitials(fullName)}
-                </Text>
+              {/* Avatar with Initials/After Upload */}
+              <View className="w-16 h-16 rounded-full bg-white items-center justify-center mr-4 overflow-hidden">
+                {supabaseProfile?.profile_picture ? (
+                  <Image
+                    source={{ uri: supabaseProfile.profile_picture }}
+                    className="w-16 h-16 rounded-full"
+                    resizeMode="cover"
+                    onError={() => {
+                      console.log(
+                        "Header avatar failed to load:",
+                        supabaseProfile.profile_picture
+                      );
+                    }}
+                  />
+                ) : (
+                  <Text className="text-2xl font-extrabold text-primary">
+                    {getInitials(fullName)}
+                  </Text>
+                )}
               </View>
 
               <View className="flex-1">
@@ -119,11 +261,42 @@ export default function Profile() {
               </View>
             </View>
 
-            <View className="bg-white/10 px-3 py-2 rounded-lg self-start">
-              <Text className="text-white/90 text-xs font-semibold">
-                ID: {userId}
-              </Text>
-            </View>
+            {/* Account Number with Copy */}
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleCopyAccountNumber}
+              disabled={loadingAccount || !accountNumber}
+              className="bg-white/20 px-4 py-3 rounded-xl flex-row items-center justify-between"
+              style={{
+                minWidth: 200,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 3,
+              }}
+            >
+              <View className="flex-1">
+                <View className="flex-row items-center mb-1">
+                  <Ionicons name="shield-checkmark" size={14} color="#10B981" style={{ marginRight: 4 }} />
+                  <Text className="text-white/80 text-xs font-semibold">
+                    Verified Account
+                  </Text>
+                </View>
+                {loadingAccount ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text className="text-white font-bold text-base tracking-wider">
+                    {accountNumber || "Loading..."}
+                  </Text>
+                )}
+              </View>
+              {!loadingAccount && accountNumber && (
+                <View className="ml-3 w-8 h-8 rounded-full bg-white/20 items-center justify-center">
+                  <Ionicons name="copy-outline" size={16} color="white" />
+                </View>
+              )}
+            </TouchableOpacity>
           </LinearGradient>
         </View>
 
@@ -140,7 +313,7 @@ export default function Profile() {
               </Text>
             </View>
             <Text className="text-gray-600 text-sm font-medium">
-              Active Cards
+              Active Banks
             </Text>
           </TouchableOpacity>
 
@@ -174,7 +347,7 @@ export default function Profile() {
           <View className="gap-2">
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to My Profile")}
+              onPress={() => router.push("/my_profile")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
@@ -195,7 +368,7 @@ export default function Profile() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to Security")}
+              onPress={() => router.push("/security")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
@@ -220,7 +393,7 @@ export default function Profile() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to Cards")}
+              onPress={() => router.push("/my_bank")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
@@ -235,7 +408,7 @@ export default function Profile() {
               </View>
               <View className="flex-1">
                 <Text className="text-base font-semibold text-gray-900">
-                  My Cards
+                  My Banks
                 </Text>
                 <Text className="text-xs text-gray-500 mt-0.5">
                   {stats.activeCards} active
@@ -254,7 +427,7 @@ export default function Profile() {
           <View className="gap-2">
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to Notifications")}
+              onPress={() => router.push("/notification")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
@@ -279,7 +452,7 @@ export default function Profile() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to Language")}
+              onPress={() => router.push("/language")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
@@ -300,6 +473,37 @@ export default function Profile() {
                 <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
               </View>
             </TouchableOpacity>
+
+            {/* Demo Mode Toggle */}
+            <View
+              className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
+              }}
+            >
+              <View className="w-10 h-10 rounded-full bg-purple-50 items-center justify-center mr-3">
+                <Ionicons name="flask-outline" size={20} color="#8B5CF6" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-gray-900">
+                  Demo Mode
+                </Text>
+                <Text className="text-xs text-gray-500 mt-0.5">
+                  Use mock data for testing
+                </Text>
+              </View>
+              <Switch
+                value={isDemoMode}
+                onValueChange={toggleDemoMode}
+                trackColor={{ false: "#D1D5DB", true: "#A78BFA" }}
+                thumbColor={isDemoMode ? "#8B5CF6" : "#F3F4F6"}
+                ios_backgroundColor="#D1D5DB"
+              />
+            </View>
           </View>
         </View>
 
@@ -332,7 +536,7 @@ export default function Profile() {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => console.log("Go to Terms")}
+              onPress={() => router.push("/term_condition")}
               className="flex-row items-center bg-white border-2 border-gray-200 rounded-2xl p-4"
               style={{
                 shadowColor: "#000",
@@ -382,7 +586,9 @@ export default function Profile() {
           },
           {
             label: "Scan",
-            icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
+            icon: (color) => (
+              <AntDesign name="qrcode" size={40} color={color} />
+            ),
             onPress: () => console.log("Go Scan"),
             special: true,
           },

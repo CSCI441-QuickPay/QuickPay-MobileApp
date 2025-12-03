@@ -1,124 +1,175 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
+import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BalanceCard from "@/components/home/BalanceCard";
 import BottomNav from "@/components/BottomNav";
 import Header from "@/components/home/Header";
 import TransactionFilter from "@/components/home/TransactionFilter";
 import TransactionList from "@/components/home/TransactionList";
+import { useDemoMode } from "@/contexts/DemoModeContext";
+import { banks } from "@/data/budget";
 import { transactions as mockTransactions } from "@/data/transaction";
-import UserSyncService from "@/services/UserSyncService";
 import UserModel from "@/models/UserModel";
 import {
-  fetchPlaidTransactions,
-  fetchPlaidAccounts,
   calculateTotalBalance,
-  transformPlaidTransaction,
+  fetchPlaidAccounts,
+  fetchPlaidTransactions,
   PlaidAccount,
-  PlaidTransaction
+  PlaidTransaction,
+  transformPlaidTransaction,
 } from "@/services/PlaidService";
+import UserSyncService from "@/services/UserSyncService";
 
 export default function Home() {
   const { user } = useUser();
+  const { isDemoMode } = useDemoMode();
 
-  // Plaid data state
   const [plaidAccounts, setPlaidAccounts] = useState<PlaidAccount[]>([]);
   const [plaidTransactions, setPlaidTransactions] = useState<any[]>([]);
   const [loadingPlaidData, setLoadingPlaidData] = useState(false);
   const [totalBalance, setTotalBalance] = useState(0);
   const [hasPlaidLinked, setHasPlaidLinked] = useState<boolean | null>(null);
+  const [plaidError, setPlaidError] = useState<string | null>(null);
 
   // Fetch Plaid transactions and accounts
   const fetchPlaidData = async () => {
     if (!user) return;
 
     setLoadingPlaidData(true);
-    try {
-      console.log("🏦 Fetching Plaid data...");
+    setPlaidError(null);
 
-      // Fetch accounts and transactions in parallel
+    try {
       const [accountsData, transactionsData] = await Promise.all([
         fetchPlaidAccounts(user.id),
-        fetchPlaidTransactions(user.id)
+        fetchPlaidTransactions(user.id),
       ]);
-
-      console.log("📊 Accounts:", accountsData);
-      console.log("📊 Transactions:", transactionsData);
 
       setPlaidAccounts(accountsData);
 
-      // Transform Plaid transactions to app format
       const transformedTransactions = transactionsData.transactions.map((tx: PlaidTransaction) =>
         transformPlaidTransaction(tx, accountsData)
       );
 
-      setPlaidTransactions(transformedTransactions);
+      let combinedTransactions = transformedTransactions;
+      let combinedBalance = calculateTotalBalance(accountsData);
 
-      // Calculate total balance
-      const balance = calculateTotalBalance(accountsData);
-      setTotalBalance(balance);
+      if (isDemoMode) {
+        const { PaymentService } = await import("@/services/PaymentService");
+        const demoTxs = await PaymentService.getDemoTransactions();
 
-      console.log("✅ Plaid data loaded successfully");
-    } catch (error) {
+        combinedTransactions = [...demoTxs, ...transformedTransactions, ...mockTransactions];
+
+        // Add demo/mock bank balances
+        const demoMockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
+        combinedBalance += demoMockBalance;
+      }
+
+      setPlaidTransactions(combinedTransactions);
+      setTotalBalance(combinedBalance);
+    } catch (error: any) {
       console.error("❌ Failed to fetch Plaid data:", error);
-      // Fallback to mock data on error
-      setPlaidTransactions(mockTransactions);
-      setTotalBalance(mockTransactions.reduce((sum, t) => sum + t.amount, 0));
+      setPlaidError(error.message || "Failed to load bank data");
+
+      try {
+        const { PaymentService } = await import("@/services/PaymentService");
+        const demoTxs = isDemoMode ? await PaymentService.getDemoTransactions() : [];
+        const combinedTransactions = isDemoMode ? [...demoTxs, ...mockTransactions] : [...mockTransactions];
+        setPlaidTransactions(combinedTransactions);
+
+        const fallbackBalance = isDemoMode
+          ? banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0)
+          : 0;
+        setTotalBalance(fallbackBalance);
+      } catch {
+        setPlaidTransactions(mockTransactions);
+        setTotalBalance(0);
+      }
     } finally {
       setLoadingPlaidData(false);
     }
   };
 
-  // Sync user to Supabase and check Plaid status
+  // Sync user and check Plaid status
   useEffect(() => {
     async function initializeUser() {
-      if (user) {
-        try {
-          console.log("🔄 Syncing user to Supabase from home...", user.id);
-          await UserSyncService.syncCurrentUser(user);
-          console.log("✅ User synced successfully");
+      if (!user) return;
 
-          // Check if user has Plaid linked
-          const userData = await UserModel.getByClerkId(user.id);
-          const hasPlaid = !!userData?.plaidAccessToken;
-          console.log("🔗 Plaid linked on home:", hasPlaid);
-          console.log("🔗 Plaid access token:", userData?.plaidAccessToken);
+      try {
+        await UserSyncService.syncCurrentUser(user);
 
-          setHasPlaidLinked(hasPlaid);
+        const userData = await UserModel.getByClerkId(user.id);
+        const hasPlaid = !!userData?.plaidAccessToken;
+        setHasPlaidLinked(hasPlaid);
 
-          if (!hasPlaid) {
-            // Check if user has skipped Plaid onboarding
-            const skipKey = `plaid_onboarding_skipped_${user.id}`;
-            const hasSkipped = await AsyncStorage.getItem(skipKey);
-            console.log("⏭️ User has skipped Plaid:", hasSkipped === "true");
-
-            if (hasSkipped !== "true") {
-              // First-time user - redirect to full-screen Plaid onboarding page
-              console.log("⚠️ First-time user, redirecting to plaid-onboarding-hosted...");
-              router.replace("/plaid-onboarding-hosted");
-              return;
-            } else {
-              // User skipped - use mock data
-              console.log("ℹ️ User skipped Plaid - using mock data");
-              setPlaidTransactions(mockTransactions);
-              setTotalBalance(mockTransactions.reduce((sum, t) => sum + t.amount, 0));
-            }
-          } else {
-            // Fetch Plaid data if linked
+        if (isDemoMode) {
+          if (hasPlaid) {
             await fetchPlaidData();
+          } else {
+            const { PaymentService } = await import("@/services/PaymentService");
+            const demoTxs = await PaymentService.getDemoTransactions();
+            setPlaidTransactions([...demoTxs, ...mockTransactions]);
+            const mockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
+            setTotalBalance(mockBalance);
           }
-        } catch (error) {
-          console.error("❌ Failed to initialize user:", error);
+          return;
         }
+
+        if (!hasPlaid) {
+          const skipKey = `plaid_onboarding_skipped_${user.id}`;
+          const hasSkipped = await AsyncStorage.getItem(skipKey);
+
+          if (hasSkipped !== "true") {
+            router.replace("/plaid-onboarding-hosted");
+            return;
+          } else {
+            setPlaidTransactions([]);
+            setTotalBalance(userData?.balance || 0);
+          }
+        } else {
+          await fetchPlaidData();
+        }
+      } catch (err) {
+        console.error("❌ Failed to initialize user:", err);
       }
     }
     initializeUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, isDemoMode]);
+
+  // Refresh transactions on screen focus
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const refreshData = async () => {
+        if (!user || !isActive) return;
+
+        if (isDemoMode) {
+          const { PaymentService } = await import("@/services/PaymentService");
+          const demoTxs = await PaymentService.getDemoTransactions();
+          if (demoTxs.length > 0 && isActive) {
+            setPlaidTransactions([...demoTxs, ...mockTransactions]);
+          }
+        } else if (hasPlaidLinked) {
+          await fetchPlaidData();
+        } else {
+          try {
+            const userData = await UserModel.getByClerkId(user.id);
+            if (isActive) setTotalBalance(userData?.balance || 0);
+          } catch (err) {
+            console.error("❌ Failed to refresh balance:", err);
+          }
+        }
+      };
+
+      refreshData();
+      return () => { isActive = false; };
+    }, [user, isDemoMode, hasPlaidLinked])
+  );
 
   const [filterState, setFilterState] = useState({
     timeFilter: "all",
@@ -128,78 +179,61 @@ export default function Home() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
-      {/* Fixed Header */}
       <View className="bg-white">
-        <Header/>
+        <Header />
       </View>
 
-      {/* Fixed Balance Card */}
       <BalanceCard
         balance={totalBalance}
-        onRequest={() => console.log("Request Money")}
-        onSend={() => router.push("/favorite")}
+        onRequest={() => router.push({ pathname: "/request", params: { initialAmount: "0" } })}
+        onSend={() => router.push("/send")}
         showLinkAccount={hasPlaidLinked === false}
         onLinkAccount={async () => {
           if (user) {
-            // Clear skip flag and navigate to Plaid onboarding
             const skipKey = `plaid_onboarding_skipped_${user.id}`;
             await AsyncStorage.removeItem(skipKey);
-            console.log("🔄 Cleared skip flag, navigating to Plaid onboarding...");
             router.push("/plaid-onboarding-hosted");
           }
         }}
       />
 
-      {/* Fixed Transaction Filter */}
-      <TransactionFilter onFilterChange={setFilterState} />
+      {plaidError && (
+        <View className="mx-4 mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-1">
+              <Text className="text-red-800 font-semibold">Unable to load bank data</Text>
+              <Text className="text-red-600 text-sm mt-1">{plaidError}</Text>
+            </View>
+            <TouchableOpacity onPress={fetchPlaidData} className="ml-3 bg-red-600 px-4 py-2 rounded-lg">
+              <Text className="text-white font-semibold">Retry</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
-      {/* Scrollable Transaction List */}
-      <View className="flex-1 mt-2">
+      <TransactionFilter onFilterChange={setFilterState} connectedBanks={plaidAccounts.map(acc => acc.name)} />
+
+      <ScrollView
+        className="flex-1 mt-2"
+        refreshControl={<RefreshControl refreshing={loadingPlaidData} onRefresh={fetchPlaidData} colors={["#00332d"]} tintColor="#00332d" />}
+      >
         {loadingPlaidData ? (
-          <View className="flex-1 items-center justify-center">
+          <View className="flex-1 items-center justify-center py-20">
             <ActivityIndicator size="large" color="#00332d" />
             <Text className="text-gray-500 mt-4">Loading transactions...</Text>
           </View>
         ) : (
-          <TransactionList
-            filters={filterState}
-            transactions={plaidTransactions.length > 0 ? plaidTransactions : mockTransactions}
-          />
+          <TransactionList filters={filterState} transactions={plaidTransactions} />
         )}
-      </View>
+      </ScrollView>
 
-      {/* Bottom Navigation */}
       <BottomNav
         items={[
-          {
-            label: "Home",
-            icon: (color) => <Ionicons name="home" size={34} color={color} />,
-            onPress: () => router.push("/home"),
-            active: true,
-          },
-          {
-            label: "Budget",
-            icon: (color) => (
-              <MaterialIcons name="account-tree" size={34} color={color} />
-            ),
-            onPress: () => router.push("/visual_budget"),
-          },
-          {
-            label: "Scan",
-            icon: (color) => <AntDesign name="qrcode" size={40} color={color} />,
-            onPress: () => console.log("Go Scan"),
-            special: true,
-          },
-          {
-            label: "Favorite",
-            icon: (color) => <AntDesign name="star" size={34} color={color} />,
-            onPress: () => router.push("/favorite"),
-          },
-          {
-            label: "Profile",
-            icon: (color) => <Ionicons name="person" size={34} color={color} />,
-            onPress: () => router.push("/profile"),
-          },
+          { label: "Home", icon: (color) => <Ionicons name="home" size={34} color={color} />, onPress: () => router.push("/home"), active: true },
+          { label: "Budget", icon: (color) => <MaterialIcons name="account-tree" size={34} color={color} />, onPress: () => router.push("/visual_budget") },
+          { label: "Scan", icon: (color) => <AntDesign name="qrcode" size={40} color={color} />, onPress: () => router.push("/qr_scan"), special: true },
+          { label: "Favorite", icon: (color) => <AntDesign name="star" size={34} color={color} />, onPress: () => router.push("/favorite") },
+          { label: "Profile", icon: (color) => <Ionicons name="person" size={34} color={color} />, onPress: () => router.push("/profile") },
         ]}
       />
     </SafeAreaView>

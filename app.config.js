@@ -7,6 +7,7 @@ export default {
     scheme: "quickpay",
     version: "1.0.0",
     orientation: "portrait",
+    owner: "seththarohour",
     android: {
       package: "com.anonymous.quickpay",
       adaptiveIcon: {
@@ -19,9 +20,9 @@ export default {
     },
     extra: {
       clerkPublishableKey: process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY,
-      eas: {
-        projectId: "7f9681d1-7965-4173-ac04-1a3842879307"
-      }
+      "eas": {
+        "projectId": "9e19f686-2e17-4c88-83d5-f294adbb5f19"
+      },
     },
   },
 };

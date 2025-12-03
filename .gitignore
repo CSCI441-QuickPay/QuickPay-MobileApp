@@ -2,8 +2,10 @@
 
 # Dependencies
 node_modules/
-package-lock.json
-
+/android/
+/ios/
+android/app/src/main/res/mipmap-*
+ios/**/build/
 # Expo / Build
 .expo/
 dist/
