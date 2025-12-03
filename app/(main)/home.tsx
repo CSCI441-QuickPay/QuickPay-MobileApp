@@ -13,7 +13,6 @@ import TransactionFilter from "@/components/home/TransactionFilter";
 import TransactionList from "@/components/home/TransactionList";
 import { useDemoMode } from "@/contexts/DemoModeContext";
 import { banks } from "@/data/budget";
-import { transactions as mockTransactions } from "@/data/transaction";
 import UserModel from "@/models/UserModel";
 import TransactionModel from "@/models/TransactionModel";
 import {
@@ -101,13 +100,7 @@ export default function Home() {
       let combinedBalance = quickPayBalance + plaidBalance;
 
       if (isDemoMode) {
-        const { PaymentService } = await import("@/services/PaymentService");
-        const demoTxs = await PaymentService.getDemoTransactions();
-
-        // In Demo Mode: Add demo transactions + mock transactions for testing
-        combinedTransactions = [...demoTxs, ...combinedTransactions, ...mockTransactions];
-
-        // Add demo/mock bank balances to total (same as visual_budget.tsx)
+        // In Demo Mode: Add demo/mock bank balances to total (same as visual_budget.tsx)
         const mockBankBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0);
         combinedBalance += mockBankBalance;
         console.log(`💰 Demo Mode Home: Total Balance = $${combinedBalance.toFixed(2)} (QuickPay: $${quickPayBalance}, Plaid: $${plaidBalance}, Mock: $${mockBankBalance})`);
@@ -123,9 +116,6 @@ export default function Home() {
       setPlaidError(error.message || "Failed to load bank data");
 
       try {
-        const { PaymentService } = await import("@/services/PaymentService");
-        const demoTxs = isDemoMode ? await PaymentService.getDemoTransactions() : [];
-
         // Get QuickPay balance and transactions for fallback
         const userData = await UserModel.getByClerkId(user.id);
         const quickPayBalance = userData?.balance || 0;
@@ -160,19 +150,16 @@ export default function Home() {
           console.error('Failed to fetch QuickPay transactions in fallback:', err);
         }
 
-        const combinedTransactions = isDemoMode
-          ? [...demoTxs, ...quickPayTransactions, ...mockTransactions]
-          : quickPayTransactions; // Real Mode: only show QuickPay transactions (no mock data)
-
-        setPlaidTransactions(combinedTransactions);
+        // Show QuickPay transactions (from Supabase)
+        setPlaidTransactions(quickPayTransactions);
 
         const fallbackBalance = isDemoMode
           ? quickPayBalance + banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0)
           : quickPayBalance;
         setTotalBalance(fallbackBalance);
       } catch {
-        // Final fallback: show mock transactions only in Demo Mode, otherwise empty
-        setPlaidTransactions(isDemoMode ? mockTransactions : []);
+        // Final fallback: empty transactions
+        setPlaidTransactions([]);
         setTotalBalance(0);
       }
     } finally {
@@ -199,9 +186,26 @@ export default function Home() {
           if (hasPlaid) {
             await fetchPlaidData();
           } else {
-            const { PaymentService } = await import("@/services/PaymentService");
-            const demoTxs = await PaymentService.getDemoTransactions();
-            setPlaidTransactions([...demoTxs, ...mockTransactions]);
+            // Demo Mode without Plaid: Fetch QuickPay transactions from Supabase
+            const quickPayTransactions = await TransactionModel.getByUserId(userData?.id || '');
+            const transformedTransactions = quickPayTransactions.map((tx) => ({
+              id: tx.id || '',
+              amount: tx.amount,
+              date: tx.transactionDate instanceof Date
+                ? tx.transactionDate.toISOString().split('T')[0]
+                : String(tx.transactionDate).split('T')[0],
+              name: tx.title,
+              title: tx.title,
+              category: tx.category || 'Transfer',
+              merchant_name: tx.merchantName,
+              logo_url: tx.logo,
+              type: tx.transactionType === 'credit' ? 'income' : 'expense',
+              pending: tx.pending,
+              subtitle: tx.subtitle,
+              icon: tx.icon,
+              isQuickPay: true,
+            }));
+            setPlaidTransactions(transformedTransactions);
 
             // Demo Mode without Plaid: QuickPay + Mock banks (same logic as visual_budget.tsx)
             const quickPayBalance = userData?.balance || 0;
@@ -240,12 +244,9 @@ export default function Home() {
       const refreshData = async () => {
         if (!user || !isActive) return;
 
-        if (isDemoMode) {
-          const { PaymentService } = await import("@/services/PaymentService");
-          const demoTxs = await PaymentService.getDemoTransactions();
-          if (demoTxs.length > 0 && isActive) {
-            setPlaidTransactions([...demoTxs, ...mockTransactions]);
-          }
+        if (isDemoMode && hasPlaidLinked) {
+          // Demo Mode with Plaid: fetch all data
+          await fetchPlaidData();
         } else if (hasPlaidLinked) {
           // Real Mode with Plaid: fetch all data (Plaid + QuickPay transactions)
           await fetchPlaidData();

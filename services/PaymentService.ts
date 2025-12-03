@@ -100,70 +100,133 @@ export class PaymentService {
   }
 
   /**
-   * Process payment in Demo Mode (mock transaction)
+   * Process QuickPay balance transfer (instant, saved to Supabase)
    */
   static async processDemoPayment(
     request: PaymentRequest,
     recipientName: string
   ): Promise<PaymentResult> {
     try {
-      // Format subtitle with SOURCE breakdown for multi-bank payments
-      let subtitle = `Account: ${request.recipientAccountNumber}`;
+      console.log('💰 Processing QuickPay balance transfer to Supabase');
 
-      // If multiple sources used, format as SOURCE: BANK1(-$X.XX), BANK2(-$Y.YY)
-      if (request.sources.length > 1) {
-        const sourceBreakdown = request.sources
-          .map(source => `${source.name}(-$${source.amount.toFixed(2)})`)
-          .join(', ');
-        subtitle = `SOURCE: ${sourceBreakdown}`;
+      // Get recipient info
+      const recipient = await this.getRecipientInfo(request.recipientAccountNumber);
+      if (!recipient) {
+        throw new Error('Recipient not found');
       }
 
-      // Create mock transaction
-      const mockTransaction = {
-        id: `demo_${Date.now()}`,
-        amount: -request.totalAmount,
-        description: request.description || `Sent to ${recipientName}`,
-        date: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD for TransactionList
-        category: 'Transfer',
-        type: 'debit',
-        pending: false,
-        title: `Sent to ${recipientName}`,
-        subtitle: subtitle,
-        merchant: recipientName,
-        isDemoTransaction: true,
-      };
+      // Get sender info for subtitle and sender name
+      const { data: senderData } = await supabase
+        .from('users')
+        .select('account_number, balance, first_name, last_name')
+        .eq('id', request.senderId)
+        .single();
 
-      // Save to AsyncStorage for session persistence
-      const stored = await AsyncStorage.getItem(DEMO_TRANSACTIONS_KEY);
-      const transactions = stored ? JSON.parse(stored) : [];
-      transactions.unshift(mockTransaction);
-      await AsyncStorage.setItem(DEMO_TRANSACTIONS_KEY, JSON.stringify(transactions));
+      if (!senderData) {
+        throw new Error('Sender not found');
+      }
 
-      console.log('🎭 Demo Mode: Mock transaction created', mockTransaction);
+      // Check if sender has sufficient QuickPay balance
+      const quickPaySource = request.sources.find(s => s.type === 'quickpay');
+      if (quickPaySource && quickPaySource.amount > senderData.balance) {
+        throw new Error(`Insufficient QuickPay balance. Available: $${senderData.balance.toFixed(2)}`);
+      }
+
+      // Format subtitle and sender name
+      const subtitle = `From: ${senderData.account_number} • To: ${request.recipientAccountNumber}`;
+      const senderFullName = `${senderData.first_name} ${senderData.last_name}`;
+
+      // Deduct from sender's balance
+      const { error: deductError } = await supabase
+        .from('users')
+        .update({ balance: senderData.balance - request.totalAmount })
+        .eq('id', request.senderId);
+
+      if (deductError) {
+        console.error('Error deducting sender balance:', deductError);
+        throw new Error('Failed to deduct balance from sender');
+      }
+
+      // Credit recipient's balance
+      const { data: recipientData } = await supabase
+        .from('users')
+        .select('id, balance')
+        .eq('account_number', request.recipientAccountNumber)
+        .single();
+
+      if (!recipientData) {
+        throw new Error('Recipient not found');
+      }
+
+      const { error: creditError } = await supabase
+        .from('users')
+        .update({ balance: recipientData.balance + request.totalAmount })
+        .eq('id', recipientData.id);
+
+      if (creditError) {
+        console.error('Error crediting recipient balance:', creditError);
+        throw new Error('Failed to credit recipient balance');
+      }
+
+      // Insert sender's transaction (debit)
+      const { data: senderTransaction, error: senderTxError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: request.senderId,
+          amount: -request.totalAmount,
+          transaction_type: 'debit',
+          category: 'Transfer',
+          merchant_name: recipientName,
+          description: request.description || `Sent to ${recipientName}`,
+          transaction_date: new Date().toISOString().split('T')[0],
+          pending: false,
+          title: `Sent to ${recipientName}`,
+          subtitle: subtitle,
+          transfer_type: 'quickpay',
+        })
+        .select()
+        .single();
+
+      if (senderTxError) {
+        console.error('Error creating sender transaction:', senderTxError);
+        throw new Error('Failed to record sender transaction');
+      }
+
+      // Insert recipient's transaction (credit)
+      const { error: recipientTxError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: recipientData.id,
+          amount: request.totalAmount,
+          transaction_type: 'credit',
+          category: 'Transfer',
+          merchant_name: senderFullName,
+          description: `Received from ${senderFullName}`,
+          transaction_date: new Date().toISOString().split('T')[0],
+          pending: false,
+          title: `Received from ${senderFullName}`,
+          subtitle: `From: ${senderData.account_number} • To: ${request.recipientAccountNumber}`,
+          transfer_type: 'quickpay',
+        });
+
+      if (recipientTxError) {
+        console.error('Error creating recipient transaction:', recipientTxError);
+        // Don't throw - sender transaction already created
+      }
+
+      console.log('✅ QuickPay transfer completed:', senderTransaction.id);
 
       return {
         success: true,
-        transactionId: mockTransaction.id,
-        message: 'Demo payment processed successfully',
+        transactionId: senderTransaction.id,
+        message: 'Transfer completed successfully',
       };
     } catch (error: any) {
-      console.error('Demo payment processing error:', error);
-      throw new Error(error.message || 'Failed to process demo payment');
+      console.error('QuickPay payment processing error:', error);
+      throw new Error(error.message || 'Failed to process payment');
     }
   }
 
-  /**
-   * Get demo transactions from cache
-   */
-  static async getDemoTransactions(): Promise<any[]> {
-    try {
-      const stored = await AsyncStorage.getItem(DEMO_TRANSACTIONS_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error loading demo transactions:', error);
-      return [];
-    }
-  }
 
   /**
    * Process Plaid bank transfer (ACH transfer from bank account)

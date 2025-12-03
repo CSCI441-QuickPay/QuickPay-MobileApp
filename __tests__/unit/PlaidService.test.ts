@@ -153,10 +153,10 @@ describe('PlaidService', () => {
   describe('calculateTotalBalance', () => {
     /**
      * Test: Should calculate total balance from multiple accounts
-     * Expected: Sum of all account balances
+     * Expected: Sum of all account balances (Plaid returns cents, function converts to dollars)
      */
     it('should calculate total balance from multiple accounts', () => {
-      // Arrange: Create mock accounts with balances
+      // Arrange: Create mock accounts with balances in cents (Plaid format)
       const accounts: PlaidAccount[] = [
         {
           account_id: 'acc_1',
@@ -164,8 +164,8 @@ describe('PlaidService', () => {
           type: 'depository',
           subtype: 'checking',
           balances: {
-            current: 1000,
-            available: 950,
+            current: 100000, // $1000.00 in cents
+            available: 95000,
           },
         },
         {
@@ -174,7 +174,7 @@ describe('PlaidService', () => {
           type: 'depository',
           subtype: 'savings',
           balances: {
-            current: 5000,
+            current: 500000, // $5000.00 in cents
           },
         },
         {
@@ -183,15 +183,15 @@ describe('PlaidService', () => {
           type: 'credit',
           subtype: 'credit card',
           balances: {
-            current: -250, // Negative balance = owed amount
+            current: -25000, // -$250.00 in cents (owed amount)
           },
         },
       ];
 
-      // Act: Calculate total
+      // Act: Calculate total (function divides by 100 to convert cents to dollars)
       const total = calculateTotalBalance(accounts);
 
-      // Assert: Should sum current balances (1000 + 5000 - 250)
+      // Assert: Should sum current balances and convert to dollars (100000 + 500000 - 25000) / 100 = $5750.00
       expect(total).toBe(5750);
     });
   });
@@ -203,14 +203,15 @@ describe('PlaidService', () => {
   describe('transformPlaidTransaction', () => {
     /**
      * Test: Should transform expense transaction correctly
-     * Expected: Negative amount becomes positive expense
+     * Expected: Plaid positive amount (money out) becomes negative in app
      */
     it('should transform expense transaction correctly', () => {
       // Arrange: Mock expense transaction (money out)
+      // NOTE: Plaid uses POSITIVE for money OUT (expenses)
       const plaidTx: PlaidTransaction = {
         transaction_id: 'tx_expense',
         account_id: 'acc_1',
-        amount: -45.50, // Negative = expense
+        amount: 45.50, // Positive in Plaid = expense (money out)
         date: '2024-10-30',
         name: 'Target Store',
         merchant_name: 'Target',
@@ -232,17 +233,19 @@ describe('PlaidService', () => {
       // Act: Transform transaction
       const result = transformPlaidTransaction(plaidTx, accounts);
 
-      // Assert: Verify app format
+      // Assert: Verify app format (service flips sign, so positive Plaid amount becomes negative app amount)
       expect(result).toEqual({
         id: 'tx_expense',
         title: 'Target',
-        amount: 45.50, // Absolute value
+        amount: -45.50, // Flipped to negative for expense
         date: '2024-10-30',
         type: 'expense',
         category: 'Shops',
         bank: 'Chase Checking',
         status: 'completed',
         description: 'Target Store',
+        subtitle: 'Chase Checking',
+        logo_url: undefined,
       });
     });
   });

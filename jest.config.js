@@ -57,6 +57,6 @@ module.exports = {
 
   // Transform ignore patterns for node_modules
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|@expo|@clerk|@supabase)/)',
+    'node_modules/(?!(react-native|@react-native|expo|@expo|@clerk|@supabase|react-native-url-polyfill)/)',
   ],
 };
