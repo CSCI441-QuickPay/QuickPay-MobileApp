@@ -174,13 +174,29 @@ export default function TransactionList({ filters, transactions: transactionsPro
 
   const groupedTransactions = groupTransactionsByDate(filteredTransactions);
 
+  // Sort date groups in descending order (Today -> Yesterday -> older dates)
+  const sortedDateKeys = Object.keys(groupedTransactions).sort((a, b) => {
+    // "Today" should always be first
+    if (a === "Today") return -1;
+    if (b === "Today") return 1;
+
+    // "Yesterday" should be second
+    if (a === "Yesterday") return -1;
+    if (b === "Yesterday") return 1;
+
+    // For other dates, parse and compare (newest first)
+    const dateA = new Date(a);
+    const dateB = new Date(b);
+    return dateB.getTime() - dateA.getTime();
+  });
+
   return (
     <ScrollView
       className="flex-1"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}
     >
-      {Object.keys(groupedTransactions).map((date) => (
+      {sortedDateKeys.map((date) => (
         <View key={date} className="mb-4">
           {/* Date Header */}
           <Text className="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">

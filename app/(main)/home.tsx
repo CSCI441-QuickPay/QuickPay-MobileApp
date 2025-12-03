@@ -90,13 +90,14 @@ export default function Home() {
       // Combine Plaid + QuickPay transactions
       let combinedTransactions = [...transformedPlaidTransactions, ...transformedQuickPayTransactions];
 
-      // Calculate Plaid balance (Tartan returns dollars, not cents - no conversion needed)
+      // Calculate Plaid balance from Plaid API (read-only, original balances)
+      // NOTE: Plaid balances do NOT change with QuickPay transactions
       const plaidBalance = accountsData.reduce((sum, account) => {
         const balance = account.balances.available || account.balances.current || 0;
         return sum + balance;
       }, 0);
 
-      // Calculate total balance using same logic as visual_budget.tsx
+      // Calculate total balance: QuickPay balance + Plaid balance
       let combinedBalance = quickPayBalance + plaidBalance;
 
       if (isDemoMode) {
@@ -106,9 +107,10 @@ export default function Home() {
         // In Demo Mode: Add demo transactions + mock transactions for testing
         combinedTransactions = [...demoTxs, ...combinedTransactions, ...mockTransactions];
 
-        // Add demo/mock bank balances (same as visual_budget.tsx)
+        // Add demo/mock bank balances to total (same as visual_budget.tsx)
         const mockBankBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0);
         combinedBalance += mockBankBalance;
+        console.log(`💰 Demo Mode Home: Total Balance = $${combinedBalance.toFixed(2)} (QuickPay: $${quickPayBalance}, Plaid: $${plaidBalance}, Mock: $${mockBankBalance})`);
       }
 
       // Sort all transactions by date (newest first)

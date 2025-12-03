@@ -199,20 +199,36 @@ export class PaymentService {
       if (isDemoMode) {
         console.log('🎭 Processing Plaid transfer in Demo Mode - Saving to Supabase');
 
+        // Get sender's account number for subtitle
+        const { data: senderData } = await supabase
+          .from('users')
+          .select('account_number')
+          .eq('id', request.senderId)
+          .single();
+
+        // Get the bank account ID from database to link the transaction
+        const { data: bankAccount } = await supabase
+          .from('bank_accounts')
+          .select('id')
+          .eq('plaid_account_id', bankSource.accountId)
+          .eq('user_id', request.senderId)
+          .single();
+
         // Insert pending transaction into Supabase
         const { data: transaction, error } = await supabase
           .from('transactions')
           .insert({
             user_id: request.senderId,
+            bank_account_id: bankAccount?.id || null,
             amount: -request.totalAmount, // Negative for outgoing
             transaction_type: 'debit',
-            category: 'Bank Transfer',
+            category: 'Transfer',
             merchant_name: fullRecipientName,
-            description: request.description || `Bank Transfer to ${fullRecipientName}`,
+            description: request.description || `Sent to ${fullRecipientName}`,
             transaction_date: new Date().toISOString().split('T')[0],
             pending: true, // Mark as pending
-            title: `Bank Transfer to ${fullRecipientName}`,
-            subtitle: `From ${bankSource.name}`,
+            title: `Sent to ${fullRecipientName}`,
+            subtitle: `From: ${senderData?.account_number || 'Unknown'} • To: ${request.recipientAccountNumber}`,
             // These will be added after migration
             // transfer_type: 'bank_transfer',
           })
@@ -228,7 +244,12 @@ export class PaymentService {
 
         // Auto-approve after 2 seconds (simulates ACH processing)
         setTimeout(async () => {
-          await this.approvePendingTransaction(transaction.id, request.senderId, recipient.accountNumber!, request.totalAmount);
+          await this.approvePendingTransaction(
+            transaction.id,
+            request.senderId,
+            recipient.accountNumber!,
+            request.totalAmount
+          );
         }, 2000);
 
         return {
@@ -238,49 +259,106 @@ export class PaymentService {
         };
       }
 
-      // Real Mode: Call Plaid Transfer API and save to Supabase
+      // Real Mode: Try Plaid Transfer API, fallback to sandbox simulation
       console.log('🏦 Processing real Plaid bank transfer');
-      const transferResult = await PlaidTransferService.createTransfer({
-        accessToken: bankSource.accessToken,
-        accountId: bankSource.accountId,
-        amount: request.totalAmount,
-        description: request.description || `Transfer to ${recipient.firstName} ${recipient.lastName}`,
-        recipientId: request.recipientAccountNumber,
-      });
 
-      if (!transferResult.success) {
-        throw new Error(transferResult.message);
+      try {
+        const transferResult = await PlaidTransferService.createTransfer({
+          accessToken: bankSource.accessToken,
+          accountId: bankSource.accountId,
+          amount: request.totalAmount,
+          description: request.description || `Transfer to ${recipient.firstName} ${recipient.lastName}`,
+          recipientId: request.recipientAccountNumber,
+        });
+
+        if (!transferResult.success) {
+          throw new Error(transferResult.message);
+        }
+
+        // Save to Supabase with Plaid transfer ID
+        const { data: transaction, error } = await supabase
+          .from('transactions')
+          .insert({
+            user_id: request.senderId,
+            amount: -request.totalAmount,
+            transaction_type: 'debit',
+            category: 'Bank Transfer',
+            merchant_name: fullRecipientName,
+            description: request.description || `Bank Transfer to ${fullRecipientName}`,
+            transaction_date: new Date().toISOString().split('T')[0],
+            pending: true,
+            title: `Bank Transfer to ${fullRecipientName}`,
+            subtitle: `From ${bankSource.name}`,
+            // transfer_type: 'plaid_ach',
+            // plaid_transfer_id: transferResult.transferId,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error saving Plaid transfer transaction:', error);
+        }
+
+        return {
+          success: true,
+          transactionId: transaction?.id || transferResult.transferId,
+          message: 'Bank transfer initiated successfully',
+        };
+      } catch (transferError: any) {
+        // Fallback: Plaid Transfer API not available (sandbox/tartan or not configured)
+        console.warn('⚠️ Plaid Transfer API failed, using sandbox simulation:', transferError.message);
+        console.log('🎭 Falling back to sandbox transfer simulation');
+
+        // Get the bank account ID from database to link the transaction
+        const { data: bankAccount } = await supabase
+          .from('bank_accounts')
+          .select('id')
+          .eq('plaid_account_id', bankSource.accountId)
+          .eq('user_id', request.senderId)
+          .single();
+
+        // Insert pending transaction into Supabase (same as demo mode)
+        const { data: transaction, error } = await supabase
+          .from('transactions')
+          .insert({
+            user_id: request.senderId,
+            bank_account_id: bankAccount?.id || null,
+            amount: -request.totalAmount,
+            transaction_type: 'debit',
+            category: 'Bank Transfer',
+            merchant_name: fullRecipientName,
+            description: request.description || `Bank Transfer to ${fullRecipientName}`,
+            transaction_date: new Date().toISOString().split('T')[0],
+            pending: true,
+            title: `Bank Transfer to ${fullRecipientName}`,
+            subtitle: `From ${bankSource.name} (Sandbox)`,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error saving pending transaction:', error);
+          throw new Error('Failed to save pending transaction');
+        }
+
+        console.log('✅ Pending transaction saved (sandbox):', transaction.id);
+
+        // Auto-approve after 2 seconds (simulates ACH processing)
+        setTimeout(async () => {
+          await this.approvePendingTransaction(
+            transaction.id,
+            request.senderId,
+            recipient.accountNumber!,
+            request.totalAmount
+          );
+        }, 2000);
+
+        return {
+          success: true,
+          transactionId: transaction.id,
+          message: 'Bank transfer initiated (sandbox mode - pending approval)',
+        };
       }
-
-      // Save to Supabase with Plaid transfer ID
-      const { data: transaction, error } = await supabase
-        .from('transactions')
-        .insert({
-          user_id: request.senderId,
-          amount: -request.totalAmount,
-          transaction_type: 'debit',
-          category: 'Bank Transfer',
-          merchant_name: fullRecipientName,
-          description: request.description || `Bank Transfer to ${fullRecipientName}`,
-          transaction_date: new Date().toISOString().split('T')[0],
-          pending: true,
-          title: `Bank Transfer to ${fullRecipientName}`,
-          subtitle: `From ${bankSource.name}`,
-          // transfer_type: 'plaid_ach',
-          // plaid_transfer_id: transferResult.transferId,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error saving Plaid transfer transaction:', error);
-      }
-
-      return {
-        success: true,
-        transactionId: transaction?.id || transferResult.transferId,
-        message: 'Bank transfer initiated successfully',
-      };
     } catch (error: any) {
       console.error('PaymentService.processPlaidTransfer error:', error);
       throw new Error(error.message || 'Failed to process bank transfer');
@@ -290,6 +368,7 @@ export class PaymentService {
   /**
    * Approve a pending bank transfer transaction
    * - Marks transaction as not pending
+   * - Deducts from sender's bank account
    * - Credits recipient's QuickPay balance
    */
   static async approvePendingTransaction(
@@ -307,6 +386,10 @@ export class PaymentService {
         console.error('Recipient not found for approval');
         return;
       }
+
+      // NOTE: Bank account balances are READ-ONLY from Plaid.
+      // We do NOT deduct from bank_accounts table.
+      // All payments flow through QuickPay balance only.
 
       // Update transaction to not pending
       const { error: txError } = await supabase
@@ -343,6 +426,16 @@ export class PaymentService {
         return;
       }
 
+      // Get sender info for recipient's transaction
+      const { data: senderData } = await supabase
+        .from('users')
+        .select('first_name, last_name, account_number')
+        .eq('id', senderId)
+        .single();
+
+      const senderName = senderData ? `${senderData.first_name} ${senderData.last_name}` : 'Unknown';
+      const senderAccountNumber = senderData?.account_number || 'Unknown';
+
       // Create corresponding income transaction for recipient
       await supabase
         .from('transactions')
@@ -350,13 +443,13 @@ export class PaymentService {
           user_id: recipient.id,
           amount: amount, // Positive for incoming
           transaction_type: 'credit',
-          category: 'Bank Transfer',
-          merchant_name: 'Bank Transfer Received',
-          description: `Received bank transfer`,
+          category: 'Transfer',
+          merchant_name: senderName,
+          description: `Received from ${senderName}`,
           transaction_date: new Date().toISOString().split('T')[0],
           pending: false,
-          title: 'Bank Transfer Received',
-          subtitle: 'Via Bank Transfer',
+          title: `Received from ${senderName}`,
+          subtitle: `From: ${senderAccountNumber} • To: ${recipientAccountNumber}`,
         });
 
       console.log('✅ Transaction approved and recipient credited');

@@ -3,10 +3,17 @@ import { Ionicons } from '@expo/vector-icons';
 import TransactionModalHeader from './TransactionModalHeader';
 import * as Sharing from 'expo-sharing';
 import ViewShot from 'react-native-view-shot';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import FavoriteModel from '@/models/FavoriteModel';
+import { useUser } from '@clerk/clerk-expo';
+import { supabase } from '@/config/supabaseConfig';
 
 export default function ExportReceiptModal({ visible, onClose, transaction }: any) {
   const viewShotRef = useRef<ViewShot>(null);
+  const { user } = useUser();
+  const [recipientAvatar, setRecipientAvatar] = useState<string | null>(null);
+  const [recipientAccountNumber, setRecipientAccountNumber] = useState<string>('');
+  const [bankName, setBankName] = useState<string | null>(null);
 
   const isIncome = transaction?.amount >= 0;
   const transactionType = isIncome ? 'Income' : 'Withdrawal';
@@ -51,14 +58,71 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
 
   const bankSources = parseBankSources();
 
+  // Parse account numbers from subtitle
+  const parseAccountNumbers = () => {
+    if (!transaction?.subtitle) return null;
+
+    // Check for "From: XXX • To: YYY" format
+    const match = transaction.subtitle.match(/From:\s*([^\s•]+)\s*•\s*To:\s*([^\s•]+)/);
+    if (match) {
+      return {
+        from: match[1].trim(),
+        to: match[2].trim()
+      };
+    }
+    return null;
+  };
+
+  const accountNumbers = parseAccountNumbers();
+
+  // Fetch recipient avatar, account number, and bank name when modal opens
+  useEffect(() => {
+    const fetchRecipientData = async () => {
+      if (!visible || !user) return;
+
+      try {
+        // Fetch recipient profile if account numbers exist
+        if (accountNumbers) {
+          // Determine which account number is the recipient's
+          // For sent transactions (amount < 0), recipient is "To"
+          // For received transactions (amount >= 0), recipient is "From"
+          const recipientAccNum = isIncome ? accountNumbers.from : accountNumbers.to;
+          setRecipientAccountNumber(recipientAccNum);
+
+          // Fetch recipient profile from users table
+          const accountHolder = await FavoriteModel.getAccountHolderByAccountNumber(recipientAccNum);
+          if (accountHolder?.profilePicture) {
+            setRecipientAvatar(accountHolder.profilePicture);
+          }
+        }
+
+        // Fetch bank name if transaction has bank_account_id
+        if (transaction?.bank_account_id) {
+          const { data: bankAccount, error } = await supabase
+            .from('bank_accounts')
+            .select('name')
+            .eq('id', transaction.bank_account_id)
+            .single();
+
+          if (!error && bankAccount) {
+            setBankName(bankAccount.name);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching recipient data:', error);
+      }
+    };
+
+    fetchRecipientData();
+  }, [visible, transaction, user, accountNumbers, isIncome]);
+
   // Extract single bank account source
-  // Priority: 1) bank field from Plaid, 2) all banks from multi-source, 3) subtitle if not multi-bank format, 4) Unknown
-  const bankAccount = transaction?.bank ||
+  // Priority: 1) Fetched bank name from database, 2) bank field from Plaid, 3) all banks from multi-source, 4) QuickPay (default)
+  const bankAccount = bankName ||
+                     transaction?.bank ||
                      (bankSources && bankSources.length > 0
                        ? bankSources.map((s: any) => s.bank).join(', ')
-                       : (transaction?.subtitle && !transaction.subtitle.match(/\w+\(-?\$[\d.]+\)/)
-                          ? transaction.subtitle.replace('Account: ', '')
-                          : 'Unknown Bank'));
+                       : 'QuickPay');
 
   const handleExportImage = async () => {
     try {
@@ -119,17 +183,24 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
                 {/* Transaction Summary */}
                 <View className="bg-gray-50 rounded-xl p-4 mb-4">
                   <View className="flex-row items-center mb-3">
-                    {merchantLogo ? (
+                    {recipientAvatar ? (
+                      <Image source={{ uri: recipientAvatar }} className="w-12 h-12 rounded-full" />
+                    ) : merchantLogo ? (
                       <Image source={merchantLogo} className="w-12 h-12 rounded-xl" />
                     ) : (
-                      <View className="w-12 h-12 rounded-xl bg-[#00332d] items-center justify-center">
-                        <Ionicons name="business-outline" size={24} color="white" />
+                      <View className="w-12 h-12 rounded-full bg-[#00332d] items-center justify-center">
+                        <Ionicons name="person-outline" size={24} color="white" />
                       </View>
                     )}
                     <View className="flex-1 ml-3">
                       <Text className="text-base font-semibold text-gray-900">
                         {companyName}
                       </Text>
+                      {recipientAccountNumber && (
+                        <Text className="text-xs text-gray-500 mt-1">
+                          {recipientAccountNumber}
+                        </Text>
+                      )}
                     </View>
                   </View>
 
@@ -183,6 +254,27 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
                   )}
 
                   <DetailRow label="Country" value={country} />
+
+                  {/* Account Numbers */}
+                  {accountNumbers && (
+                    <View className="pt-3 border-t border-gray-200">
+                      <Text className="text-xs text-gray-500 mb-2">QuickPay Account Numbers</Text>
+                      <View className="flex-row justify-between items-center mb-2">
+                        <View className="flex-row items-center">
+                          <Ionicons name="person-outline" size={14} color="#6B7280" style={{ marginRight: 4 }} />
+                          <Text className="text-sm text-gray-500">Sender</Text>
+                        </View>
+                        <Text className="text-sm font-medium text-gray-900">{accountNumbers.from}</Text>
+                      </View>
+                      <View className="flex-row justify-between items-center">
+                        <View className="flex-row items-center">
+                          <Ionicons name="person-outline" size={14} color="#6B7280" style={{ marginRight: 4 }} />
+                          <Text className="text-sm text-gray-500">Recipient</Text>
+                        </View>
+                        <Text className="text-sm font-medium text-gray-900">{accountNumbers.to}</Text>
+                      </View>
+                    </View>
+                  )}
 
                   {transaction?.budgetBlock && (
                     <DetailRow label="Budget Block" value={transaction.budgetBlock} />

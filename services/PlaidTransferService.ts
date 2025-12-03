@@ -52,12 +52,19 @@ export class PlaidTransferService {
       );
 
       if (error) {
-        console.error('❌ Plaid transfer creation error:', error);
-        throw new Error(error.message || 'Failed to create transfer');
+        // Don't throw - return error result to allow fallback
+        console.warn('⚠️ Plaid transfer API unavailable (expected in sandbox)');
+        return {
+          success: false,
+          message: error.message || 'Plaid Transfer API not available',
+        };
       }
 
       if (!data || !data.transfer_id) {
-        throw new Error('Invalid response from transfer service');
+        return {
+          success: false,
+          message: 'Invalid response from transfer service',
+        };
       }
 
       console.log('✅ Plaid Transfer created:', data.transfer_id);

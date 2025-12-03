@@ -151,6 +151,66 @@ export async function fetchPlaidAccounts(clerkId: string): Promise<PlaidAccount[
 }
 
 /**
+ * Fetch accounts with local database balances instead of Plaid balances
+ * This is critical for showing updated balances after payments
+ */
+export async function fetchPlaidAccountsWithLocalBalances(clerkId: string): Promise<PlaidAccount[]> {
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
+
+    // Get user's Supabase ID
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('clerk_id', clerkId)
+      .single();
+
+    if (userError || !user) {
+      console.error('User not found:', userError);
+      return [];
+    }
+
+    // Fetch Plaid accounts (for names and account IDs)
+    const plaidAccounts = await fetchPlaidAccounts(clerkId);
+
+    // Fetch local database balances
+    const { data: bankAccounts, error: bankError } = await supabase
+      .from('bank_accounts')
+      .select('plaid_account_id, name, balance, available_balance')
+      .eq('user_id', user.id);
+
+    if (bankError) {
+      console.error('Error fetching bank accounts:', bankError);
+      return plaidAccounts; // Fallback to Plaid balances
+    }
+
+    // Merge local balances with Plaid account data
+    return plaidAccounts.map(plaidAccount => {
+      const localAccount = bankAccounts?.find(ba => ba.plaid_account_id === plaidAccount.account_id);
+
+      if (localAccount) {
+        // Use local database balance (updated after payments)
+        return {
+          ...plaidAccount,
+          balances: {
+            ...plaidAccount.balances,
+            available: parseFloat(localAccount.available_balance || localAccount.balance),
+            current: parseFloat(localAccount.balance),
+          }
+        };
+      }
+
+      // No local record, use Plaid balance
+      return plaidAccount;
+    });
+  } catch (error) {
+    console.error('Error fetching accounts with local balances:', error);
+    return await fetchPlaidAccounts(clerkId); // Fallback to Plaid
+  }
+}
+
+/**
  * Calculate total balance from all accounts
  * Note: Plaid returns balances in cents, so we divide by 100 to get dollars
  */

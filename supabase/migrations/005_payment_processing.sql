@@ -9,12 +9,14 @@ CREATE OR REPLACE FUNCTION process_payment(
 DECLARE
   v_recipient_id UUID;
   v_sender_account_number TEXT;
+  v_sender_name TEXT;
   v_source JSONB;
   v_transaction_id UUID;
   v_recipient_name TEXT;
 BEGIN
-  -- Get sender's account number for transaction records
-  SELECT account_number INTO v_sender_account_number
+  -- Get sender's account number and name for transaction records
+  SELECT account_number, COALESCE(first_name || ' ' || last_name, email)
+  INTO v_sender_account_number, v_sender_name
   FROM users
   WHERE id = p_sender_id;
 
@@ -52,17 +54,16 @@ BEGIN
       END IF;
 
     ELSIF (v_source->>'type')::text = 'bank' THEN
-      -- Deduct from bank account balance
-      UPDATE bank_accounts
-      SET balance = balance - (v_source->>'amount')::decimal,
-          available_balance = available_balance - (v_source->>'amount')::decimal,
-          updated_at = NOW()
+      -- NOTE: Bank accounts are READ-ONLY from Plaid.
+      -- We do NOT deduct from bank_accounts table.
+      -- Just validate that the bank account exists and belongs to the sender.
+      PERFORM 1
+      FROM bank_accounts
       WHERE id = (v_source->>'id')::uuid
-      AND user_id = p_sender_id
-      AND available_balance >= (v_source->>'amount')::decimal;
+      AND user_id = p_sender_id;
 
       IF NOT FOUND THEN
-        RAISE EXCEPTION 'Insufficient bank balance';
+        RAISE EXCEPTION 'Bank account not found or does not belong to sender';
       END IF;
     END IF;
 
@@ -72,6 +73,8 @@ BEGIN
       bank_account_id,
       amount,
       transaction_type,
+      category,
+      merchant_name,
       description,
       transaction_date,
       pending,
@@ -83,13 +86,15 @@ BEGIN
       p_sender_id,
       CASE WHEN (v_source->>'type')::text = 'bank'
         THEN (v_source->>'id')::uuid ELSE NULL END,
-      (v_source->>'amount')::decimal,
+      -(v_source->>'amount')::decimal,  -- Negative for debit
       'debit',
+      'Transfer',
+      v_recipient_name,
       p_description,
       CURRENT_DATE,
       false,
       'Sent to ' || v_recipient_name,
-      'Account: ' || p_recipient_account_number,
+      'From: ' || v_sender_account_number || ' • To: ' || p_recipient_account_number,
       NOW(),
       NOW()
     );
@@ -106,6 +111,8 @@ BEGIN
     user_id,
     amount,
     transaction_type,
+    category,
+    merchant_name,
     description,
     transaction_date,
     pending,
@@ -117,11 +124,13 @@ BEGIN
     v_recipient_id,
     p_total_amount,
     'credit',
+    'Transfer',
+    v_sender_name,
     p_description,
     CURRENT_DATE,
     false,
-    'Received Payment',
-    'From account: ' || v_sender_account_number,
+    'Received from ' || v_sender_name,
+    'From: ' || v_sender_account_number || ' • To: ' || p_recipient_account_number,
     NOW(),
     NOW()
   ) RETURNING id INTO v_transaction_id;

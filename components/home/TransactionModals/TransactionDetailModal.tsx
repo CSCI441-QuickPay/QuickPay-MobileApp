@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -15,15 +15,20 @@ import { modalStyles } from '@/styles/modalStyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TransactionModalHeader from './TransactionModalHeader';
 import EditBudgetBlockModal from './EditBudgetBlockModal';
+import FavoriteModel from '@/models/FavoriteModel';
+import { useUser } from '@clerk/clerk-expo';
+import { supabase } from '@/config/supabaseConfig';
 
 export default function TransactionDetailModal({ visible, onClose, transaction }: any) {
   const insets = useSafeAreaInsets();
+  const { user } = useUser();
   const [budgetVisible, setBudgetVisible] = useState(false);
   const [internalNote, setInternalNote] = useState(transaction?.internalNote || '');
-  const [editingNote, setEditingNote] = useState(false);
+  const [recipientAvatar, setRecipientAvatar] = useState<string | null>(null);
+  const [bankName, setBankName] = useState<string | null>(null);
 
   const publicRemark = transaction?.remark || '';
-  const isCharge = transaction?.amount < 0;
+  const isIncome = transaction?.amount >= 0;
 
   // Extract company/merchant name - handle both Plaid and local data
   const companyName = transaction?.company || transaction?.merchant_name || transaction?.title || 'Company';
@@ -65,14 +70,69 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
 
   const bankSources = parseBankSources();
 
+  // Parse account numbers from subtitle
+  const parseAccountNumbers = () => {
+    if (!transaction?.subtitle) return null;
+
+    // Check for "From: XXX • To: YYY" format
+    const match = transaction.subtitle.match(/From:\s*([^\s•]+)\s*•\s*To:\s*([^\s•]+)/);
+    if (match) {
+      return {
+        from: match[1].trim(),
+        to: match[2].trim()
+      };
+    }
+    return null;
+  };
+
+  const accountNumbers = parseAccountNumbers();
+
+  // Fetch recipient avatar and bank name when modal opens
+  useEffect(() => {
+    const fetchRecipientData = async () => {
+      if (!visible || !user) return;
+
+      try {
+        // Fetch recipient profile if account numbers exist
+        if (accountNumbers) {
+          // For sent transactions (amount < 0), recipient is "To"
+          // For received transactions (amount >= 0), recipient is "From"
+          const recipientAccNum = isIncome ? accountNumbers.from : accountNumbers.to;
+
+          // Fetch recipient profile
+          const accountHolder = await FavoriteModel.getAccountHolderByAccountNumber(recipientAccNum);
+          if (accountHolder?.profilePicture) {
+            setRecipientAvatar(accountHolder.profilePicture);
+          }
+        }
+
+        // Fetch bank name if transaction has bank_account_id
+        if (transaction?.bank_account_id) {
+          const { data: bankAccount, error } = await supabase
+            .from('bank_accounts')
+            .select('name')
+            .eq('id', transaction.bank_account_id)
+            .single();
+
+          if (!error && bankAccount) {
+            setBankName(bankAccount.name);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching recipient data:', error);
+      }
+    };
+
+    fetchRecipientData();
+  }, [visible, transaction, user, accountNumbers, isIncome]);
+
   // Extract single bank account source
-  // Priority: 1) bank field from Plaid, 2) all banks from multi-source, 3) subtitle if not multi-bank format, 4) Unknown
-  const bankAccount = transaction?.bank ||
+  // Priority: 1) Fetched bank name from database, 2) bank field from Plaid, 3) all banks from multi-source, 4) QuickPay (default)
+  const bankAccount = bankName ||
+                     transaction?.bank ||
                      (bankSources && bankSources.length > 0
                        ? bankSources.map((s: any) => s.bank).join(', ')
-                       : (transaction?.subtitle && !transaction.subtitle.match(/\w+\(-?\$[\d.]+\)/)
-                          ? transaction.subtitle.replace('Account: ', '')
-                          : 'Unknown Bank'));
+                       : 'QuickPay');
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -95,18 +155,24 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
             {/* Transaction Summary */}
             <View style={modalStyles.card}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {merchantLogo ? (
+                {recipientAvatar ? (
+                  <Image source={{ uri: recipientAvatar }} style={{ width: 52, height: 52, borderRadius: 26 }} />
+                ) : merchantLogo ? (
                   <Image source={merchantLogo} style={{ width: 52, height: 52, borderRadius: 12 }} />
                 ) : (
-                  <Ionicons name="card-outline" size={40} color="#00332d" />
+                  <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: '#00332d', alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="person-outline" size={28} color="white" />
+                  </View>
                 )}
                 <View style={{ marginLeft: 12, flex: 1 }}>
                   <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>
                     {companyName}
                   </Text>
-                  <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
-                    {transaction.date || 'N/A'}
-                  </Text>
+                  {accountNumbers && (
+                    <Text style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
+                      {isIncome ? accountNumbers.from : accountNumbers.to}
+                    </Text>
+                  )}
                 </View>
                 <Text
                   style={{
@@ -123,6 +189,12 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
             {/* Transaction Info */}
             <View style={modalStyles.card}>
               <Text style={modalStyles.sectionTitle}>Transaction Info</Text>
+
+              {/* Date */}
+              <View style={modalStyles.fieldRow}>
+                <Text style={modalStyles.fieldLabel}>Date</Text>
+                <Text style={modalStyles.fieldValue}>{transaction.date || 'N/A'}</Text>
+              </View>
 
               {/* Category */}
               {category && category !== 'Other' && (
@@ -184,6 +256,23 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
                   ))}
                 </View>
               ) : null}
+
+              {/* Account Numbers */}
+              {accountNumbers && (
+                <View style={{ marginTop: 8, marginBottom: 8, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#E5E7EB' }}>
+                  <Text style={[modalStyles.fieldLabel, { marginBottom: 8 }]}>
+                    Account Numbers
+                  </Text>
+                  <View style={modalStyles.fieldRow}>
+                    <Text style={modalStyles.fieldLabel}>From</Text>
+                    <Text style={modalStyles.fieldValue}>{accountNumbers.from}</Text>
+                  </View>
+                  <View style={modalStyles.fieldRow}>
+                    <Text style={modalStyles.fieldLabel}>To</Text>
+                    <Text style={modalStyles.fieldValue}>{accountNumbers.to}</Text>
+                  </View>
+                </View>
+              )}
 
               <View style={modalStyles.fieldRow}>
                 <Text style={modalStyles.fieldLabel}>Budget Block</Text>
