@@ -27,15 +27,19 @@ export default function BudgetPlayground({
   const [isDraggingBlock, setIsDraggingBlock] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-  const canvasPan = useRef(new Animated.ValueXY(calculateCenterPosition(SCREEN_WIDTH))).current;
+  const canvasPan = useRef(new Animated.ValueXY(calculateCenterPosition(SCREEN_WIDTH, undefined, scale))).current;
 
   // Recenter canvas when categories are loaded or changed
+  // Find the Current Budget block position to trigger recenter when it changes
+  const currentBudgetBlock = categories.find((c: any) => c.id === 'total');
+  const currentBudgetPosition = currentBudgetBlock?.position;
+
   useEffect(() => {
     if (categories && categories.length > 0) {
-      const centerPosition = calculateCenterPosition(SCREEN_WIDTH, categories);
+      const centerPosition = calculateCenterPosition(SCREEN_WIDTH, categories, scale);
       canvasPan.setValue(centerPosition);
     }
-  }, [categories.length]); // Only recenter when categories are initially loaded
+  }, [categories.length, currentBudgetPosition?.x, currentBudgetPosition?.y, scale]); // Recenter when Current Budget position or scale changes
 
   // Open delete modal when categoryToDelete is set
   useEffect(() => {
@@ -52,7 +56,7 @@ export default function BudgetPlayground({
   const resetFocus = () => {
     setFocusedCategoryId(null);
     Animated.spring(canvasPan, {
-      toValue: calculateCenterPosition(SCREEN_WIDTH, categories),
+      toValue: calculateCenterPosition(SCREEN_WIDTH, categories, scale),
       useNativeDriver: false,
     }).start();
   };
@@ -220,6 +224,7 @@ export default function BudgetPlayground({
         {...canvasPanResponder.panHandlers}
         style={{
           flex: 1,
+          paddingBottom: 200, // Add bottom padding to allow scrolling below Current Budget block
           transform: [
             { translateX: canvasPan.x },
             { translateY: canvasPan.y },
