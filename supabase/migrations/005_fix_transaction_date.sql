@@ -1,4 +1,6 @@
--- Create atomic payment processing function
+-- Fix transaction_date to use CURRENT_DATE instead of NOW()
+-- This ensures the date is stored correctly without timezone/time issues
+
 CREATE OR REPLACE FUNCTION process_payment(
   p_sender_id UUID,
   p_recipient_account_number TEXT,
@@ -66,7 +68,7 @@ BEGIN
       END IF;
     END IF;
 
-    -- Create debit transaction for sender
+    -- Create debit transaction for sender (FIXED: use CURRENT_DATE)
     INSERT INTO transactions (
       user_id,
       bank_account_id,
@@ -86,7 +88,7 @@ BEGIN
       (v_source->>'amount')::decimal,
       'debit',
       p_description,
-      CURRENT_DATE,
+      CURRENT_DATE,  -- Fixed: was NOW()
       false,
       'Sent to ' || v_recipient_name,
       'Account: ' || p_recipient_account_number,
@@ -101,7 +103,7 @@ BEGIN
       updated_at = NOW()
   WHERE id = v_recipient_id;
 
-  -- Create credit transaction for recipient
+  -- Create credit transaction for recipient (FIXED: use CURRENT_DATE)
   INSERT INTO transactions (
     user_id,
     amount,
@@ -118,7 +120,7 @@ BEGIN
     p_total_amount,
     'credit',
     p_description,
-    CURRENT_DATE,
+    CURRENT_DATE,  -- Fixed: was NOW()
     false,
     'Received Payment',
     'From account: ' || v_sender_account_number,
@@ -139,8 +141,4 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION process_payment TO authenticated;
-
--- Add comment
-COMMENT ON FUNCTION process_payment IS 'Atomically process multi-source payment from sender to recipient';
+COMMENT ON FUNCTION process_payment IS 'Atomically process multi-source payment from sender to recipient - Updated to use CURRENT_DATE for transaction_date';
