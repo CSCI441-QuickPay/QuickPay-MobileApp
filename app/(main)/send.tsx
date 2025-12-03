@@ -244,16 +244,28 @@ export default function SendMoney() {
   };
 
   const alreadySelectedIds = sources.map((s) => s.id);
+
+  // Transform Plaid accounts to BankOptions
+  const plaidBankOptions: BankOption[] = availableBanks.map((b) => {
+    // Note: Tartan (mock Plaid) returns balances in dollars, not cents
+    // Real Plaid returns in cents, but for now we're using Tartan for testing
+    const balance = b.balances.available || b.balances.current || 0;
+
+    return {
+      id: b.account_id,
+      type: 'bank' as const,
+      name: b.name,
+      balance: balance,
+      accountType: b.subtype || 'checking',
+      mask: '****', // Plaid doesn't expose mask in this interface
+    };
+  });
+
+  // In Demo Mode: merge Plaid banks + mock banks
+  // In Real Mode: only Plaid banks
   const bankOptionsForSelector = isDemoMode
-    ? getMockBankOptions()
-    : availableBanks.map((b) => ({
-        id: b.account_id,
-        type: 'bank' as const,
-        name: b.name,
-        balance: b.balances.available || b.balances.current || 0,
-        accountType: b.subtype || 'checking',
-        mask: b.mask || '****',
-      }));
+    ? [...plaidBankOptions, ...getMockBankOptions()]
+    : plaidBankOptions;
 
   return (
     <SafeAreaView className="flex-1 bg-[#00332d]" edges={['top']}>

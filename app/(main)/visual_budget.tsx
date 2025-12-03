@@ -45,14 +45,75 @@ export default function VisualBudget() {
       try {
         setLoading(true);
 
-        // If Demo Mode is ON, use mock data + QuickPay Balance
+        // If Demo Mode is ON, use real Plaid banks + mock banks + QuickPay Balance
         if (isDemoMode) {
-          console.log("🎭 Demo Mode ON - Using mock budget data + QuickPay Balance");
+          console.log("🎭 Demo Mode ON - Fetching Plaid + Mock Banks + QuickPay Balance");
 
           // Get user's balance from database for QuickPay Balance
           const dbUser = await UserModel.getByClerkId(user.id);
           const userBalance = dbUser?.balance || 0;
           console.log(`💵 Demo Mode: QuickPay user balance = $${userBalance.toFixed(2)}`);
+
+          // Fetch Plaid accounts
+          let plaidAccounts: PlaidAccount[] = [];
+          try {
+            plaidAccounts = await fetchPlaidAccounts(user.id);
+            console.log(`✅ Demo Mode: Fetched ${plaidAccounts.length} Plaid accounts`);
+          } catch (error) {
+            console.error('❌ Demo Mode: Error fetching Plaid accounts:', error);
+          }
+
+          // Transform Plaid accounts into bank blocks
+          const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+          const HORIZONTAL_SPACING = 200;
+          const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
+            // Note: Tartan (mock Plaid) returns balances in dollars, not cents
+            // Real Plaid returns in cents, but for now we're using Tartan for testing
+            const balance = account.balances.available || account.balances.current || 0;
+
+            return {
+              id: account.account_id,
+              name: account.name,
+              icon: 'card',
+              color: bankColors[index % bankColors.length],
+              spent: 0,
+              budget: balance,
+              amount: balance,
+              parentId: null,
+              children: ['total'],
+              position: {
+                x: 260 + (index * HORIZONTAL_SPACING),
+                y: 30
+              },
+              type: 'bank',
+            };
+          });
+
+          // Load mock banks from data/budget.tsx
+          const { banks: mockBanks } = await import('@/data/budget');
+          console.log(`🏦 Demo Mode: Loaded ${mockBanks.length} mock banks`);
+
+          // Create mock bank blocks positioned after Plaid banks
+          const mockBankBlocks: TreeBudgetCategory[] = mockBanks.map((bank, index) => ({
+            id: bank.id,
+            name: bank.name,
+            icon: bank.icon,
+            color: bank.color,
+            spent: 0,
+            budget: bank.budget || bank.amount || 0,
+            amount: bank.budget || bank.amount || 0,
+            parentId: null,
+            children: ['total'],
+            position: {
+              x: 260 + ((plaidBankBlocks.length + index) * HORIZONTAL_SPACING),
+              y: 30
+            },
+            type: 'bank',
+            isMock: true, // Flag to identify mock banks
+          }));
+
+          // Combine all banks (Plaid + Mock)
+          const allBankBlocks = [...plaidBankBlocks, ...mockBankBlocks];
 
           // Create QuickPay Balance block
           const quickPayBlock: TreeBudgetCategory = {
@@ -69,15 +130,42 @@ export default function VisualBudget() {
             type: 'bank',
           };
 
-          // Merge QuickPay Balance with mock budget categories
-          const allCategories = [quickPayBlock, ...budgetCategories];
-          console.log(`✅ Demo Mode: Created ${allCategories.length} categories (1 QuickPay + ${budgetCategories.length} mock)`);
-          setCategories(allCategories);
+          // Calculate total balance from QuickPay + Plaid + Mock banks
+          const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
+          const mockTotalBalance = mockBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
+          const totalBalance = userBalance + plaidTotalBalance + mockTotalBalance;
+          console.log(`💰 Demo Mode: Total Balance = $${totalBalance.toFixed(2)} (QuickPay: $${userBalance}, Plaid: $${plaidTotalBalance}, Mock: $${mockTotalBalance})`);
 
-          // Total balance = user balance + mock banks
-          const mockBankBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
-          setTotalBalance(userBalance + mockBankBalance);
-          console.log(`💰 Demo Mode: Total Balance = $${(userBalance + mockBankBalance).toFixed(2)}`);
+          // Calculate center position for Current Budget (below all parent banks)
+          const totalParents = 1 + allBankBlocks.length; // QuickPay + All banks
+          const centerX = totalParents === 1
+            ? 60 // If only QuickPay, center below it
+            : (60 + (260 + (allBankBlocks.length - 1) * HORIZONTAL_SPACING)) / 2; // Center between QuickPay and last bank
+
+          // Load mock budget categories (children of Current Budget)
+          const { budgetCategories: mockCategories } = await import('@/data/budget');
+          const budgetChildren = mockCategories.filter(c => c.type !== 'bank' && c.type !== 'budget');
+          console.log(`📊 Demo Mode: Loaded ${budgetChildren.length} budget categories`);
+
+          const currentBudgetBlock: TreeBudgetCategory = {
+            id: 'total',
+            name: 'Current Budget',
+            icon: 'cash',
+            color: '#6366F1',
+            spent: 0,
+            budget: totalBalance,
+            amount: totalBalance,
+            parentId: null,
+            children: budgetChildren.filter(c => c.parentId === 'total').map(c => c.id),
+            position: { x: centerX, y: 230 },
+            type: 'budget',
+          };
+
+          // Combine: QuickPay + All Banks (Plaid + Mock) + Current Budget + Budget Categories
+          const allCategories = [quickPayBlock, ...allBankBlocks, currentBudgetBlock, ...budgetChildren];
+          console.log(`✅ Demo Mode: Created ${allCategories.length} blocks (1 QuickPay + ${plaidBankBlocks.length} Plaid + ${mockBankBlocks.length} Mock + 1 Current Budget + ${budgetChildren.length} categories)`);
+          setCategories(allCategories);
+          setTotalBalance(totalBalance);
           setLoading(false);
           return;
         }
@@ -109,22 +197,28 @@ export default function VisualBudget() {
         // Transform Plaid accounts into bank blocks positioned horizontally
         const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
         const HORIZONTAL_SPACING = 200; // Space between banks horizontally
-        const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => ({
-          id: account.account_id,
-          name: account.name,
-          icon: 'card',
-          color: bankColors[index % bankColors.length],
-          spent: 0,
-          budget: account.balances.available || account.balances.current || 0,
-          amount: account.balances.available || account.balances.current || 0,
-          parentId: null,
-          children: ['total'], // All Plaid banks connect to Current Budget
-          position: {
-            x: 260 + (index * HORIZONTAL_SPACING), // Position to the right of QuickPay, horizontally spaced
-            y: 30 // Same Y level as QuickPay Balance
-          },
-          type: 'bank',
-        }));
+        const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
+          // Note: Tartan (mock Plaid) returns balances in dollars, not cents
+          // Real Plaid returns in cents, but for now we're using Tartan for testing
+          const balance = account.balances.available || account.balances.current || 0;
+
+          return {
+            id: account.account_id,
+            name: account.name,
+            icon: 'card',
+            color: bankColors[index % bankColors.length],
+            spent: 0,
+            budget: balance,
+            amount: balance,
+            parentId: null,
+            children: ['total'], // All Plaid banks connect to Current Budget
+            position: {
+              x: 260 + (index * HORIZONTAL_SPACING), // Position to the right of QuickPay, horizontally spaced
+              y: 30 // Same Y level as QuickPay Balance
+            },
+            type: 'bank',
+          };
+        });
 
         // Calculate total balance from QuickPay + all Plaid accounts
         const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
@@ -199,9 +293,66 @@ export default function VisualBudget() {
 
         try {
           if (isDemoMode) {
-            // Demo Mode: Reload mock data
+            // Demo Mode: Reload Plaid + Mock Banks + QuickPay data
             const dbUser = await UserModel.getByClerkId(user.id);
             const userBalance = dbUser?.balance || 0;
+
+            // Fetch Plaid accounts
+            let plaidAccounts: PlaidAccount[] = [];
+            try {
+              plaidAccounts = await fetchPlaidAccounts(user.id);
+              console.log(`✅ Demo Mode Refresh: Fetched ${plaidAccounts.length} Plaid accounts`);
+            } catch (error) {
+              console.error('❌ Demo Mode Refresh: Error fetching Plaid accounts:', error);
+            }
+
+            // Transform Plaid accounts into bank blocks
+            const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+            const HORIZONTAL_SPACING = 200;
+            const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
+              // Note: Tartan (mock Plaid) returns balances in dollars, not cents
+              // Real Plaid returns in cents, but for now we're using Tartan for testing
+              const balance = account.balances.available || account.balances.current || 0;
+
+              return {
+                id: account.account_id,
+                name: account.name,
+                icon: 'card',
+                color: bankColors[index % bankColors.length],
+                spent: 0,
+                budget: balance,
+                amount: balance,
+                parentId: null,
+                children: ['total'],
+                position: {
+                  x: 260 + (index * HORIZONTAL_SPACING),
+                  y: 30
+                },
+                type: 'bank',
+              };
+            });
+
+            // Load mock banks
+            const { banks: mockBanks } = await import('@/data/budget');
+            const mockBankBlocks: TreeBudgetCategory[] = mockBanks.map((bank, index) => ({
+              id: bank.id,
+              name: bank.name,
+              icon: bank.icon,
+              color: bank.color,
+              spent: 0,
+              budget: bank.budget || bank.amount || 0,
+              amount: bank.budget || bank.amount || 0,
+              parentId: null,
+              children: ['total'],
+              position: {
+                x: 260 + ((plaidBankBlocks.length + index) * HORIZONTAL_SPACING),
+                y: 30
+              },
+              type: 'bank',
+              isMock: true,
+            }));
+
+            const allBankBlocks = [...plaidBankBlocks, ...mockBankBlocks];
 
             const quickPayBlock: TreeBudgetCategory = {
               id: 'quickpay-balance',
@@ -217,11 +368,36 @@ export default function VisualBudget() {
               type: 'bank',
             };
 
-            const allCategories = [quickPayBlock, ...budgetCategories];
-            const mockBankBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+            const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
+            const mockTotalBalance = mockBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
+            const totalBalance = userBalance + plaidTotalBalance + mockTotalBalance;
+
+            const totalParents = 1 + allBankBlocks.length;
+            const centerX = totalParents === 1
+              ? 60
+              : (60 + (260 + (allBankBlocks.length - 1) * HORIZONTAL_SPACING)) / 2;
+
+            // Load mock budget categories
+            const { budgetCategories: mockCategories } = await import('@/data/budget');
+            const budgetChildren = mockCategories.filter(c => c.type !== 'bank' && c.type !== 'budget');
+
+            const currentBudgetBlock: TreeBudgetCategory = {
+              id: 'total',
+              name: 'Current Budget',
+              icon: 'cash',
+              color: '#6366F1',
+              spent: 0,
+              budget: totalBalance,
+              amount: totalBalance,
+              parentId: null,
+              children: budgetChildren.filter(c => c.parentId === 'total').map(c => c.id),
+              position: { x: centerX, y: 230 },
+              type: 'budget',
+            };
+
             if (isActive) {
-              setCategories(allCategories);
-              setTotalBalance(userBalance + mockBankBalance);
+              setCategories([quickPayBlock, ...allBankBlocks, currentBudgetBlock, ...budgetChildren]);
+              setTotalBalance(totalBalance);
             }
           } else {
             // Real Mode: Refetch Plaid accounts
@@ -234,22 +410,28 @@ export default function VisualBudget() {
             const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
             const HORIZONTAL_SPACING = 200;
 
-            const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => ({
-              id: account.account_id,
-              name: account.name,
-              icon: 'card',
-              color: bankColors[index % bankColors.length],
-              spent: 0,
-              budget: account.balances.available || account.balances.current || 0,
-              amount: account.balances.available || account.balances.current || 0,
-              parentId: null,
-              children: ['total'],
-              position: {
-                x: 260 + (index * HORIZONTAL_SPACING),
-                y: 30
-              },
-              type: 'bank',
-            }));
+            const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
+              // Note: Tartan (mock Plaid) returns balances in dollars, not cents
+              // Real Plaid returns in cents, but for now we're using Tartan for testing
+              const balance = account.balances.available || account.balances.current || 0;
+
+              return {
+                id: account.account_id,
+                name: account.name,
+                icon: 'card',
+                color: bankColors[index % bankColors.length],
+                spent: 0,
+                budget: balance,
+                amount: balance,
+                parentId: null,
+                children: ['total'],
+                position: {
+                  x: 260 + (index * HORIZONTAL_SPACING),
+                  y: 30
+                },
+                type: 'bank',
+              };
+            });
 
             const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
             const totalBalance = userBalance + plaidTotalBalance;
@@ -328,22 +510,28 @@ export default function VisualBudget() {
       const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
       const HORIZONTAL_SPACING = 200;
 
-      const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => ({
-        id: account.account_id,
-        name: account.name,
-        icon: 'card',
-        color: bankColors[index % bankColors.length],
-        spent: 0,
-        budget: account.balances.available || account.balances.current || 0,
-        amount: account.balances.available || account.balances.current || 0,
-        parentId: null,
-        children: ['total'],
-        position: {
-          x: 260 + (index * HORIZONTAL_SPACING),
-          y: 30
-        },
-        type: 'bank',
-      }));
+      const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
+        // Note: Tartan (mock Plaid) returns balances in dollars, not cents
+        // Real Plaid returns in cents, but for now we're using Tartan for testing
+        const balance = account.balances.available || account.balances.current || 0;
+
+        return {
+          id: account.account_id,
+          name: account.name,
+          icon: 'card',
+          color: bankColors[index % bankColors.length],
+          spent: 0,
+          budget: balance,
+          amount: balance,
+          parentId: null,
+          children: ['total'],
+          position: {
+            x: 260 + (index * HORIZONTAL_SPACING),
+            y: 30
+          },
+          type: 'bank',
+        };
+      });
 
       const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
       const totalBalance = userBalance + plaidTotalBalance;

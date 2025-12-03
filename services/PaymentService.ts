@@ -1,5 +1,5 @@
 import { supabase } from '@/config/supabaseConfig';
-import { UserModel } from '@/models/UserModel';
+import UserModel from '@/models/UserModel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DEMO_TRANSACTIONS_KEY = '@demo_transactions';
@@ -104,6 +104,17 @@ export class PaymentService {
     recipientName: string
   ): Promise<PaymentResult> {
     try {
+      // Format subtitle with SOURCE breakdown for multi-bank payments
+      let subtitle = `Account: ${request.recipientAccountNumber}`;
+
+      // If multiple sources used, format as SOURCE: BANK1(-$X.XX), BANK2(-$Y.YY)
+      if (request.sources.length > 1) {
+        const sourceBreakdown = request.sources
+          .map(source => `${source.name}(-$${source.amount.toFixed(2)})`)
+          .join(', ');
+        subtitle = `SOURCE: ${sourceBreakdown}`;
+      }
+
       // Create mock transaction
       const mockTransaction = {
         id: `demo_${Date.now()}`,
@@ -114,7 +125,7 @@ export class PaymentService {
         type: 'debit',
         pending: false,
         title: `Sent to ${recipientName}`,
-        subtitle: `Account: ${request.recipientAccountNumber}`,
+        subtitle: subtitle,
         merchant: recipientName,
         isDemoTransaction: true,
       };
