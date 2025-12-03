@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text } from 'react-native';
+import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialIcons, AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useUser } from '@clerk/clerk-expo';
+import { useFocusEffect } from '@react-navigation/native';
 
 import BottomNav from '@/components/BottomNav';
 import BudgetHeader from '@/components/visual_budget/BudgetHeader';
@@ -16,6 +17,7 @@ import { TreeBudgetCategory } from '@/models/BudgetModel';
 import { getBudgetSummary } from '@/controllers/BudgetController';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import UserModel from '@/models/UserModel';
+import { fetchPlaidAccounts, PlaidAccount, unlinkPlaidAccount } from '@/services/PlaidService';
 
 export default function VisualBudget() {
   const { user } = useUser();
@@ -80,8 +82,8 @@ export default function VisualBudget() {
           return;
         }
 
-        // Real Mode - fetch from database or show QuickPay Balance only
-        console.log("📊 Real Mode - Loading real budget data");
+        // Real Mode - fetch from database AND Plaid
+        console.log("📊 Real Mode - Loading real budget data from Plaid");
 
         let dbUser;
         try {
@@ -91,50 +93,46 @@ export default function VisualBudget() {
           console.error("❌ Real Mode: Error fetching user:", err);
         }
 
-        if (!dbUser) {
-          console.log("⚠️ Real Mode: No database user - showing QuickPay with $0 balance");
-          // Still show QuickPay blocks even with no user
-          const quickPayBlock: TreeBudgetCategory = {
-            id: 'quickpay-balance',
-            name: 'QuickPay Balance',
-            icon: 'wallet',
-            color: '#10B981',
-            spent: 0,
-            budget: 0,
-            amount: 0,
-            parentId: null,
-            children: ['total'],
-            position: { x: 60, y: 30 },
-            type: 'bank',
-          };
+        // Get user's QuickPay balance
+        const userBalance = dbUser?.balance || 0;
+        console.log(`💰 Real Mode: QuickPay Balance = $${userBalance.toFixed(2)}`);
 
-          const currentBudgetBlock: TreeBudgetCategory = {
-            id: 'total',
-            name: 'Current Budget',
-            icon: 'cash',
-            color: '#6366F1',
-            spent: 0,
-            budget: 0,
-            amount: 0,
-            parentId: 'quickpay-balance',
-            children: [],
-            position: { x: 60, y: 230 },
-            type: 'budget',
-          };
-
-          console.log("✅ Real Mode: Created 2 blocks with $0 (no user)");
-          setCategories([quickPayBlock, currentBudgetBlock]);
-          setTotalBalance(0);
-          setLoading(false);
-          return;
+        // Fetch Plaid accounts
+        let plaidAccounts: PlaidAccount[] = [];
+        try {
+          plaidAccounts = await fetchPlaidAccounts(user.id);
+          console.log(`✅ Real Mode: Fetched ${plaidAccounts.length} Plaid accounts`);
+        } catch (error) {
+          console.error('❌ Real Mode: Error fetching Plaid accounts:', error);
         }
 
-        // Get user's balance from database
-        const userBalance = dbUser.balance || 0;
-        setTotalBalance(userBalance);
-        console.log(`💰 Real Mode: User Balance = $${userBalance.toFixed(2)}`);
+        // Transform Plaid accounts into bank blocks positioned horizontally
+        const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+        const HORIZONTAL_SPACING = 200; // Space between banks horizontally
+        const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => ({
+          id: account.account_id,
+          name: account.name,
+          icon: 'card',
+          color: bankColors[index % bankColors.length],
+          spent: 0,
+          budget: account.balances.available || account.balances.current || 0,
+          amount: account.balances.available || account.balances.current || 0,
+          parentId: null,
+          children: ['total'], // All Plaid banks connect to Current Budget
+          position: {
+            x: 260 + (index * HORIZONTAL_SPACING), // Position to the right of QuickPay, horizontally spaced
+            y: 30 // Same Y level as QuickPay Balance
+          },
+          type: 'bank',
+        }));
 
-        // Create QuickPay Balance block with Current Budget child
+        // Calculate total balance from QuickPay + all Plaid accounts
+        const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
+        const totalBalance = userBalance + plaidTotalBalance;
+        setTotalBalance(totalBalance);
+        console.log(`💰 Real Mode: Total Balance = $${totalBalance.toFixed(2)} (QuickPay: $${userBalance}, Plaid: $${plaidTotalBalance})`);
+
+        // Create QuickPay Balance block
         const quickPayBlock: TreeBudgetCategory = {
           id: 'quickpay-balance',
           name: 'QuickPay Balance',
@@ -149,23 +147,33 @@ export default function VisualBudget() {
           type: 'bank',
         };
 
+        // Calculate center position for Current Budget (below all parent banks)
+        const totalParents = 1 + plaidBankBlocks.length; // QuickPay + Plaid banks
+        const allParentIds = ['quickpay-balance', ...plaidBankBlocks.map(b => b.id)];
+
+        // Position Current Budget at the center of all parent banks
+        const centerX = totalParents === 1
+          ? 60 // If only QuickPay, center below it
+          : (60 + (260 + (plaidBankBlocks.length - 1) * HORIZONTAL_SPACING)) / 2; // Center between QuickPay and last Plaid bank
+
         const currentBudgetBlock: TreeBudgetCategory = {
           id: 'total',
           name: 'Current Budget',
           icon: 'cash',
           color: '#6366F1',
           spent: 0,
-          budget: userBalance,
-          amount: userBalance,
-          parentId: 'quickpay-balance',
+          budget: totalBalance,
+          amount: totalBalance,
+          parentId: null, // No single parent - connects to multiple parents
           children: [],
-          position: { x: 60, y: 230 },
+          position: { x: centerX, y: 230 },
           type: 'budget',
         };
 
-        console.log("✅ Real Mode: Created 2 blocks (QuickPay Balance + Current Budget)");
-        const realCategories = [quickPayBlock, currentBudgetBlock];
-        console.log(`📦 Real Mode: Setting ${realCategories.length} categories:`, realCategories.map(c => c.name));
+        // Combine all blocks: QuickPay + Plaid Banks + Current Budget
+        const realCategories = [quickPayBlock, ...plaidBankBlocks, currentBudgetBlock];
+        console.log(`✅ Real Mode: Created ${realCategories.length} blocks (1 QuickPay + ${plaidBankBlocks.length} Plaid banks + 1 Current Budget)`);
+        console.log(`📦 Real Mode: Setting categories:`, realCategories.map(c => c.name));
         setCategories(realCategories);
       } catch (error) {
         console.error("❌ Failed to load budget data:", error);
@@ -178,6 +186,214 @@ export default function VisualBudget() {
 
     loadBudgetData();
   }, [user, isDemoMode, demoModeLoading]);
+
+  // Refetch budget data when screen comes into focus (e.g., after linking/unlinking banks)
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const refreshBudgetData = async () => {
+        if (!user || !isActive || demoModeLoading) return;
+
+        console.log("🔄 Visual Budget screen focused - refreshing budget data");
+
+        try {
+          if (isDemoMode) {
+            // Demo Mode: Reload mock data
+            const dbUser = await UserModel.getByClerkId(user.id);
+            const userBalance = dbUser?.balance || 0;
+
+            const quickPayBlock: TreeBudgetCategory = {
+              id: 'quickpay-balance',
+              name: 'QuickPay Balance',
+              icon: 'wallet',
+              color: '#10B981',
+              spent: 0,
+              budget: userBalance,
+              amount: userBalance,
+              parentId: null,
+              children: ['total'],
+              position: { x: 60, y: 30 },
+              type: 'bank',
+            };
+
+            const allCategories = [quickPayBlock, ...budgetCategories];
+            const mockBankBalance = transactions.reduce((sum, t) => sum + t.amount, 0);
+            if (isActive) {
+              setCategories(allCategories);
+              setTotalBalance(userBalance + mockBankBalance);
+            }
+          } else {
+            // Real Mode: Refetch Plaid accounts
+            const dbUser = await UserModel.getByClerkId(user.id);
+            const userBalance = dbUser?.balance || 0;
+
+            const plaidAccounts = await fetchPlaidAccounts(user.id);
+            console.log(`✅ Refresh: Fetched ${plaidAccounts.length} Plaid accounts`);
+
+            const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+            const HORIZONTAL_SPACING = 200;
+
+            const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => ({
+              id: account.account_id,
+              name: account.name,
+              icon: 'card',
+              color: bankColors[index % bankColors.length],
+              spent: 0,
+              budget: account.balances.available || account.balances.current || 0,
+              amount: account.balances.available || account.balances.current || 0,
+              parentId: null,
+              children: ['total'],
+              position: {
+                x: 260 + (index * HORIZONTAL_SPACING),
+                y: 30
+              },
+              type: 'bank',
+            }));
+
+            const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
+            const totalBalance = userBalance + plaidTotalBalance;
+
+            const quickPayBlock: TreeBudgetCategory = {
+              id: 'quickpay-balance',
+              name: 'QuickPay Balance',
+              icon: 'wallet',
+              color: '#10B981',
+              spent: 0,
+              budget: userBalance,
+              amount: userBalance,
+              parentId: null,
+              children: ['total'],
+              position: { x: 60, y: 30 },
+              type: 'bank',
+            };
+
+            const totalParents = 1 + plaidBankBlocks.length;
+            const centerX = totalParents === 1
+              ? 60
+              : (60 + (260 + (plaidBankBlocks.length - 1) * HORIZONTAL_SPACING)) / 2;
+
+            const currentBudgetBlock: TreeBudgetCategory = {
+              id: 'total',
+              name: 'Current Budget',
+              icon: 'cash',
+              color: '#6366F1',
+              spent: 0,
+              budget: totalBalance,
+              amount: totalBalance,
+              parentId: null,
+              children: [],
+              position: { x: centerX, y: 230 },
+              type: 'budget',
+            };
+
+            if (isActive) {
+              setCategories([quickPayBlock, ...plaidBankBlocks, currentBudgetBlock]);
+              setTotalBalance(totalBalance);
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error refreshing budget data:", error);
+        }
+      };
+
+      refreshBudgetData();
+
+      return () => {
+        isActive = false;
+      };
+    }, [user, isDemoMode, demoModeLoading])
+  );
+
+  // Handle bank unlinking
+  const handleBankUnlink = async (bank: any) => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      await unlinkPlaidAccount(user.id);
+
+      Alert.alert(
+        'Bank Unlinked',
+        `${bank.name} has been successfully unlinked.`,
+        [{ text: 'OK' }]
+      );
+
+      // Reload budget data after unlinking
+      const dbUser = await UserModel.getByClerkId(user.id);
+      const userBalance = dbUser?.balance || 0;
+
+      // Fetch updated Plaid accounts
+      const plaidAccounts = await fetchPlaidAccounts(user.id);
+      const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
+      const HORIZONTAL_SPACING = 200;
+
+      const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => ({
+        id: account.account_id,
+        name: account.name,
+        icon: 'card',
+        color: bankColors[index % bankColors.length],
+        spent: 0,
+        budget: account.balances.available || account.balances.current || 0,
+        amount: account.balances.available || account.balances.current || 0,
+        parentId: null,
+        children: ['total'],
+        position: {
+          x: 260 + (index * HORIZONTAL_SPACING),
+          y: 30
+        },
+        type: 'bank',
+      }));
+
+      const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
+      const totalBalance = userBalance + plaidTotalBalance;
+
+      const quickPayBlock: TreeBudgetCategory = {
+        id: 'quickpay-balance',
+        name: 'QuickPay Balance',
+        icon: 'wallet',
+        color: '#10B981',
+        spent: 0,
+        budget: userBalance,
+        amount: userBalance,
+        parentId: null,
+        children: ['total'],
+        position: { x: 60, y: 30 },
+        type: 'bank',
+      };
+
+      const totalParents = 1 + plaidBankBlocks.length;
+      const centerX = totalParents === 1
+        ? 60
+        : (60 + (260 + (plaidBankBlocks.length - 1) * HORIZONTAL_SPACING)) / 2;
+
+      const currentBudgetBlock: TreeBudgetCategory = {
+        id: 'total',
+        name: 'Current Budget',
+        icon: 'cash',
+        color: '#6366F1',
+        spent: 0,
+        budget: totalBalance,
+        amount: totalBalance,
+        parentId: null,
+        children: [],
+        position: { x: centerX, y: 230 },
+        type: 'budget',
+      };
+
+      setCategories([quickPayBlock, ...plaidBankBlocks, currentBudgetBlock]);
+      setTotalBalance(totalBalance);
+    } catch (error: any) {
+      console.error("❌ Error unlinking bank:", error);
+      Alert.alert(
+        'Unlink Failed',
+        error.message || 'Failed to unlink bank. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Get budget summary - calculates total spent across all categories
   const summary = getBudgetSummary(
@@ -211,6 +427,7 @@ export default function VisualBudget() {
           externalBankCount={externalBanks.length}
           summary={summary}
           userName={user?.firstName || 'User'}
+          onBankUnlink={handleBankUnlink}
         />
       </View>
 

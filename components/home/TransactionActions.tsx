@@ -1,5 +1,5 @@
 import { Ionicons} from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SplitTransactionModal } from './SplitTransaction';
 import {
@@ -16,6 +16,11 @@ export default function TransactionActions({ visible, transaction }: { visible: 
   const [returnModalVisible, setReturnModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [localTransaction, setLocalTransaction] = useState(transaction);
+
+  // Sync localTransaction when transaction prop changes
+  useEffect(() => {
+    setLocalTransaction(transaction);
+  }, [transaction]);
 
   if (!visible) return null;
 
@@ -81,7 +86,7 @@ export default function TransactionActions({ visible, transaction }: { visible: 
           onPress={() => setDetailModalVisible(true)} disabled={undefined} active={undefined}        />
       </View>
 
-      {/* Modals */}
+      {/* Modals - All use localTransaction for consistency */}
       <SplitTransactionModal
         visible={splitModalVisible}
         onClose={() => setSplitModalVisible(false)}
@@ -92,22 +97,22 @@ export default function TransactionActions({ visible, transaction }: { visible: 
       <ExportReceiptModal
         visible={exportModalVisible}
         onClose={() => setExportModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
       />
       <ReturnTransactionModal
         visible={returnModalVisible}
         onClose={() => setReturnModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
       />
       <TransactionDetailModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
       />
       <WithdrawModal
         visible={withdrawModalVisible}
         onClose={() => setWithdrawModalVisible(false)}
-        transaction={transaction}
+        transaction={localTransaction}
       />
     </>
   );

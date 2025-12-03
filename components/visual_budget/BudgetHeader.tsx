@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -11,18 +11,49 @@ import { router } from 'expo-router';
  * - banks: Array of ALL bank objects (including QuickPay) for display in expansion
  * - externalBankCount: Number of external banks connected (excluding QuickPay)
  * - summary: Object with totalSpent (sum of all category.spent values)
+ * - onBankUnlink: Callback function to handle bank unlinking
  *
  * Expected calculation in parent:
  * const totalBalance = banks.reduce((sum, bank) => sum + bank.budget, 0);
  * const totalSpent = categories.filter(c => c.type === 'category').reduce((sum, cat) => sum + cat.spent, 0);
  */
-export default function BudgetHeader({ totalBalance, banks, externalBankCount, summary }: any) {
+export default function BudgetHeader({ totalBalance, banks, externalBankCount, summary, onBankUnlink }: any) {
   const [showBanks, setShowBanks] = useState(false);
 
   const handleConnectBank = () => {
     // Navigate to Plaid onboarding page (same as "Link Bank" button on home page)
     console.log('🔗 Navigating to Plaid onboarding from Budget page...');
     router.push('/plaid-onboarding-hosted');
+  };
+
+  const handleUnlinkBank = (bank: any) => {
+    // Don't allow unlinking QuickPay Balance
+    if (bank.id === 'quickpay-balance') {
+      Alert.alert(
+        'Cannot Remove',
+        'QuickPay Balance cannot be removed. This is your primary account.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Unlink Bank',
+      `Are you sure you want to unlink ${bank.name}? This will remove it from your budget tracking.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Unlink',
+          style: 'destructive',
+          onPress: () => {
+            console.log('🔓 Unlinking bank:', bank.name, bank.id);
+            if (onBankUnlink) {
+              onBankUnlink(bank);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -81,21 +112,31 @@ export default function BudgetHeader({ totalBalance, banks, externalBankCount, s
             contentContainerStyle={{ gap: 12, paddingRight: 12 }}
           >
             {banks && banks.map((bank: any) => (
-              <View
+              <TouchableOpacity
                 key={bank.id}
+                onPress={() => handleUnlinkBank(bank)}
+                onLongPress={() => handleUnlinkBank(bank)}
+                activeOpacity={0.7}
                 className="bg-white rounded-xl p-4 border border-gray-200 min-w-[140px]"
               >
                 <View className="flex-row items-center justify-between mb-2">
-                  <View 
+                  <View
                     className="w-8 h-8 rounded-lg items-center justify-center"
                     style={{ backgroundColor: bank.color + '20' }}
                   >
                     <Ionicons name={bank.icon as any} size={18} color={bank.color} />
                   </View>
-                  <View 
-                    className="w-2 h-2 rounded-full" 
-                    style={{ backgroundColor: bank.color }}
-                  />
+                  {bank.id !== 'quickpay-balance' && (
+                    <View className="w-5 h-5 rounded-full bg-red-50 items-center justify-center">
+                      <Ionicons name="close" size={12} color="#EF4444" />
+                    </View>
+                  )}
+                  {bank.id === 'quickpay-balance' && (
+                    <View
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: bank.color }}
+                    />
+                  )}
                 </View>
                 <Text className="text-xs text-gray-600 mb-1" numberOfLines={1}>
                   {bank.name}
@@ -103,7 +144,12 @@ export default function BudgetHeader({ totalBalance, banks, externalBankCount, s
                 <Text className="text-lg font-bold text-gray-900">
                   ${(bank.budget || 0).toFixed(2)}
                 </Text>
-              </View>
+                {bank.id !== 'quickpay-balance' && (
+                  <Text className="text-xs text-gray-400 mt-1">
+                    Tap to unlink
+                  </Text>
+                )}
+              </TouchableOpacity>
             ))}
 
             {/* Add Bank Button */}

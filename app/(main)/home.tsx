@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
+import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BalanceCard from "@/components/home/BalanceCard";
 import BottomNav from "@/components/BottomNav";
@@ -166,6 +167,51 @@ export default function Home() {
     initializeUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isDemoMode]);
+
+  // Refetch transactions when screen comes into focus (e.g., after sending payment)
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const refreshData = async () => {
+        if (!user || !isActive) return;
+
+        console.log("🔄 Home screen focused - refreshing transaction data");
+
+        if (isDemoMode) {
+          // In Demo Mode, reload demo transactions from AsyncStorage
+          const { PaymentService } = await import("@/services/PaymentService");
+          const demoTxs = await PaymentService.getDemoTransactions();
+          if (demoTxs.length > 0 && isActive) {
+            console.log(`✅ Loaded ${demoTxs.length} demo transactions`);
+            // Merge with mock transactions (demo txs first, then mock)
+            setPlaidTransactions([...demoTxs, ...mockTransactions]);
+          }
+        } else {
+          // In Real Mode, refetch Plaid transactions
+          if (hasPlaidLinked) {
+            await fetchPlaidData();
+          } else {
+            // Refresh QuickPay balance even if Plaid not linked
+            try {
+              const userData = await UserModel.getByClerkId(user.id);
+              if (isActive) {
+                setTotalBalance(userData?.balance || 0);
+              }
+            } catch (err) {
+              console.error("❌ Failed to refresh balance:", err);
+            }
+          }
+        }
+      };
+
+      refreshData();
+
+      return () => {
+        isActive = false;
+      };
+    }, [user, isDemoMode, hasPlaidLinked])
+  );
 
   const [filterState, setFilterState] = useState({
     timeFilter: "all",

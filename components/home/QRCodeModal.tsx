@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   Alert,
   Modal,
@@ -15,6 +16,10 @@ import * as Sharing from "expo-sharing";
 import ViewShot from "react-native-view-shot";
 import UserModel from "@/models/UserModel";
 import { supabase } from "@/config/supabaseConfig";
+import { fetchProfile } from "@/services/profileService";
+import { useFocusEffect } from "@react-navigation/native";
+import { getInitials } from "@/utils/profileUtils";
+import { Profile as SupaProfile } from "../../types/Profile";
 
 interface QRCodeModalProps {
   visible: boolean;
@@ -22,16 +27,46 @@ interface QRCodeModalProps {
 }
 
 export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [showDetails, setShowDetails] = useState(false);
   const [accountNumber, setAccountNumber] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const viewShotRef = useRef<ViewShot>(null);
+  const [supabaseProfile, setSupabaseProfile] = useState<SupaProfile | null>(
+    null
+  );
+  const fullName = user
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || "User"
+    : "Guest";
+  const userEmail = user?.primaryEmailAddress?.emailAddress || "Not provided";
+   // Load Supabase profile whenever this screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-  const userName =
-    `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "User";
-  const userEmail = user?.primaryEmailAddress?.emailAddress || "";
+      const loadProfile = async () => {
+        if (!isLoaded || !user?.id) return;
 
+        try {
+          const p = await fetchProfile(user.id);
+          console.log("PROFILE HEADER from Supabase (focus):", p);
+
+          if (isActive) {
+            setSupabaseProfile(p || null);
+          }
+        } catch (err) {
+          console.log("Profile header fetchProfile error:", err);
+        }
+      };
+
+      loadProfile();
+
+      // cleanup when screen loses focus
+      return () => {
+        isActive = false;
+      };
+    }, [isLoaded, user?.id])
+  );
   // Load account number from database
   useEffect(() => {
     const loadAccountNumber = async () => {
@@ -81,7 +116,7 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
 
   const qrData = JSON.stringify({
     accountNumber: accountNumber,
-    name: userName,
+    name: fullName,
     email: userEmail,
     type: "payment",
   });
@@ -102,7 +137,7 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
         if (isAvailable) {
           await Sharing.shareAsync(uri, {
             mimeType: "image/png",
-            dialogTitle: `Share QR Code - ${userName}`,
+            dialogTitle: `Share QR Code - ${fullName}`,
             UTI: "public.png",
           });
         } else {
@@ -154,16 +189,34 @@ export default function QRCodeModal({ visible, onClose }: QRCodeModalProps) {
           >
             <View className="bg-white rounded-3xl p-8 items-center shadow-lg w-full max-w-sm">
               {/* User Info */}
-              <View className="items-center mb-6">
-                <View className="w-16 h-16 rounded-full bg-[#00332d] items-center justify-center mb-3">
-                  <Text className="text-white text-2xl font-bold">
-                    {userName.charAt(0).toUpperCase()}
-                  </Text>
+              <View className="items-center mt-2 mb-4">
+                {/* Avatar */}
+                <View className="w-16 h-16 rounded-full bg-[#00332d] items-center justify-center overflow-hidden">
+                  {supabaseProfile?.profile_picture ? (
+                    <Image
+                      source={{ uri: supabaseProfile.profile_picture }}
+                      className="w-16 h-16"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text className="text-white text-2xl font-bold">
+                      {getInitials(fullName)}
+                    </Text>
+                  )}
                 </View>
-                <Text className="text-xl font-bold text-gray-900">{userName}</Text>
-                <Text className="text-sm text-gray-600 mt-1">{userEmail}</Text>
+
+                {/* Name */}
+                <Text className="text-lg font-semibold text-[#00332d] mt-3">
+                  {fullName}
+                </Text>
+
+                {/* Email */}
+                <Text className="text-gray-600 text-sm mt-1">
+                  {userEmail}
+                </Text>
               </View>
 
+              
               {/* QR Code */}
               <View className="bg-white mt-4 rounded-2xl p-4 border-4 border-white/20">
                 <QRCode

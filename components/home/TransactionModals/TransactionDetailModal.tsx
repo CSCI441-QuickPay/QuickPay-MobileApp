@@ -25,16 +25,30 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
   const publicRemark = transaction?.remark || '';
   const isCharge = transaction?.amount < 0;
 
-  // Parse bank sources from subtitle
+  // Extract company/merchant name - handle both Plaid and local data
+  const companyName = transaction?.company || transaction?.merchant_name || transaction?.title || 'Company';
+
+  // Extract merchant logo - handle both Plaid (logo_url) and local (logo) data
+  const merchantLogo = transaction?.logo || (transaction?.logo_url ? { uri: transaction.logo_url } : null);
+
+  // Extract category - use formatted category from Plaid or existing category
+  const category = transaction?.category || 'Other';
+
+  // Set country - default to United States
+  const country = transaction?.country || 'United States';
+
+  // Parse bank sources from subtitle for multi-bank transactions
   const parseBankSources = () => {
-    if (!transaction?.subtitle || !transaction.subtitle.includes('SOURCE:')) {
-      return null;
-    }
+    if (!transaction?.subtitle) return null;
 
-    const sourceMatch = transaction.subtitle.match(/SOURCE:\s*(.+)/);
-    if (!sourceMatch) return null;
+    // Check if subtitle contains multi-bank format: "BANK1(-$X.XX), BANK2(-$Y.YY)"
+    // Supports both "SOURCE: ..." and direct format without prefix
+    const hasMultiBankFormat = transaction.subtitle.match(/\w+\(-?\$[\d.]+\)/);
+    if (!hasMultiBankFormat) return null;
 
-    const sourcesText = sourceMatch[1];
+    // Extract the sources text (remove "SOURCE:" prefix if present)
+    const sourcesText = transaction.subtitle.replace(/^SOURCE:\s*/, '');
+
     const sourceItems = sourcesText.split(',').map((item: string) => {
       const match = item.trim().match(/(.+?)\((-?\$[\d.]+)\)/);
       if (match) {
@@ -50,6 +64,15 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
   };
 
   const bankSources = parseBankSources();
+
+  // Extract single bank account source
+  // Priority: 1) bank field from Plaid, 2) all banks from multi-source, 3) subtitle if not multi-bank format, 4) Unknown
+  const bankAccount = transaction?.bank ||
+                     (bankSources && bankSources.length > 0
+                       ? bankSources.map((s: any) => s.bank).join(', ')
+                       : (transaction?.subtitle && !transaction.subtitle.match(/\w+\(-?\$[\d.]+\)/)
+                          ? transaction.subtitle.replace('Account: ', '')
+                          : 'Unknown Bank'));
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -72,14 +95,14 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
             {/* Transaction Summary */}
             <View style={modalStyles.card}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {transaction.logo ? (
-                  <Image source={transaction.logo} style={{ width: 52, height: 52, borderRadius: 12 }} />
+                {merchantLogo ? (
+                  <Image source={merchantLogo} style={{ width: 52, height: 52, borderRadius: 12 }} />
                 ) : (
                   <Ionicons name="card-outline" size={40} color="#00332d" />
                 )}
                 <View style={{ marginLeft: 12, flex: 1 }}>
                   <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>
-                    {transaction.company || 'Company'}
+                    {companyName}
                   </Text>
                   <Text style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
                     {transaction.date || 'N/A'}
@@ -100,16 +123,40 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
             {/* Transaction Info */}
             <View style={modalStyles.card}>
               <Text style={modalStyles.sectionTitle}>Transaction Info</Text>
+
+              {/* Category */}
+              {category && category !== 'Other' && (
+                <View style={modalStyles.fieldRow}>
+                  <Text style={modalStyles.fieldLabel}>Category</Text>
+                  <View style={{ backgroundColor: '#EFF6FF', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 14, color: '#1E40AF', fontWeight: '600' }}>
+                      {category}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Bank Account - Always display unless there's a detailed breakdown */}
+              {!bankSources || bankSources.length === 0 ? (
+                <View style={modalStyles.fieldRow}>
+                  <Text style={modalStyles.fieldLabel}>Bank Account</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Ionicons name="card-outline" size={16} color="#00332d" style={{ marginRight: 6 }} />
+                    <Text style={modalStyles.fieldValue}>{bankAccount}</Text>
+                  </View>
+                </View>
+              ) : null}
+
               <View style={modalStyles.fieldRow}>
                 <Text style={modalStyles.fieldLabel}>Country</Text>
-                <Text style={modalStyles.fieldValue}>{transaction.country || 'N/A'}</Text>
+                <Text style={modalStyles.fieldValue}>{country}</Text>
               </View>
 
-              {/* Bank Sources - Show detailed breakdown for charges */}
-              {isCharge && bankSources && bankSources.length > 0 ? (
+              {/* Bank Accounts - Show detailed breakdown when multiple banks used */}
+              {bankSources && bankSources.length > 0 ? (
                 <View style={{ marginTop: 8, marginBottom: 8 }}>
                   <Text style={[modalStyles.fieldLabel, { marginBottom: 8 }]}>
-                    Bank Sources Deducted
+                    Bank Accounts Deducted
                   </Text>
                   {bankSources.map((source: any, index: number) => (
                     <View
@@ -136,14 +183,7 @@ export default function TransactionDetailModal({ visible, onClose, transaction }
                     </View>
                   ))}
                 </View>
-              ) : (
-                <View style={modalStyles.fieldRow}>
-                  <Text style={modalStyles.fieldLabel}>Banks</Text>
-                  <Text style={modalStyles.fieldValue}>
-                    {transaction.bankList?.join(', ') || 'N/A'}
-                  </Text>
-                </View>
-              )}
+              ) : null}
 
               <View style={modalStyles.fieldRow}>
                 <Text style={modalStyles.fieldLabel}>Budget Block</Text>
