@@ -1,9 +1,9 @@
-import FavoriteModel from '@/models/FavoriteModel';
-import { RecipientInfo } from '@/services/PaymentService';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { RecipientInfo } from '@/services/PaymentService';
+import FavoriteModel from '@/models/FavoriteModel';
 
 interface RecipientInputProps {
   onRecipientSelect: (recipient: RecipientInfo | null) => void;
