@@ -16,7 +16,6 @@ import { banks } from "@/data/budget";
 import { transactions as mockTransactions } from "@/data/transaction";
 import UserModel from "@/models/UserModel";
 import {
-  calculateTotalBalance,
   fetchPlaidAccounts,
   fetchPlaidTransactions,
   PlaidAccount,
@@ -56,7 +55,19 @@ export default function Home() {
       );
 
       let combinedTransactions = transformedTransactions;
-      let combinedBalance = calculateTotalBalance(accountsData);
+
+      // Get QuickPay balance
+      const userData = await UserModel.getByClerkId(user.id);
+      const quickPayBalance = userData?.balance || 0;
+
+      // Calculate Plaid balance (Tartan returns dollars, not cents - no conversion needed)
+      const plaidBalance = accountsData.reduce((sum, account) => {
+        const balance = account.balances.available || account.balances.current || 0;
+        return sum + balance;
+      }, 0);
+
+      // Calculate total balance using same logic as visual_budget.tsx
+      let combinedBalance = quickPayBalance + plaidBalance;
 
       if (isDemoMode) {
         const { PaymentService } = await import("@/services/PaymentService");
@@ -64,9 +75,9 @@ export default function Home() {
 
         combinedTransactions = [...demoTxs, ...transformedTransactions, ...mockTransactions];
 
-        // Add demo/mock bank balances
-        const demoMockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
-        combinedBalance += demoMockBalance;
+        // Add demo/mock bank balances (same as visual_budget.tsx)
+        const mockBankBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0);
+        combinedBalance += mockBankBalance;
       }
 
       setPlaidTransactions(combinedTransactions);
@@ -81,9 +92,13 @@ export default function Home() {
         const combinedTransactions = isDemoMode ? [...demoTxs, ...mockTransactions] : [...mockTransactions];
         setPlaidTransactions(combinedTransactions);
 
+        // Get QuickPay balance for fallback
+        const userData = await UserModel.getByClerkId(user.id);
+        const quickPayBalance = userData?.balance || 0;
+
         const fallbackBalance = isDemoMode
-          ? banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0)
-          : 0;
+          ? quickPayBalance + banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0)
+          : quickPayBalance;
         setTotalBalance(fallbackBalance);
       } catch {
         setPlaidTransactions(mockTransactions);
@@ -113,8 +128,11 @@ export default function Home() {
             const { PaymentService } = await import("@/services/PaymentService");
             const demoTxs = await PaymentService.getDemoTransactions();
             setPlaidTransactions([...demoTxs, ...mockTransactions]);
-            const mockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
-            setTotalBalance(mockBalance);
+
+            // Demo Mode without Plaid: QuickPay + Mock banks (same logic as visual_budget.tsx)
+            const quickPayBalance = userData?.balance || 0;
+            const mockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0);
+            setTotalBalance(quickPayBalance + mockBalance);
           }
           return;
         }
@@ -211,7 +229,14 @@ export default function Home() {
         </View>
       )}
 
-      <TransactionFilter onFilterChange={setFilterState} connectedBanks={plaidAccounts.map(acc => acc.name)} />
+      <TransactionFilter
+        onFilterChange={setFilterState}
+        connectedBanks={
+          isDemoMode
+            ? Array.from(new Set([...plaidAccounts.map(acc => acc.name), ...banks.map(bank => bank.name)]))
+            : plaidAccounts.map(acc => acc.name)
+        }
+      />
 
       <ScrollView
         className="flex-1 mt-2"

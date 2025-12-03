@@ -41,6 +41,7 @@ export interface TreeBudgetCategory extends BudgetCategory {
   position: { x: number; y: number };
   type: BudgetType;
   transactions?: Transaction[];
+  isMock?: boolean; // Flag to identify mock banks in Demo Mode
 }
 
 /**

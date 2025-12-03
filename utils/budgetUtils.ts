@@ -13,21 +13,30 @@ export const CANVAS_CONFIG = {
   viewportHeight: 450,
   totalBudgetPosition: { x: 360, y: 240 },
   totalBudgetSize: { width: 150, height: 130 },
+  blockWidth: 150, // Standard block width for offset calculations
 };
 
 /**
  * Calculate canvas position to center Current Budget block
- * This ensures blocks are visible on initial load regardless of their position
+ *
+ * This ensures the Current Budget block is always centered in the visible viewport,
+ * regardless of:
+ * - How many bank blocks exist above it
+ * - How wide the canvas is (due to horizontal spacing of banks)
+ * - Whether in Demo Mode or Real Mode
+ *
+ * The calculation accounts for the current scale (zoom level) and adds a two block-widths
+ * right offset to ensure proper visual centering when multiple banks shift the layout.
  */
 export function calculateCenterPosition(
   screenWidth: number = SCREEN_WIDTH,
-  categories?: TreeBudgetCategory[]
+  categories?: TreeBudgetCategory[],
+  scale: number = 0.5 // Default scale from BudgetPlayground
 ) {
-  const { viewportHeight, totalBudgetSize } = CANVAS_CONFIG;
+  const { viewportHeight, totalBudgetSize, blockWidth } = CANVAS_CONFIG;
 
   // Find the Current Budget block position dynamically
-  // Works for both Real Mode (60, 230) and Demo Mode (360, 240)
-  let currentBudgetPosition = { x: 360, y: 240 }; // Default Demo Mode position
+  let currentBudgetPosition = { x: 360, y: 240 }; // Default fallback
 
   if (categories) {
     const totalBlock = categories.find(c => c.id === 'total');
@@ -36,17 +45,28 @@ export function calculateCenterPosition(
     }
   }
 
+  // Calculate the center point of the Current Budget block
   const currentBudgetCenterX = currentBudgetPosition.x + (totalBudgetSize.width / 2);
   const currentBudgetCenterY = currentBudgetPosition.y + (totalBudgetSize.height / 2);
 
   // Calculate viewport center
+  // Position Current Budget at top-center by using 1/3 of viewport height instead of center
   const viewportCenterX = screenWidth / 2;
-  const viewportCenterY = viewportHeight / 2;
+  const viewportTopCenter = viewportHeight / 3; // Position at top third for better visibility
 
-  // Return offset needed to center the Current Budget block
+  // Account for scale when calculating the offset
+  // When scaled, the block's visual position changes, so we need to adjust the pan accordingly
+  const scaledCenterX = currentBudgetCenterX * scale;
+  const scaledCenterY = currentBudgetCenterY * scale;
+
+  // Add two block-widths offset to the right (negative value pans canvas left, showing right side)
+  // This compensates for the layout when multiple bank blocks shift the canvas
+  const rightOffset = -(blockWidth * 2 * scale);
+
+  // Return the pan offset needed to position Current Budget at top-center of viewport
   return {
-    x: viewportCenterX - currentBudgetCenterX,
-    y: viewportCenterY - currentBudgetCenterY,
+    x: viewportCenterX - scaledCenterX + rightOffset,
+    y: viewportTopCenter - scaledCenterY,
   };
 }
 

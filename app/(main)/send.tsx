@@ -21,10 +21,10 @@ import BankSourceSelector, { BankOption } from '@/components/send/BankSourceSele
 import RecipientInput from '@/components/send/RecipientInput';
 import FavoritesModal from '@/components/send/FavoritesModal';
 import { PaymentSource, PaymentService, RecipientInfo } from '@/services/PaymentService';
+import { fetchPlaidAccounts, PlaidAccount } from '@/services/PlaidService';
 import UserModel from '@/models/UserModel';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { banks as mockBanks } from '@/data/budget';
-import { fetchPlaidAccounts, PlaidAccount } from '@/services/PlaidService';
 
 // Helper function to generate consistent color for recipient
 const generateRecipientColor = (accountNumber: string): string => {
@@ -78,48 +78,28 @@ export default function SendMoney() {
         setCurrentUserAccountNumber(dbUser.accountNumber || '');
       }
 
-      if (isDemoMode) {
-        // Demo Mode: Use mock bank sources
-        console.log('🎭 Demo Mode - Using mock bank sources');
-        // Don't load real banks in demo mode
+      // Fetch Plaid bank accounts (both Demo and Real Mode)
+      console.log('💳 Fetching Plaid bank accounts');
+      try {
+        const plaidAccounts = await fetchPlaidAccounts(user.id);
+        console.log(`✅ Fetched ${plaidAccounts.length} Plaid accounts`);
+        setAvailableBanks(plaidAccounts);
+      } catch (error) {
+        console.error('❌ Error fetching Plaid accounts:', error);
         setAvailableBanks([]);
+      }
 
-        // Auto-add QuickPay balance as first source if it has funds
-        if (dbUser && dbUser.balance > 0) {
-          setSources([
-            {
-              id: 'quickpay',
-              type: 'quickpay',
-              name: 'QuickPay Balance',
-              amount: 0,
-              balance: dbUser.balance,
-            },
-          ]);
-        }
-      } else {
-        // Real Mode: Get linked bank accounts from Plaid
-        console.log('💳 Real Mode - Fetching Plaid bank accounts');
-        try {
-          const plaidAccounts = await fetchPlaidAccounts(user.id);
-          console.log(`✅ Fetched ${plaidAccounts.length} Plaid accounts`);
-          setAvailableBanks(plaidAccounts);
-        } catch (error) {
-          console.error('❌ Error fetching Plaid accounts:', error);
-          setAvailableBanks([]);
-        }
-
-        // Auto-add QuickPay balance as first source if it has funds
-        if (dbUser && dbUser.balance > 0 && sources.length === 0) {
-          setSources([
-            {
-              id: 'quickpay',
-              type: 'quickpay',
-              name: 'QuickPay Balance',
-              amount: 0,
-              balance: dbUser.balance,
-            },
-          ]);
-        }
+      // Auto-add QuickPay balance as first source if it has funds and sources is empty
+      if (dbUser && dbUser.balance > 0 && sources.length === 0) {
+        setSources([
+          {
+            id: 'quickpay',
+            type: 'quickpay',
+            name: 'QuickPay Balance',
+            amount: 0,
+            balance: dbUser.balance,
+          },
+        ]);
       }
     } catch (error) {
       console.error('Error loading bank sources:', error);
@@ -264,16 +244,28 @@ export default function SendMoney() {
   };
 
   const alreadySelectedIds = sources.map((s) => s.id);
+
+  // Transform Plaid accounts to BankOptions
+  const plaidBankOptions: BankOption[] = availableBanks.map((b) => {
+    // Note: Tartan (mock Plaid) returns balances in dollars, not cents
+    // Real Plaid returns in cents, but for now we're using Tartan for testing
+    const balance = b.balances.available || b.balances.current || 0;
+
+    return {
+      id: b.account_id,
+      type: 'bank' as const,
+      name: b.name,
+      balance: balance,
+      accountType: b.subtype || 'checking',
+      mask: '****', // Plaid doesn't expose mask in this interface
+    };
+  });
+
+  // In Demo Mode: merge Plaid banks + mock banks
+  // In Real Mode: only Plaid banks
   const bankOptionsForSelector = isDemoMode
-    ? getMockBankOptions()
-    : availableBanks.map((b) => ({
-        id: b.account_id,
-        type: 'bank' as const,
-        name: b.name,
-        balance: b.balances.available || b.balances.current || 0,
-        accountType: b.subtype,
-        mask: b.account_id.slice(-4), // Last 4 characters of account_id as mask
-      }));
+    ? [...plaidBankOptions, ...getMockBankOptions()]
+    : plaidBankOptions;
 
   return (
     <SafeAreaView className="flex-1 bg-[#00332d]" edges={['top']}>
