@@ -16,7 +16,6 @@ import {
   transformPlaidTransaction,
 } from "@/services/PlaidService";
 import UserSyncService from "@/services/UserSyncService";
-import { clearOldDemoTransactions } from "@/utils/clearOldDemoTransactions";
 import { useUser } from "@clerk/clerk-expo";
 import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -25,6 +24,7 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { clearOldDemoTransactions } from "@/utils/clearOldDemoTransactions";
 
 export default function Home() {
   const { user } = useUser();

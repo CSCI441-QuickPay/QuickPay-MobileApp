@@ -21,7 +21,7 @@ import BankSourceSelector, { BankOption } from '@/components/send/BankSourceSele
 import RecipientInput from '@/components/send/RecipientInput';
 import FavoritesModal from '@/components/send/FavoritesModal';
 import { PaymentSource, PaymentService, RecipientInfo } from '@/services/PaymentService';
-import { fetchPlaidAccounts, PlaidAccount } from '@/services/PlaidService';
+import { fetchPlaidAccounts, PlaidAccount, getPlaidAccessToken } from '@/services/PlaidService';
 import UserModel from '@/models/UserModel';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { banks as mockBanks } from '@/data/budget';
@@ -53,6 +53,7 @@ export default function SendMoney() {
   const [availableBanks, setAvailableBanks] = useState<PlaidAccount[]>([]);
   const [quickPayBalance, setQuickPayBalance] = useState(0);
   const [currentUserAccountNumber, setCurrentUserAccountNumber] = useState('');
+  const [plaidAccessToken, setPlaidAccessToken] = useState<string | null>(null);
 
   // Recipient state
   const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(null);
@@ -84,6 +85,10 @@ export default function SendMoney() {
         const plaidAccounts = await fetchPlaidAccounts(user.id);
         console.log(`✅ Fetched ${plaidAccounts.length} Plaid accounts`);
         setAvailableBanks(plaidAccounts);
+
+        // Also fetch access token for Plaid Transfer API
+        const accessToken = await getPlaidAccessToken(user.id);
+        setPlaidAccessToken(accessToken);
       } catch (error) {
         console.error('❌ Error fetching Plaid accounts:', error);
         setAvailableBanks([]);
@@ -119,6 +124,9 @@ export default function SendMoney() {
         name: bank.name,
         amount: 0,
         balance: bank.balance,
+        // Include Plaid credentials for bank transfer (if available)
+        accessToken: bank.type === 'bank' ? plaidAccessToken || undefined : undefined,
+        accountId: bank.type === 'bank' ? bank.id : undefined,
       },
     ]);
   };

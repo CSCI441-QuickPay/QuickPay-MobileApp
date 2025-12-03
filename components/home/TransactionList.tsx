@@ -259,6 +259,20 @@ export default function TransactionList({ filters, transactions: transactionsPro
                             </Text>
                           </View>
                         )}
+
+                        {/* Pending Badge for Bank Transfers */}
+                        {tx.pending && (
+                          <View className="ml-2 bg-amber-50 rounded-full px-2 py-1 flex-row items-center border border-amber-200">
+                            <Ionicons
+                              name="time-outline"
+                              size={12}
+                              color="#F59E0B"
+                            />
+                            <Text className="text-xs font-bold text-amber-600 ml-1">
+                              Pending
+                            </Text>
+                          </View>
+                        )}
                       </View>
 
                       {/* Subtitle with Category */}
