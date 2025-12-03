@@ -21,11 +21,10 @@ import BankSourceSelector, { BankOption } from '@/components/send/BankSourceSele
 import RecipientInput from '@/components/send/RecipientInput';
 import FavoritesModal from '@/components/send/FavoritesModal';
 import { PaymentSource, PaymentService, RecipientInfo } from '@/services/PaymentService';
-import { BankAccount } from '@/models/BankAccountModel';
-import BankAccountModel from '@/models/BankAccountModel';
 import UserModel from '@/models/UserModel';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import { banks as mockBanks } from '@/data/budget';
+import { fetchPlaidAccounts, PlaidAccount } from '@/services/PlaidService';
 
 // Helper function to generate consistent color for recipient
 const generateRecipientColor = (accountNumber: string): string => {
@@ -51,7 +50,7 @@ export default function SendMoney() {
   // Bank sources state
   const [sources, setSources] = useState<PaymentSource[]>([]);
   const [showBankSelector, setShowBankSelector] = useState(false);
-  const [availableBanks, setAvailableBanks] = useState<BankAccount[]>([]);
+  const [availableBanks, setAvailableBanks] = useState<PlaidAccount[]>([]);
   const [quickPayBalance, setQuickPayBalance] = useState(0);
   const [currentUserAccountNumber, setCurrentUserAccountNumber] = useState('');
 
@@ -98,11 +97,14 @@ export default function SendMoney() {
           ]);
         }
       } else {
-        // Real Mode: Get linked bank accounts using database UUID
-        if (dbUser?.id) {
-          const banks = await BankAccountModel.getByUserId(dbUser.id);
-          setAvailableBanks(banks);
-        } else {
+        // Real Mode: Get linked bank accounts from Plaid
+        console.log('💳 Real Mode - Fetching Plaid bank accounts');
+        try {
+          const plaidAccounts = await fetchPlaidAccounts(user.id);
+          console.log(`✅ Fetched ${plaidAccounts.length} Plaid accounts`);
+          setAvailableBanks(plaidAccounts);
+        } catch (error) {
+          console.error('❌ Error fetching Plaid accounts:', error);
           setAvailableBanks([]);
         }
 
@@ -265,12 +267,12 @@ export default function SendMoney() {
   const bankOptionsForSelector = isDemoMode
     ? getMockBankOptions()
     : availableBanks.map((b) => ({
-        id: b.id!,
+        id: b.account_id,
         type: 'bank' as const,
-        name: b.accountName,
-        balance: b.availableBalance || b.balance,
-        accountType: b.accountType,
-        mask: b.mask,
+        name: b.name,
+        balance: b.balances.available || b.balances.current || 0,
+        accountType: b.subtype,
+        mask: b.account_id.slice(-4), // Last 4 characters of account_id as mask
       }));
 
   return (
