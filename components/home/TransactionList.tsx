@@ -16,10 +16,36 @@ type Props = {
 
 // Helper function to parse date string safely (YYYY-MM-DD format)
 function parseTransactionDate(dateStr: string): Date {
+  if (!dateStr || typeof dateStr !== 'string') {
+    console.warn('Invalid date string:', dateStr);
+    return new Date(); // Return today's date as fallback
+  }
+
   // Parse YYYY-MM-DD format manually to avoid timezone issues
-  const [year, month, day] = dateStr.split('-').map(Number);
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) {
+    console.warn('Invalid date format:', dateStr);
+    return new Date(); // Return today's date as fallback
+  }
+
+  const [year, month, day] = parts.map(Number);
+
+  // Validate the numbers
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    console.warn('Invalid date components:', dateStr);
+    return new Date(); // Return today's date as fallback
+  }
+
   // Create date at noon UTC to avoid timezone shifts
-  return new Date(year, month - 1, day);
+  const date = new Date(year, month - 1, day);
+
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    console.warn('Date parsing resulted in Invalid Date:', dateStr);
+    return new Date(); // Return today's date as fallback
+  }
+
+  return date;
 }
 
 // Helper function to get start of day in local timezone

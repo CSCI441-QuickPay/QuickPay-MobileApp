@@ -15,6 +15,7 @@ import { useDemoMode } from "@/contexts/DemoModeContext";
 import { banks } from "@/data/budget";
 import { transactions as mockTransactions } from "@/data/transaction";
 import UserModel from "@/models/UserModel";
+import TransactionModel from "@/models/TransactionModel";
 import {
   fetchPlaidAccounts,
   fetchPlaidTransactions,
@@ -23,6 +24,7 @@ import {
   transformPlaidTransaction,
 } from "@/services/PlaidService";
 import UserSyncService from "@/services/UserSyncService";
+import { clearOldDemoTransactions } from "@/utils/clearOldDemoTransactions";
 
 export default function Home() {
   const { user } = useUser();
@@ -43,22 +45,50 @@ export default function Home() {
     setPlaidError(null);
 
     try {
-      const [accountsData, transactionsData] = await Promise.all([
+      // Get user data first (needed for QuickPay transactions)
+      const userData = await UserModel.getByClerkId(user.id);
+      const quickPayBalance = userData?.balance || 0;
+
+      // Fetch Plaid AND QuickPay transactions in parallel
+      const [accountsData, transactionsData, quickPayTransactions] = await Promise.all([
         fetchPlaidAccounts(user.id),
         fetchPlaidTransactions(user.id),
+        TransactionModel.getByUserId(userData?.id || ''), // Fetch QuickPay transactions
       ]);
 
       setPlaidAccounts(accountsData);
 
-      const transformedTransactions = transactionsData.transactions.map((tx: PlaidTransaction) =>
+      // Transform Plaid transactions
+      const transformedPlaidTransactions = transactionsData.transactions.map((tx: PlaidTransaction) =>
         transformPlaidTransaction(tx, accountsData)
       );
 
-      let combinedTransactions = transformedTransactions;
+      // Transform QuickPay transactions to match display format
+      const transformedQuickPayTransactions = quickPayTransactions.map((tx) => {
+        // Format date as YYYY-MM-DD string for consistency with TransactionList component
+        const dateStr = tx.transactionDate instanceof Date
+          ? tx.transactionDate.toISOString().split('T')[0]
+          : String(tx.transactionDate).split('T')[0];
 
-      // Get QuickPay balance
-      const userData = await UserModel.getByClerkId(user.id);
-      const quickPayBalance = userData?.balance || 0;
+        return {
+          id: tx.id || '',
+          amount: tx.amount,
+          date: dateStr, // Use formatted date string
+          name: tx.title,
+          title: tx.title, // Add title field for consistency
+          category: tx.category || 'Transfer',
+          merchant_name: tx.merchantName,
+          logo_url: tx.logo,
+          type: tx.transactionType === 'credit' ? 'income' : 'expense',
+          pending: tx.pending,
+          subtitle: tx.subtitle,
+          icon: tx.icon,
+          isQuickPay: true, // Flag to identify QuickPay transactions
+        };
+      });
+
+      // Combine Plaid + QuickPay transactions
+      let combinedTransactions = [...transformedPlaidTransactions, ...transformedQuickPayTransactions];
 
       // Calculate Plaid balance (Tartan returns dollars, not cents - no conversion needed)
       const plaidBalance = accountsData.reduce((sum, account) => {
@@ -73,12 +103,16 @@ export default function Home() {
         const { PaymentService } = await import("@/services/PaymentService");
         const demoTxs = await PaymentService.getDemoTransactions();
 
-        combinedTransactions = [...demoTxs, ...transformedTransactions, ...mockTransactions];
+        // In Demo Mode: Add demo transactions + mock transactions for testing
+        combinedTransactions = [...demoTxs, ...combinedTransactions, ...mockTransactions];
 
         // Add demo/mock bank balances (same as visual_budget.tsx)
         const mockBankBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0);
         combinedBalance += mockBankBalance;
       }
+
+      // Sort all transactions by date (newest first)
+      combinedTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
       setPlaidTransactions(combinedTransactions);
       setTotalBalance(combinedBalance);
@@ -89,19 +123,54 @@ export default function Home() {
       try {
         const { PaymentService } = await import("@/services/PaymentService");
         const demoTxs = isDemoMode ? await PaymentService.getDemoTransactions() : [];
-        const combinedTransactions = isDemoMode ? [...demoTxs, ...mockTransactions] : [...mockTransactions];
-        setPlaidTransactions(combinedTransactions);
 
-        // Get QuickPay balance for fallback
+        // Get QuickPay balance and transactions for fallback
         const userData = await UserModel.getByClerkId(user.id);
         const quickPayBalance = userData?.balance || 0;
+
+        // Try to fetch QuickPay transactions even if Plaid failed
+        let quickPayTransactions: any[] = [];
+        try {
+          const dbTransactions = await TransactionModel.getByUserId(userData?.id || '');
+          quickPayTransactions = dbTransactions.map((tx) => {
+            // Format date as YYYY-MM-DD string for consistency
+            const dateStr = tx.transactionDate instanceof Date
+              ? tx.transactionDate.toISOString().split('T')[0]
+              : String(tx.transactionDate).split('T')[0];
+
+            return {
+              id: tx.id || '',
+              amount: tx.amount,
+              date: dateStr, // Use formatted date string
+              name: tx.title,
+              title: tx.title, // Add title field
+              category: tx.category || 'Transfer',
+              merchant_name: tx.merchantName,
+              logo_url: tx.logo,
+              type: tx.transactionType === 'credit' ? 'income' : 'expense',
+              pending: tx.pending,
+              subtitle: tx.subtitle,
+              icon: tx.icon,
+              isQuickPay: true,
+            };
+          });
+        } catch (err) {
+          console.error('Failed to fetch QuickPay transactions in fallback:', err);
+        }
+
+        const combinedTransactions = isDemoMode
+          ? [...demoTxs, ...quickPayTransactions, ...mockTransactions]
+          : quickPayTransactions; // Real Mode: only show QuickPay transactions (no mock data)
+
+        setPlaidTransactions(combinedTransactions);
 
         const fallbackBalance = isDemoMode
           ? quickPayBalance + banks.reduce((sum, bank) => sum + (bank.budget || bank.amount || 0), 0)
           : quickPayBalance;
         setTotalBalance(fallbackBalance);
       } catch {
-        setPlaidTransactions(mockTransactions);
+        // Final fallback: show mock transactions only in Demo Mode, otherwise empty
+        setPlaidTransactions(isDemoMode ? mockTransactions : []);
         setTotalBalance(0);
       }
     } finally {
@@ -115,6 +184,9 @@ export default function Home() {
       if (!user) return;
 
       try {
+        // Clean up old demo transactions with invalid dates (one-time cleanup)
+        await clearOldDemoTransactions();
+
         await UserSyncService.syncCurrentUser(user);
 
         const userData = await UserModel.getByClerkId(user.id);
@@ -173,13 +245,45 @@ export default function Home() {
             setPlaidTransactions([...demoTxs, ...mockTransactions]);
           }
         } else if (hasPlaidLinked) {
+          // Real Mode with Plaid: fetch all data (Plaid + QuickPay transactions)
           await fetchPlaidData();
         } else {
+          // Real Mode without Plaid: fetch QuickPay balance and transactions only
           try {
             const userData = await UserModel.getByClerkId(user.id);
-            if (isActive) setTotalBalance(userData?.balance || 0);
+            if (!isActive) return;
+
+            setTotalBalance(userData?.balance || 0);
+
+            // Fetch QuickPay transactions even without Plaid
+            const quickPayTransactions = await TransactionModel.getByUserId(userData?.id || '');
+            const transformedTransactions = quickPayTransactions.map((tx) => {
+              const dateStr = tx.transactionDate instanceof Date
+                ? tx.transactionDate.toISOString().split('T')[0]
+                : String(tx.transactionDate).split('T')[0];
+
+              return {
+                id: tx.id || '',
+                amount: tx.amount,
+                date: dateStr,
+                name: tx.title,
+                title: tx.title,
+                category: tx.category || 'Transfer',
+                merchant_name: tx.merchantName,
+                logo_url: tx.logo,
+                type: tx.transactionType === 'credit' ? 'income' : 'expense',
+                pending: tx.pending,
+                subtitle: tx.subtitle,
+                icon: tx.icon,
+                isQuickPay: true,
+              };
+            });
+
+            if (isActive) {
+              setPlaidTransactions(transformedTransactions);
+            }
           } catch (err) {
-            console.error("❌ Failed to refresh balance:", err);
+            console.error("❌ Failed to refresh balance and transactions:", err);
           }
         }
       };

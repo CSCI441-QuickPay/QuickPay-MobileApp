@@ -36,6 +36,7 @@ serve(async (req) => {
       products: [Products.Auth, Products.Transactions],
       country_codes: [CountryCode.Us],
       language: 'en',
+      android_package_name: 'com.anonymous.QuickPay',
     })
 
     console.log('✅ Link token created successfully')
