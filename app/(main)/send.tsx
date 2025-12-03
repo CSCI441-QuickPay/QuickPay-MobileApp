@@ -196,6 +196,12 @@ export default function SendMoney() {
     try {
       setIsProcessing(true);
 
+      // Get Supabase user ID (not Clerk ID)
+      const userData = await UserModel.getByClerkId(user.id);
+      if (!userData || !userData.id) {
+        throw new Error('User account not found');
+      }
+
       const recipientFullName = recipientInfo.firstName && recipientInfo.lastName
         ? `${recipientInfo.firstName} ${recipientInfo.lastName}`
         : recipientInfo.email;
@@ -203,7 +209,7 @@ export default function SendMoney() {
       // Process payment with Demo Mode flag
       await PaymentService.processPayment(
         {
-          senderId: user.id,
+          senderId: userData.id as string, // Use Supabase UUID, not Clerk ID
           recipientAccountNumber: recipientInfo.accountNumber,
           sources,
           totalAmount,

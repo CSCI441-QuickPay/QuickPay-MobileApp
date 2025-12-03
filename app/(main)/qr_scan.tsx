@@ -1,24 +1,22 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Dimensions,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Expo Camera (NEW API for SDK 53)
 import { CameraView, useCameraPermissions } from "expo-camera";
 
-import * as ImagePicker from "expo-image-picker";
-import * as Haptics from "expo-haptics";
-import BottomNav from "@/components/BottomNav";
-import { AntDesign } from "@expo/vector-icons";
 import QRCodeModel from "@/models/QRCodeModel";
+import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SCAN_FRAME_SIZE = SCREEN_WIDTH * 0.7;
@@ -218,7 +216,6 @@ export default function QRScan() {
   );
 }
 
-// STYLES (UNCHANGED)
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,

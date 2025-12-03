@@ -120,7 +120,7 @@ export class PaymentService {
         id: `demo_${Date.now()}`,
         amount: -request.totalAmount,
         description: request.description || `Sent to ${recipientName}`,
-        date: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0], // Format as YYYY-MM-DD for TransactionList
         category: 'Transfer',
         type: 'debit',
         pending: false,
