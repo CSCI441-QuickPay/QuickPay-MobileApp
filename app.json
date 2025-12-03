@@ -12,6 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.QuickPay",
       "infoPlist": {
+        "NSCameraUsageDescription": "QuickPay needs access to your camera to scan QR codes for payments.",
+        "NSMicrophoneUsageDescription": "QuickPay needs access to your microphone for camera functionality.",
+        "NSPhotoLibraryUsageDescription": "QuickPay needs access to your photo library to upload QR code images.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false,
           "NSExceptionDomains": {
@@ -36,6 +39,9 @@
       },
       "package": "com.anonymous.QuickPay",
       "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
@@ -59,6 +65,20 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow QuickPay to access your camera to scan QR codes for payments.",
+          "microphonePermission": "Allow QuickPay to access your microphone for camera functionality.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow QuickPay to access your photos to upload QR code images."
+        }
+      ],
       [
         "expo-splash-screen",
         {
