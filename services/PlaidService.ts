@@ -271,3 +271,33 @@ export async function unlinkPlaidAccount(clerkId: string): Promise<boolean> {
     throw error;
   }
 }
+
+/**
+ * Get Plaid access token for user (for Plaid Transfer API)
+ */
+export async function getPlaidAccessToken(clerkId: string): Promise<string | null> {
+  try {
+    console.log('🔑 Getting Plaid access token for user:', clerkId);
+
+    const response = await fetch(`${FUNCTIONS_URL}/plaid-get-accounts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY!,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ clerkId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return null;
+    }
+
+    const data = await response.json();
+    return data.access_token || null;
+  } catch (error) {
+    console.error('❌ Error getting Plaid access token:', error);
+    return null;
+  }
+}

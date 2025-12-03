@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Configuration, PlaidApi, PlaidEnvironments } from "npm:plaid@24.0.0"
 
 const corsHeaders = {
@@ -13,26 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { clerkId } = await req.json()
+    const { transferId } = await req.json()
 
-    // Get user from Supabase
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
-
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('plaid_access_token')
-      .eq('clerk_id', clerkId)
-      .single()
-
-    if (userError || !user?.plaid_access_token) {
-      return new Response(
-        JSON.stringify({ error: 'No Plaid account linked' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
+    console.log('Getting transfer status for:', transferId)
 
     const plaidClient = new PlaidApi(
       new Configuration({
@@ -46,20 +28,30 @@ serve(async (req) => {
       })
     )
 
-    const response = await plaidClient.accountsBalanceGet({
-      access_token: user.plaid_access_token,
+    const response = await plaidClient.transferGet({
+      transfer_id: transferId,
     })
+
+    console.log('✅ Transfer status retrieved:', response.data.transfer.status)
 
     return new Response(
       JSON.stringify({
-        accounts: response.data.accounts,
-        access_token: user.plaid_access_token // Include for Plaid Transfer API
+        transfer_id: response.data.transfer.id,
+        status: response.data.transfer.status,
+        amount: response.data.transfer.amount,
+        created: response.data.transfer.created,
+        network: response.data.transfer.network,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
+    console.error('❌ Error getting transfer status:', error)
+    console.error('Error details:', error.response?.data || error.message)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        error: error.message,
+        details: error.response?.data || 'No additional details'
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   }

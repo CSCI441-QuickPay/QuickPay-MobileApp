@@ -33,7 +33,7 @@ serve(async (req) => {
     const response = await plaidClient.linkTokenCreate({
       user: { client_user_id: clerkId },
       client_name: 'QuickPay',
-      products: [Products.Auth, Products.Transactions],
+      products: [Products.Auth, Products.Transactions, Products.Transfer],
       country_codes: [CountryCode.Us],
       language: 'en',
       android_package_name: 'com.anonymous.QuickPay',
