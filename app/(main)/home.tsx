@@ -211,7 +211,14 @@ export default function Home() {
         </View>
       )}
 
-      <TransactionFilter onFilterChange={setFilterState} connectedBanks={plaidAccounts.map(acc => acc.name)} />
+      <TransactionFilter
+        onFilterChange={setFilterState}
+        connectedBanks={
+          isDemoMode
+            ? Array.from(new Set([...plaidAccounts.map(acc => acc.name), ...banks.map(bank => bank.name)]))
+            : plaidAccounts.map(acc => acc.name)
+        }
+      />
 
       <ScrollView
         className="flex-1 mt-2"
