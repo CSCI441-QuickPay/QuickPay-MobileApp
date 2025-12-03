@@ -31,6 +31,7 @@ export type Transaction = {
   date: string;
   logo?: any;
   icon?: string;
+  category?: string;
   splitData?: SplitData;
 };
 
@@ -40,10 +41,11 @@ export const transactions: Transaction[] = [
   {
     id: "1",
     title: "NETFLIX.COM,SINGAPORE",
-    subtitle: "SOURCE: COMMERCE(-$2.00), BOA(-$1.99)",
+    subtitle: "COMMERCE(-$2.00), BOA(-$1.99)",
     amount: -3.99,
     date: "2025-09-29",
     logo: require("@/assets/images/netflix_logo.png"),
+    category: "Entertainment",
     splitData: {
       code: "AB3XY9",
       numberOfPeople: 3,
@@ -61,24 +63,27 @@ export const transactions: Transaction[] = [
     subtitle: "",
     amount: 679.17,
     date: "2025-09-29",
+    category: "Income",
   },
   // Transaction 3: YouTube Premium WITHOUT split
   {
     id: "3",
     title: "GOOGLE *YouTubePremium",
-    subtitle: "SOURCE: COMMERCE(-$1.1), BOA(-$1.09)",
+    subtitle: "COMMERCE(-$1.1), BOA(-$1.09)",
     amount: -2.19,
     date: "2025-08-05",
     logo: require("@/assets/images/youtube_premium_logo.png"),
+    category: "Entertainment",
   },
   // Transaction 4: Netflix WITHOUT split
   {
     id: "4",
     title: "NETFLIX.COM,SINGAPORE",
-    subtitle: "SOURCE: COMMERCE(-$2.00), BOA(-$1.99)",
+    subtitle: "COMMERCE(-$2.00), BOA(-$1.99)",
     amount: -3.99,
     date: "2025-09-18",
     logo: require("@/assets/images/netflix_logo.png"),
+    category: "Entertainment",
   },
   // Transaction 5: Income (cannot be split)
   {
@@ -87,5 +92,6 @@ export const transactions: Transaction[] = [
     subtitle: "",
     amount: 679.17,
     date: "2025-09-15",
+    category: "Income",
   },
 ];
