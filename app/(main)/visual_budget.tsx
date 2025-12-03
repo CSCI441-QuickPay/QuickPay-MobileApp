@@ -17,7 +17,8 @@ import { TreeBudgetCategory } from '@/models/BudgetModel';
 import { getBudgetSummary } from '@/controllers/BudgetController';
 import { useDemoMode } from '@/contexts/DemoModeContext';
 import UserModel from '@/models/UserModel';
-import { fetchPlaidAccounts, PlaidAccount, unlinkPlaidAccount } from '@/services/PlaidService';
+import BankAccountModel from '@/models/BankAccountModel';
+import { unlinkPlaidAccount, fetchPlaidAccounts } from '@/services/PlaidService';
 
 export default function VisualBudget() {
   const { user } = useUser();
@@ -54,40 +55,39 @@ export default function VisualBudget() {
           const userBalance = dbUser?.balance || 0;
           console.log(`💵 Demo Mode: QuickPay user balance = $${userBalance.toFixed(2)}`);
 
-          // Fetch Plaid accounts
-          let plaidAccounts: PlaidAccount[] = [];
-          try {
-            plaidAccounts = await fetchPlaidAccounts(user.id);
-            console.log(`✅ Demo Mode: Fetched ${plaidAccounts.length} Plaid accounts`);
-          } catch (error) {
-            console.error('❌ Demo Mode: Error fetching Plaid accounts:', error);
-          }
-
-          // Transform Plaid accounts into bank blocks
+          // Fetch Plaid accounts from local database (not Plaid API)
           const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
           const HORIZONTAL_SPACING = 200;
-          const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
-            // Note: Tartan (mock Plaid) returns balances in dollars, not cents
-            // Real Plaid returns in cents, but for now we're using Tartan for testing
-            const balance = account.balances.available || account.balances.current || 0;
+          let plaidBankBlocks: TreeBudgetCategory[] = [];
+          try {
+            // Get bank accounts from Plaid API (read-only, original balances)
+            const plaidAccounts = await fetchPlaidAccounts(user.id);
+            console.log(`✅ Demo Mode: Fetched ${plaidAccounts.length} Plaid accounts from API`);
 
-            return {
-              id: account.account_id,
-              name: account.name,
-              icon: 'card',
-              color: bankColors[index % bankColors.length],
-              spent: 0,
-              budget: balance,
-              amount: balance,
-              parentId: null,
-              children: ['total'],
-              position: {
-                x: 260 + (index * HORIZONTAL_SPACING),
-                y: 30
-              },
-              type: 'bank',
-            };
-          });
+            // Transform Plaid accounts into bank blocks
+            plaidBankBlocks = plaidAccounts.map((account, index) => {
+              const balance = account.balances.available || account.balances.current || 0;
+
+              return {
+                id: account.account_id,
+                name: account.name,
+                icon: 'card',
+                color: bankColors[index % bankColors.length],
+                spent: 0,
+                budget: balance,
+                amount: balance,
+                parentId: null,
+                children: ['total'],
+                position: {
+                  x: 260 + (index * HORIZONTAL_SPACING),
+                  y: 30
+                },
+                type: 'bank',
+              };
+            });
+          } catch (error) {
+            console.error('❌ Demo Mode: Error fetching bank accounts from Plaid API:', error);
+          }
 
           // Load mock banks from data/budget.tsx
           const { banks: mockBanks } = await import('@/data/budget');
@@ -130,10 +130,10 @@ export default function VisualBudget() {
             type: 'bank',
           };
 
-          // Calculate total balance from QuickPay + Plaid + Mock banks
+          // Calculate total balance from QuickPay + Plaid + Mock banks (in Demo Mode)
           const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
           const mockTotalBalance = mockBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
-          const totalBalance = userBalance + plaidTotalBalance + mockTotalBalance;
+          const totalBalance = userBalance + plaidTotalBalance + mockTotalBalance; // Include mock banks in Demo Mode
           console.log(`💰 Demo Mode: Total Balance = $${totalBalance.toFixed(2)} (QuickPay: $${userBalance}, Plaid: $${plaidTotalBalance}, Mock: $${mockTotalBalance})`);
 
           // Calculate center position for Current Budget (below all parent banks)
@@ -185,40 +185,39 @@ export default function VisualBudget() {
         const userBalance = dbUser?.balance || 0;
         console.log(`💰 Real Mode: QuickPay Balance = $${userBalance.toFixed(2)}`);
 
-        // Fetch Plaid accounts
-        let plaidAccounts: PlaidAccount[] = [];
-        try {
-          plaidAccounts = await fetchPlaidAccounts(user.id);
-          console.log(`✅ Real Mode: Fetched ${plaidAccounts.length} Plaid accounts`);
-        } catch (error) {
-          console.error('❌ Real Mode: Error fetching Plaid accounts:', error);
-        }
-
-        // Transform Plaid accounts into bank blocks positioned horizontally
+        // Fetch Plaid accounts from local database (not Plaid API)
         const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
         const HORIZONTAL_SPACING = 200; // Space between banks horizontally
-        const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
-          // Note: Tartan (mock Plaid) returns balances in dollars, not cents
-          // Real Plaid returns in cents, but for now we're using Tartan for testing
-          const balance = account.balances.available || account.balances.current || 0;
+        let plaidBankBlocks: TreeBudgetCategory[] = [];
+        try {
+          // Get bank accounts from Plaid API (read-only, original balances)
+          const plaidAccounts = await fetchPlaidAccounts(user.id);
+          console.log(`✅ Real Mode: Fetched ${plaidAccounts.length} Plaid accounts from API`);
 
-          return {
-            id: account.account_id,
-            name: account.name,
-            icon: 'card',
-            color: bankColors[index % bankColors.length],
-            spent: 0,
-            budget: balance,
-            amount: balance,
-            parentId: null,
-            children: ['total'], // All Plaid banks connect to Current Budget
-            position: {
-              x: 260 + (index * HORIZONTAL_SPACING), // Position to the right of QuickPay, horizontally spaced
-              y: 30 // Same Y level as QuickPay Balance
-            },
-            type: 'bank',
-          };
-        });
+          // Transform Plaid accounts into bank blocks positioned horizontally
+          plaidBankBlocks = plaidAccounts.map((account, index) => {
+            const balance = account.balances.available || account.balances.current || 0;
+
+            return {
+              id: account.account_id,
+              name: account.name,
+              icon: 'card',
+              color: bankColors[index % bankColors.length],
+              spent: 0,
+              budget: balance,
+              amount: balance,
+              parentId: null,
+              children: ['total'], // All Plaid banks connect to Current Budget
+              position: {
+                x: 260 + (index * HORIZONTAL_SPACING), // Position to the right of QuickPay, horizontally spaced
+                y: 30 // Same Y level as QuickPay Balance
+              },
+              type: 'bank',
+            };
+          });
+        } catch (error) {
+          console.error('❌ Real Mode: Error fetching bank accounts from database:', error);
+        }
 
         // Calculate total balance from QuickPay + all Plaid accounts
         const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
@@ -297,40 +296,39 @@ export default function VisualBudget() {
             const dbUser = await UserModel.getByClerkId(user.id);
             const userBalance = dbUser?.balance || 0;
 
-            // Fetch Plaid accounts
-            let plaidAccounts: PlaidAccount[] = [];
-            try {
-              plaidAccounts = await fetchPlaidAccounts(user.id);
-              console.log(`✅ Demo Mode Refresh: Fetched ${plaidAccounts.length} Plaid accounts`);
-            } catch (error) {
-              console.error('❌ Demo Mode Refresh: Error fetching Plaid accounts:', error);
-            }
-
-            // Transform Plaid accounts into bank blocks
+            // Fetch Plaid accounts from local database (not Plaid API)
             const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
             const HORIZONTAL_SPACING = 200;
-            const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
-              // Note: Tartan (mock Plaid) returns balances in dollars, not cents
-              // Real Plaid returns in cents, but for now we're using Tartan for testing
-              const balance = account.balances.available || account.balances.current || 0;
+            let plaidBankBlocks: TreeBudgetCategory[] = [];
+            try {
+              // Get bank accounts from Plaid API (read-only, original balances)
+              const plaidAccounts = await fetchPlaidAccounts(user.id);
+              console.log(`✅ Demo Mode Refresh: Fetched ${plaidAccounts.length} Plaid accounts from API`);
 
-              return {
-                id: account.account_id,
-                name: account.name,
-                icon: 'card',
-                color: bankColors[index % bankColors.length],
-                spent: 0,
-                budget: balance,
-                amount: balance,
-                parentId: null,
-                children: ['total'],
-                position: {
-                  x: 260 + (index * HORIZONTAL_SPACING),
-                  y: 30
-                },
-                type: 'bank',
-              };
-            });
+              // Transform Plaid accounts into bank blocks
+              plaidBankBlocks = plaidAccounts.map((account, index) => {
+                const balance = account.balances.available || account.balances.current || 0;
+
+                return {
+                  id: account.account_id,
+                  name: account.name,
+                  icon: 'card',
+                  color: bankColors[index % bankColors.length],
+                  spent: 0,
+                  budget: balance,
+                  amount: balance,
+                  parentId: null,
+                  children: ['total'],
+                  position: {
+                    x: 260 + (index * HORIZONTAL_SPACING),
+                    y: 30
+                  },
+                  type: 'bank',
+                };
+              });
+            } catch (error) {
+              console.error('❌ Demo Mode Refresh: Error fetching bank accounts from database:', error);
+            }
 
             // Load mock banks
             const { banks: mockBanks } = await import('@/data/budget');
@@ -400,38 +398,44 @@ export default function VisualBudget() {
               setTotalBalance(totalBalance);
             }
           } else {
-            // Real Mode: Refetch Plaid accounts
+            // Real Mode: Refetch Plaid accounts from local database
             const dbUser = await UserModel.getByClerkId(user.id);
             const userBalance = dbUser?.balance || 0;
 
-            const plaidAccounts = await fetchPlaidAccounts(user.id);
-            console.log(`✅ Refresh: Fetched ${plaidAccounts.length} Plaid accounts`);
-
             const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
             const HORIZONTAL_SPACING = 200;
+            let plaidBankBlocks: TreeBudgetCategory[] = [];
 
-            const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
-              // Note: Tartan (mock Plaid) returns balances in dollars, not cents
-              // Real Plaid returns in cents, but for now we're using Tartan for testing
-              const balance = account.balances.available || account.balances.current || 0;
+            try {
+              // Get bank accounts from local database
+              const localBankAccounts = await BankAccountModel.getByUserId(dbUser?.id || '');
+              const plaidLocalAccounts = localBankAccounts.filter(acc => acc.plaidAccountId);
+              console.log(`✅ Refresh: Fetched ${plaidLocalAccounts.length} Plaid accounts from database`);
 
-              return {
-                id: account.account_id,
-                name: account.name,
-                icon: 'card',
-                color: bankColors[index % bankColors.length],
-                spent: 0,
-                budget: balance,
-                amount: balance,
-                parentId: null,
-                children: ['total'],
-                position: {
-                  x: 260 + (index * HORIZONTAL_SPACING),
-                  y: 30
-                },
-                type: 'bank',
-              };
-            });
+              // Transform local bank accounts into bank blocks
+              plaidBankBlocks = plaidLocalAccounts.map((account, index) => {
+                const balance = account.balance;
+
+                return {
+                  id: account.plaidAccountId!,
+                  name: account.accountName,
+                  icon: 'card',
+                  color: bankColors[index % bankColors.length],
+                  spent: 0,
+                  budget: balance,
+                  amount: balance,
+                  parentId: null,
+                  children: ['total'],
+                  position: {
+                    x: 260 + (index * HORIZONTAL_SPACING),
+                    y: 30
+                  },
+                  type: 'bank',
+                };
+              });
+            } catch (error) {
+              console.error('❌ Real Mode Refresh: Error fetching bank accounts from database:', error);
+            }
 
             const plaidTotalBalance = plaidBankBlocks.reduce((sum, bank) => sum + bank.budget, 0);
             const totalBalance = userBalance + plaidTotalBalance;
@@ -505,14 +509,14 @@ export default function VisualBudget() {
       const dbUser = await UserModel.getByClerkId(user.id);
       const userBalance = dbUser?.balance || 0;
 
-      // Fetch updated Plaid accounts
-      const plaidAccounts = await fetchPlaidAccounts(user.id);
+      // Fetch updated Plaid accounts from local database
       const bankColors = ['#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6'];
       const HORIZONTAL_SPACING = 200;
 
+      // Get bank accounts from Plaid API (read-only, original balances)
+      const plaidAccounts = await fetchPlaidAccounts(user.id);
+
       const plaidBankBlocks: TreeBudgetCategory[] = plaidAccounts.map((account, index) => {
-        // Note: Tartan (mock Plaid) returns balances in dollars, not cents
-        // Real Plaid returns in cents, but for now we're using Tartan for testing
         const balance = account.balances.available || account.balances.current || 0;
 
         return {

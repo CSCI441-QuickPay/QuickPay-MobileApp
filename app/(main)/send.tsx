@@ -79,7 +79,7 @@ export default function SendMoney() {
         setCurrentUserAccountNumber(dbUser.accountNumber || '');
       }
 
-      // Fetch Plaid bank accounts (both Demo and Real Mode)
+      // Fetch Plaid bank accounts (read-only balances from Plaid API)
       console.log('💳 Fetching Plaid bank accounts');
       try {
         const plaidAccounts = await fetchPlaidAccounts(user.id);
