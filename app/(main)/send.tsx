@@ -22,6 +22,7 @@ import FavoritesModal from '@/components/send/FavoritesModal';
 import RecipientInput from '@/components/send/RecipientInput';
 import { banks as mockBanks } from '@/data/budget';
 import UserModel from '@/models/UserModel';
+import { mapPlaidAccountsToSources } from '@/services/BankAccountMapper';
 import { PaymentService, PaymentSource, RecipientInfo } from '@/services/PaymentService';
 import { fetchPlaidAccounts, PlaidAccount } from '@/services/PlaidService';
 
@@ -35,6 +36,7 @@ export default function SendMoney() {
   const [availableBanks, setAvailableBanks] = useState<PlaidAccount[]>([]);
   const [quickPayBalance, setQuickPayBalance] = useState(0);
   const [currentUserAccountNumber, setCurrentUserAccountNumber] = useState('');
+  const [userDbId, setUserDbId] = useState<string | null>(null);
 
   // Recipient state
   const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(null);
@@ -59,12 +61,14 @@ export default function SendMoney() {
       if (dbUser) {
         setQuickPayBalance(dbUser.balance);
         setCurrentUserAccountNumber(dbUser.accountNumber || '');
+        setUserDbId(dbUser.id || null);
       }
 
       // Fetch Plaid bank accounts (both Demo and Real Mode)
       console.log('💳 Fetching Plaid bank accounts');
+      let plaidAccounts: PlaidAccount[] = [];
       try {
-        const plaidAccounts = await fetchPlaidAccounts(user.id);
+        plaidAccounts = await fetchPlaidAccounts(user.id);
         console.log(`✅ Fetched ${plaidAccounts.length} Plaid accounts`);
         setAvailableBanks(plaidAccounts);
       } catch (error) {
@@ -72,34 +76,136 @@ export default function SendMoney() {
         setAvailableBanks([]);
       }
 
-      // Auto-add QuickPay balance as first source if it has funds and sources is empty
-      if (dbUser && dbUser.balance > 0 && sources.length === 0) {
-        setSources([
-          {
-            id: 'quickpay',
-            type: 'quickpay',
-            name: 'QuickPay Balance',
+      // Map Plaid accounts -> persisted bank_accounts rows (create missing ones)
+      // This ensures we pass UUID bank_accounts.id into PaymentService later.
+      if (dbUser) {
+        try {
+          const mapped = await mapPlaidAccountsToSources(dbUser.id, plaidAccounts, true);
+          // mapped items have { sourceId, type, name, balance, ... }
+          const bankSources: PaymentSource[] = mapped.map((m: any) => ({
+            id: m.sourceId,
+            type: 'bank',
+            name: m.name,
             amount: 0,
-            balance: dbUser.balance,
-          },
-        ]);
+            balance: Number(m.balance || 0),
+          }));
+
+          // Always include QuickPay first if it has funds. Avoid duplicates.
+          const initialSources: PaymentSource[] = [];
+          if (dbUser.balance && dbUser.balance > 0) {
+            initialSources.push({
+              id: 'quickpay',
+              type: 'quickpay',
+              name: 'QuickPay Balance',
+              amount: 0,
+              balance: dbUser.balance,
+            });
+          }
+          setSources([...initialSources, ...bankSources]);
+        } catch (err) {
+          console.warn('[SendMoney] mapPlaidAccountsToSources failed', err);
+          // fallback to prior behavior: QuickPay only
+          if (dbUser.balance && dbUser.balance > 0) {
+            setSources([
+              {
+                id: 'quickpay',
+                type: 'quickpay',
+                name: 'QuickPay Balance',
+                amount: 0,
+                balance: dbUser.balance,
+              },
+            ]);
+          }
+        }
+      } else {
+        // If no dbUser, still show QuickPay if available locally
+        if (sources.length === 0 && quickPayBalance > 0) {
+          setSources([
+            {
+              id: 'quickpay',
+              type: 'quickpay',
+              name: 'QuickPay Balance',
+              amount: 0,
+              balance: quickPayBalance,
+            },
+          ]);
+        }
       }
     } catch (error) {
       console.error('Error loading bank sources:', error);
     }
   };
 
-  const handleAddBankSource = (bank: BankOption) => {
-    setSources([
-      ...sources,
-      {
-        id: bank.id,
-        type: bank.type,
+  const handleAddBankSource = async (bank: BankOption) => {
+    // When user selects a bank from the selector, ensure we map it into a persisted bank_accounts UUID.
+    // bank.id may be a Plaid account_id or a mock id. Use userDbId and the mapper to convert/create.
+    try {
+      if (!userDbId) {
+        // fallback: add as-is (may fail when sending)
+        setSources((prev) => [
+          ...prev,
+          {
+            id: bank.id,
+            type: bank.type,
+            name: bank.name,
+            amount: 0,
+            balance: bank.balance,
+          },
+        ]);
+        return;
+      }
+
+      // build a minimal PlaidAccount-like object for mapping
+      const minimalPlaid: PlaidAccount = {
+        account_id: bank.id,
+        account_id_raw: bank.id, // in case your PlaidAccount type expects other keys
+        balances: { available: bank.balance, current: bank.balance, iso_currency_code: 'USD' },
+        mask: bank.mask || '****',
         name: bank.name,
-        amount: 0,
-        balance: bank.balance,
-      },
-    ]);
+        subtype: bank.accountType || 'checking',
+        type: 'depository',
+        // other fields optional
+      } as unknown as PlaidAccount;
+
+      const mapped = await mapPlaidAccountsToSources(userDbId, [minimalPlaid], true);
+      const m = mapped[0];
+      if (m && m.sourceId) {
+        setSources((prev) => [
+          ...prev,
+          {
+            id: m.sourceId,
+            type: 'bank',
+            name: m.name,
+            amount: 0,
+            balance: Number(m.balance || 0),
+          },
+        ]);
+      } else {
+        // fallback add unmapped
+        setSources((prev) => [
+          ...prev,
+          {
+            id: bank.id,
+            type: bank.type,
+            name: bank.name,
+            amount: 0,
+            balance: bank.balance,
+          },
+        ]);
+      }
+    } catch (err) {
+      console.warn('[SendMoney] handleAddBankSource failed', err);
+      setSources((prev) => [
+        ...prev,
+        {
+          id: bank.id,
+          type: bank.type,
+          name: bank.name,
+          amount: 0,
+          balance: bank.balance,
+        },
+      ]);
+    }
   };
 
   const handleUpdateAmount = (sourceId: string, amount: number) => {
