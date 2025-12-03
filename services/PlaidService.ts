@@ -241,3 +241,33 @@ export async function isPlaidLinked(clerkId: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Unlink Plaid account (remove access token from database)
+ */
+export async function unlinkPlaidAccount(clerkId: string): Promise<boolean> {
+  try {
+    console.log('🔓 Unlinking Plaid account for user:', clerkId);
+
+    const response = await fetch(`${FUNCTIONS_URL}/plaid-unlink`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY!,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ clerkId }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to unlink Plaid account');
+    }
+
+    console.log('✅ Plaid account unlinked successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Error unlinking Plaid account:', error);
+    throw error;
+  }
+}
