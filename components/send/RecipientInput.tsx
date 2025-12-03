@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { RecipientInfo } from '@/services/PaymentService';
-import FavoriteModel from '@/models/FavoriteModel';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { RecipientInfo } from "@/services/PaymentService";
+import FavoriteModel from "@/models/FavoriteModel";
 
 interface RecipientInputProps {
   onRecipientSelect: (recipient: RecipientInfo | null) => void;
@@ -20,35 +26,50 @@ export default function RecipientInput({
   scannedAccountNumber,
   selectedRecipient,
 }: RecipientInputProps) {
-  const [accountNumber, setAccountNumber] = useState('');
+  const [accountNumber, setAccountNumber] = useState("");
   const [isValidating, setIsValidating] = useState(false);
-  const [validatedRecipient, setValidatedRecipient] = useState<RecipientInfo | null>(null);
-  const [error, setError] = useState('');
+  const [validatedRecipient, setValidatedRecipient] =
+    useState<RecipientInfo | null>(null);
+  const [error, setError] = useState("");
 
   // Auto-fill when selected from favorites
   useEffect(() => {
-    if (selectedRecipient && selectedRecipient.accountNumber !== accountNumber) {
+    if (
+      selectedRecipient &&
+      selectedRecipient.accountNumber !== accountNumber
+    ) {
       setAccountNumber(selectedRecipient.accountNumber);
       setValidatedRecipient(selectedRecipient);
-      setError('');
+      setError("");
     }
   }, [selectedRecipient]);
 
   // Auto-validate when scanned account number is provided
   useEffect(() => {
-    if (scannedAccountNumber && scannedAccountNumber !== accountNumber) {
-      setAccountNumber(scannedAccountNumber);
-      validateAccountNumber(scannedAccountNumber);
-    }
+    if (!scannedAccountNumber) return;
+
+    // Prevent loops
+    if (scannedAccountNumber === accountNumber) return;
+
+    // Set input field
+    setAccountNumber(scannedAccountNumber);
+
+    // Reset old validation state
+    setError("");
+    setValidatedRecipient(null);
+    onRecipientSelect(null);
+
+    // Auto validate same as manual typing
+    validateAccountNumber(scannedAccountNumber);
   }, [scannedAccountNumber]);
 
   const handleAccountNumberChange = (text: string) => {
     // Only allow numeric input
-    const cleaned = text.replace(/[^0-9]/g, '');
+    const cleaned = text.replace(/[^0-9]/g, "");
     // Limit to 10 digits
     const limited = cleaned.slice(0, 10);
     setAccountNumber(limited);
-    setError('');
+    setError("");
     setValidatedRecipient(null);
     onRecipientSelect(null);
 
@@ -61,50 +82,52 @@ export default function RecipientInput({
   const validateAccountNumber = async (accNum: string) => {
     // Validate account number contains only digits
     if (!/^\d+$/.test(accNum)) {
-      setError('Account number must contain only numbers');
+      setError("Account number must contain only numbers");
       return;
     }
 
     // Validate account number length
     if (accNum.length < 6) {
-      setError('Account number must be at least 6 digits');
+      setError("Account number must be at least 6 digits");
       return;
     }
     if (accNum.length > 20) {
-      setError('Account number cannot exceed 20 digits');
+      setError("Account number cannot exceed 20 digits");
       return;
     }
 
     if (accNum === currentAccountNumber) {
-      setError('You cannot send money to yourself');
+      setError("You cannot send money to yourself");
       return;
     }
 
     setIsValidating(true);
-    setError('');
+    setError("");
 
     try {
       // Use FavoriteModel directly like AddFavoriteModal does
-      const accountHolder = await FavoriteModel.getAccountHolderByAccountNumber(accNum);
+      const accountHolder = await FavoriteModel.getAccountHolderByAccountNumber(
+        accNum
+      );
 
       if (!accountHolder) {
-        setError('Account not found');
+        setError("Account not found");
         setValidatedRecipient(null);
         onRecipientSelect(null);
       } else {
         // Create RecipientInfo object from account holder data
         const recipient: RecipientInfo = {
           accountNumber: accNum,
-          firstName: accountHolder.name.split(' ')[0],
-          lastName: accountHolder.name.split(' ').slice(1).join(' '),
-          email: '', // Not needed for display
+          firstName: accountHolder.name.split(" ")[0],
+          lastName: accountHolder.name.split(" ").slice(1).join(" "),
+          email: "", // Not needed for display
           profilePicture: accountHolder.profilePicture,
         };
         setValidatedRecipient(recipient);
         onRecipientSelect(recipient);
       }
     } catch (err) {
-      setError('Failed to validate account');
+      setError("Failed to validate account");
       setValidatedRecipient(null);
       onRecipientSelect(null);
     } finally {
@@ -114,8 +137,8 @@ export default function RecipientInput({
 
   const handleScanQR = () => {
     router.push({
-      pathname: '/qr_scan',
-      params: { returnTo: 'send' },
+      pathname: "/qr_scan",
+      params: { returnTo: "send" },
     });
   };
 
@@ -136,8 +159,16 @@ export default function RecipientInput({
   // Generate consistent color for recipient (same logic as send.tsx)
   const generateRecipientColor = (accountNumber: string): string => {
     const colors = [
-      '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
-      '#EC4899', '#14B8A6', '#F97316', '#06B6D4', '#6366F1'
+      "#EF4444",
+      "#F59E0B",
+      "#10B981",
+      "#3B82F6",
+      "#8B5CF6",
+      "#EC4899",
+      "#14B8A6",
+      "#F97316",
+      "#06B6D4",
+      "#6366F1",
     ];
 
     let hash = 0;
@@ -149,7 +180,10 @@ export default function RecipientInput({
   };
 
   const getRecipientColor = (recipient: RecipientInfo) => {
-    return recipient.profilePicture || generateRecipientColor(recipient.accountNumber);
+    return (
+      recipient.profilePicture ||
+      generateRecipientColor(recipient.accountNumber)
+    );
   };
 
   return (
@@ -227,7 +261,8 @@ export default function RecipientInput({
           {/* Professional verification message */}
           <View className="pt-3 border-t border-green-200">
             <Text className="text-xs text-gray-700 leading-5">
-              Please verify that the account number is correct before proceeding.
+              Please verify that the account number is correct before
+              proceeding.
             </Text>
           </View>
         </View>
@@ -237,7 +272,12 @@ export default function RecipientInput({
       {!validatedRecipient && !error && (
         <View className="bg-blue-50 border border-blue-200 rounded-xl p-3">
           <View className="flex-row items-start">
-            <Ionicons name="information-circle" size={18} color="#3B82F6" style={{ marginTop: 1 }} />
+            <Ionicons
+              name="information-circle"
+              size={18}
+              color="#3B82F6"
+              style={{ marginTop: 1 }}
+            />
             <Text className="text-xs text-blue-800 ml-2 flex-1">
               Enter account number, scan QR, or select from favorites
             </Text>

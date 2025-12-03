@@ -1,6 +1,6 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -11,34 +11,90 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Expo Camera (NEW API for SDK 53)
-import { CameraView, useCameraPermissions } from "expo-camera";
+// Expo Camera
+import {
+  CameraView,
+  useCameraPermissions,
+  scanFromURLAsync,
+} from "expo-camera";
 
 import QRCodeModel from "@/models/QRCodeModel";
 import * as Haptics from "expo-haptics";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
+import jsQR from "jsqr";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SCAN_FRAME_SIZE = SCREEN_WIDTH * 0.7;
+
+// ------------------------------------------------------
+// Convert gallery image → RGBA pixels for jsQR
+// ------------------------------------------------------
+async function extractPixels(uri: string) {
+  try {
+    // 1. Force convert to PNG + resize (HEIC breaks jsQR)
+    const manipulated = await manipulateAsync(
+      uri,
+      [{ resize: { width: 800 } }],
+      { format: SaveFormat.PNG, base64: true }
+    );
+
+    if (!manipulated.base64) throw new Error("No base64 data");
+
+    // 2. Load image into an HTML Image object
+    const img = new Image();
+    img.src = "data:image/png;base64," + manipulated.base64;
+
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+    });
+
+    // 3. Draw onto Canvas (Expo Dev Client supports offscreen canvas)
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Canvas 2D context not available");
+    }
+
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, img.width, img.height);
+
+    return {
+      data: imageData.data, // RGBA pixels
+      width: img.width,
+      height: img.height,
+    };
+  } catch (err) {
+    console.log("extractPixels error:", err);
+    throw err;
+  }
+}
 
 export default function QRScan() {
   const params = useLocalSearchParams();
   const returnTo = params.returnTo as string | undefined;
 
-  // NEW CAMERA PERMISSION HANDLER REQUIRED BY SDK 53
   const [permission, requestPermission] = useCameraPermissions();
-
   const [scanned, setScanned] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
 
-  // Ask for permissions
   useEffect(() => {
     if (!permission) return;
     if (!permission.granted) requestPermission();
   }, [permission]);
 
-  // Loading screen until permission exists
+  useFocusEffect(
+    useCallback(() => {
+      setScanned(false);
+      return () => {};
+    }, [])
+  );
+
   if (!permission) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center">
@@ -47,12 +103,13 @@ export default function QRScan() {
     );
   }
 
-  // If denied
   if (!permission.granted) {
     return (
       <SafeAreaView className="flex-1 bg-gray-900 items-center justify-center px-6">
         <Ionicons name="camera-outline" size={80} color="#ccf8f1" />
-        <Text className="text-white text-xl font-bold mt-6">Camera Permission Denied</Text>
+        <Text className="text-white text-xl font-bold mt-6">
+          Camera Permission Denied
+        </Text>
         <Text className="text-gray-400 text-base mt-3 text-center">
           Please enable camera access in settings.
         </Text>
@@ -61,23 +118,25 @@ export default function QRScan() {
           onPress={requestPermission}
           className="mt-8 bg-primary px-8 py-4 rounded-2xl"
         >
-          <Text className="text-secondary font-bold text-base">Allow Camera</Text>
+          <Text className="text-secondary font-bold text-base">
+            Allow Camera
+          </Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
-  // ---------------------------
-  // QR SCAN HANDLER
-  // ---------------------------
+  // ------------------------------------------------------
+  // CAMERA QR SCAN
+  // ------------------------------------------------------
   const handleBarCodeScanned = ({ data }: { data: string }) => {
+    if (scanned) return;
     setScanned(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     const parsedData = QRCodeModel.parseQRData(data);
 
     if (parsedData && parsedData.type === "quickpay_payment") {
-      // Works with your app logic
       if (returnTo === "send") {
         router.replace({
           pathname: "/send",
@@ -90,7 +149,11 @@ export default function QRScan() {
             parsedData.amount ? `Amount: $${parsedData.amount.toFixed(2)}` : ""
           }`,
           [
-            { text: "Cancel", style: "cancel", onPress: () => setScanned(false) },
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => setScanned(false),
+            },
             {
               text: "Send Payment",
               onPress: () =>
@@ -103,7 +166,6 @@ export default function QRScan() {
         );
       }
     } else {
-      // Invalid QR
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Invalid QR", "This is not a valid QuickPay QR code.", [
         { text: "Scan Again", onPress: () => setScanned(false) },
@@ -111,23 +173,50 @@ export default function QRScan() {
     }
   };
 
-  // ---------------------------
-  // Upload from Gallery
-  // ---------------------------
+  // ------------------------------------------------------
+  // GALLERY QR SCAN (FIXED)
+  // ------------------------------------------------------
   const handleUploadFromGallery = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Required", "Please allow gallery access.");
-      return;
-    }
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission Required", "Please allow gallery access.");
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 1,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        quality: 1,
+      });
 
-    if (!result.canceled && result.assets[0]) {
-      Alert.alert("Coming Soon", "Image QR scanning will be added.");
+      if (result.canceled || !result.assets[0]) return;
+
+      const uri = result.assets[0].uri;
+
+      // NATIVE QR SCAN FROM IMAGE
+      const qrResults = await scanFromURLAsync(uri, ["qr"]);
+
+      if (!qrResults || qrResults.length === 0) {
+        Alert.alert("Error", "Unable to read QR code from this image.");
+        return;
+      }
+
+      const data = qrResults[0].data;
+      const parsed = QRCodeModel.parseQRData(data);
+
+      if (!parsed || parsed.type !== "quickpay_payment") {
+        Alert.alert("Invalid QR", "This is not a valid QuickPay QR code.");
+        return;
+      }
+
+      router.push({
+        pathname: "/send",
+        params: { scannedAccountNumber: parsed.accountNumber },
+      });
+    } catch (err) {
+      console.log("QR Scan Error:", err);
+      Alert.alert("Error", "Failed to scan QR from image.");
     }
   };
 
@@ -158,7 +247,9 @@ export default function QRScan() {
           barcodeScannerSettings={{
             barcodeTypes: ["qr"],
           }}
-          onBarcodeScanned={!scanned && cameraReady ? handleBarCodeScanned : undefined}
+          onBarcodeScanned={
+            !scanned && cameraReady ? handleBarCodeScanned : undefined
+          }
         />
 
         {/* FRAME */}
@@ -204,14 +295,13 @@ export default function QRScan() {
           {/* UPLOAD */}
           <TouchableOpacity
             onPress={handleUploadFromGallery}
-            className="flex-1 bg-gray-800 rounded-2xl py-4 items-center"
+            className="flex-1 bg-gray-800 rounded-2xl py-4 items-country"
           >
             <MaterialIcons name="photo-library" size={28} color="#FFFFFF" />
             <Text className="text-white font-semibold mt-2">Upload</Text>
           </TouchableOpacity>
         </View>
       </View>
-
     </SafeAreaView>
   );
 }
@@ -235,7 +325,22 @@ const styles = StyleSheet.create({
     borderWidth: 4,
   },
   topLeft: { top: 0, left: 0, borderRightWidth: 0, borderBottomWidth: 0 },
-  topRight: { top: 0, right: 0, borderLeftWidth: 0, borderBottomWidth: 0 },
-  bottomLeft: { bottom: 0, left: 0, borderRightWidth: 0, borderTopWidth: 0 },
-  bottomRight: { bottom: 0, right: 0, borderLeftWidth: 0, borderTopWidth: 0 },
+  topRight: {
+    top: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+  },
+  bottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+  },
 });
