@@ -11,16 +11,30 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
   const isIncome = transaction?.amount >= 0;
   const transactionType = isIncome ? 'Income' : 'Withdrawal';
 
-  // Parse bank sources from subtitle
+  // Extract company/merchant name - handle both Plaid and local data
+  const companyName = transaction?.company || transaction?.merchant_name || transaction?.title || 'Company';
+
+  // Extract merchant logo - handle both Plaid (logo_url) and local (logo) data
+  const merchantLogo = transaction?.logo || (transaction?.logo_url ? { uri: transaction.logo_url } : null);
+
+  // Extract category - use formatted category from Plaid or existing category
+  const category = transaction?.category || 'Other';
+
+  // Set country - default to United States
+  const country = transaction?.country || 'United States';
+
+  // Parse bank sources from subtitle for multi-bank transactions
   const parseBankSources = () => {
-    if (!transaction?.subtitle || !transaction.subtitle.includes('SOURCE:')) {
-      return null;
-    }
+    if (!transaction?.subtitle) return null;
 
-    const sourceMatch = transaction.subtitle.match(/SOURCE:\s*(.+)/);
-    if (!sourceMatch) return null;
+    // Check if subtitle contains multi-bank format: "BANK1(-$X.XX), BANK2(-$Y.YY)"
+    // Supports both "SOURCE: ..." and direct format without prefix
+    const hasMultiBankFormat = transaction.subtitle.match(/\w+\(-?\$[\d.]+\)/);
+    if (!hasMultiBankFormat) return null;
 
-    const sourcesText = sourceMatch[1];
+    // Extract the sources text (remove "SOURCE:" prefix if present)
+    const sourcesText = transaction.subtitle.replace(/^SOURCE:\s*/, '');
+
     const sourceItems = sourcesText.split(',').map((item: string) => {
       const match = item.trim().match(/(.+?)\((-?\$[\d.]+)\)/);
       if (match) {
@@ -37,6 +51,15 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
 
   const bankSources = parseBankSources();
 
+  // Extract single bank account source
+  // Priority: 1) bank field from Plaid, 2) all banks from multi-source, 3) subtitle if not multi-bank format, 4) Unknown
+  const bankAccount = transaction?.bank ||
+                     (bankSources && bankSources.length > 0
+                       ? bankSources.map((s: any) => s.bank).join(', ')
+                       : (transaction?.subtitle && !transaction.subtitle.match(/\w+\(-?\$[\d.]+\)/)
+                          ? transaction.subtitle.replace('Account: ', '')
+                          : 'Unknown Bank'));
+
   const handleExportImage = async () => {
     try {
       if (viewShotRef.current && viewShotRef.current.capture) {
@@ -48,7 +71,7 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
         if (isAvailable) {
           await Sharing.shareAsync(uri, {
             mimeType: "image/png",
-            dialogTitle: `Share Receipt - ${transaction.company || 'Transaction'}`,
+            dialogTitle: `Share Receipt - ${companyName}`,
             UTI: "public.png",
           });
         } else {
@@ -96,8 +119,8 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
                 {/* Transaction Summary */}
                 <View className="bg-gray-50 rounded-xl p-4 mb-4">
                   <View className="flex-row items-center mb-3">
-                    {transaction?.logo ? (
-                      <Image source={transaction.logo} className="w-12 h-12 rounded-xl" />
+                    {merchantLogo ? (
+                      <Image source={merchantLogo} className="w-12 h-12 rounded-xl" />
                     ) : (
                       <View className="w-12 h-12 rounded-xl bg-[#00332d] items-center justify-center">
                         <Ionicons name="business-outline" size={24} color="white" />
@@ -105,10 +128,7 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
                     )}
                     <View className="flex-1 ml-3">
                       <Text className="text-base font-semibold text-gray-900">
-                        {transaction?.company || 'Company'}
-                      </Text>
-                      <Text className="text-sm text-gray-600 mt-0.5">
-                        {transaction?.title || 'Transaction'}
+                        {companyName}
                       </Text>
                     </View>
                   </View>
@@ -127,19 +147,21 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
                 {/* Transaction Details */}
                 <View className="space-y-3">
                   <DetailRow label="Date" value={transaction?.date || 'N/A'} />
-                  <DetailRow label="Country" value={transaction?.country || 'N/A'} />
+                  {category && category !== 'Other' && (
+                    <DetailRow label="Category" value={category} />
+                  )}
 
-                  {/* Bank Sources - Show detailed breakdown for charges */}
-                  {!isIncome && bankSources && bankSources.length > 0 ? (
+                  {/* Bank Accounts - Show detailed breakdown when multiple banks used */}
+                  {bankSources && bankSources.length > 0 ? (
                     <View className="pt-3 border-t border-gray-200">
-                      <Text className="text-xs text-gray-500 mb-2">Bank Sources Deducted</Text>
+                      <Text className="text-xs text-gray-500 mb-2">Bank Accounts Deducted</Text>
                       {bankSources.map((source: any, index: number) => (
                         <View
                           key={index}
                           className="flex-row justify-between items-center bg-gray-50 rounded-lg p-3 mb-2"
                         >
                           <View className="flex-row items-center">
-                            <Ionicons name="card-outline" size={16} color="#00332d" />
+                            <Ionicons name="card-outline" size={18} color="#00332d" />
                             <Text className="text-sm text-gray-900 ml-2 font-medium">
                               {source.bank}
                             </Text>
@@ -150,9 +172,17 @@ export default function ExportReceiptModal({ visible, onClose, transaction }: an
                         </View>
                       ))}
                     </View>
-                  ) : transaction?.bankList && transaction.bankList.length > 0 ? (
-                    <DetailRow label="Banks" value={transaction.bankList.join(', ')} />
-                  ) : null}
+                  ) : (
+                    <View className="flex-row items-center justify-between py-2">
+                      <Text className="text-sm text-gray-500">Bank Account</Text>
+                      <View className="flex-row items-center">
+                        <Ionicons name="card-outline" size={16} color="#00332d" style={{ marginRight: 6 }} />
+                        <Text className="text-sm font-medium text-gray-900">{bankAccount}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  <DetailRow label="Country" value={country} />
 
                   {transaction?.budgetBlock && (
                     <DetailRow label="Budget Block" value={transaction.budgetBlock} />
