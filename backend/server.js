@@ -28,30 +28,71 @@ app.use(
 app.get("/", (req, res) => res.send("QuickPay Stripe backend"));
 
 /**
- * Quick mock recipient lookup (local dev / smoke test)
- * GET /api/recipients/:phone
- * - Returns a mock recipient object when phone === '5502494860'
- * - Otherwise returns 404
+ * Recipient lookup (robust dev version)
+ * - Supports path lookup:  GET /api/recipients/:phone
+ * - Supports query lookup: GET /api/recipients?phone=...
+ * - Normalizes incoming phone by removing non-digits and matching on last 10 digits
+ * - Logs requests and returned payloads for easier debugging
+ * - Returns both camelCase and snake_case fields for compatibility
  *
- * Replace or remove this when you add a real DB-backed lookup.
+ * Replace or expand the DB lookup section for production use.
  */
-app.get("/api/recipients/:phone", (req, res) => {
-  const phone = req.params.phone;
-  if (!phone) return res.status(400).json({ error: "phone required" });
+async function recipientLookupHandler(req, res) {
+  try {
+    // Support both /api/recipients/:phone and /api/recipients?phone=...
+    const rawPhone = (req.params && req.params.phone) || req.query?.phone || "";
+    if (!rawPhone) return res.status(400).json({ error: "phone required" });
 
-  if (phone === "5502494860" || phone.endsWith("5502494860")) {
-    const mockRecipient = {
-      accountNumber: "5502494860",
-      firstName: "Test",
-      lastName: "Recipient",
-      email: "test.recipient@example.com",
-      profilePicture: null,
-    };
-    return res.json({ recipient: mockRecipient });
+    // Normalize: remove non-digits and use last 10 digits for matching
+    const digits = rawPhone.toString().replace(/\D/g, "");
+    const normalized = digits.length > 10 ? digits.slice(-10) : digits;
+
+    console.log(`[recipients] lookup rawPhone="${rawPhone}" digits="${digits}" normalized="${normalized}"`);
+
+    // Quick mock for local testing (keep this for dev)
+    if (normalized === "5502494860" || rawPhone.toString().endsWith("5502494860")) {
+      const mockRecipient = {
+        // camelCase (frontend preferred)
+        accountNumber: "5502494860",
+        firstName: "Test",
+        lastName: "Recipient",
+        email: "test.recipient@example.com",
+        profilePicture: null,
+        // snake_case (compatibility)
+        account_number: "5502494860",
+        first_name: "Test",
+        last_name: "Recipient",
+        profile_picture: null,
+      };
+      console.log("[recipients] returning mock recipient for", rawPhone);
+      return res.json({ recipient: mockRecipient });
+    }
+
+    // Example DB lookup placeholder (async-friendly):
+    // const row = await UsersModel.findByAccountOrPhone(normalized || rawPhone);
+    // if (row) {
+    //   const normalizedRow = {
+    //     accountNumber: row.accountNumber ?? row.account_number,
+    //     firstName: row.firstName ?? row.first_name,
+    //     lastName: row.lastName ?? row.last_name,
+    //     email: row.email,
+    //     profilePicture: row.profilePicture ?? row.profile_picture,
+    //   };
+    //   console.log('[recipients] found DB recipient for', rawPhone, normalizedRow);
+    //   return res.json({ recipient: normalizedRow });
+    // }
+
+    console.log("[recipients] no recipient found for", rawPhone);
+    return res.status(404).json({ message: "Recipient not found" });
+  } catch (err) {
+    console.error("Error in /api/recipients lookup:", err);
+    return res.status(500).json({ error: "internal" });
   }
+}
 
-  return res.status(404).json({ message: "Recipient not found" });
-});
+// Register two routes that use the same handler (avoid using optional param syntax)
+app.get("/api/recipients", recipientLookupHandler);           // query param: /api/recipients?phone=...
+app.get("/api/recipients/:phone", recipientLookupHandler);    // path param:  /api/recipients/5502494860
 
 // Create Checkout Session
 app.post("/create-checkout-session", async (req, res) => {

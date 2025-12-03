@@ -1,51 +1,33 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useUser } from '@clerk/clerk-expo';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
+  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useUser } from '@clerk/clerk-expo';
-import * as Haptics from 'expo-haptics';
 
 import BankSourceCard from '@/components/send/BankSourceCard';
 import BankSourceSelector, { BankOption } from '@/components/send/BankSourceSelector';
-import RecipientInput from '@/components/send/RecipientInput';
 import FavoritesModal from '@/components/send/FavoritesModal';
-import { PaymentSource, PaymentService, RecipientInfo } from '@/services/PaymentService';
-import { fetchPlaidAccounts, PlaidAccount } from '@/services/PlaidService';
-import UserModel from '@/models/UserModel';
-import { useDemoMode } from '@/contexts/DemoModeContext';
+import RecipientInput from '@/components/send/RecipientInput';
 import { banks as mockBanks } from '@/data/budget';
-
-// Helper function to generate consistent color for recipient
-const generateRecipientColor = (accountNumber: string): string => {
-  const colors = [
-    '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
-    '#EC4899', '#14B8A6', '#F97316', '#06B6D4', '#6366F1'
-  ];
-  
-  // Use account number to generate consistent index
-  let hash = 0;
-  for (let i = 0; i < accountNumber.length; i++) {
-    hash = accountNumber.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % colors.length;
-  return colors[index];
-};
+import UserModel from '@/models/UserModel';
+import { PaymentService, PaymentSource, RecipientInfo } from '@/services/PaymentService';
+import { fetchPlaidAccounts, PlaidAccount } from '@/services/PlaidService';
 
 export default function SendMoney() {
   const { user } = useUser();
   const params = useLocalSearchParams();
-  const { isDemoMode } = useDemoMode();
 
   // Bank sources state
   const [sources, setSources] = useState<PaymentSource[]>([]);
@@ -65,7 +47,8 @@ export default function SendMoney() {
   // Load user's banks and QuickPay balance on mount
   useEffect(() => {
     loadBankSources();
-  }, [user, isDemoMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const loadBankSources = async () => {
     if (!user) return;
@@ -103,10 +86,6 @@ export default function SendMoney() {
       }
     } catch (error) {
       console.error('Error loading bank sources:', error);
-      // Don't show error alert if just no banks found
-      if (error && typeof error === 'object' && 'code' in error) {
-        console.error('Database error:', error);
-      }
     }
   };
 
@@ -141,10 +120,9 @@ export default function SendMoney() {
     [sources]
   );
 
-  // Get consistent recipient color
   const recipientColor = useMemo(() => {
     if (!recipientInfo) return 'rgba(255,255,255,0.1)';
-    return recipientInfo.profilePicture || generateRecipientColor(recipientInfo.accountNumber);
+    return recipientInfo.profilePicture || '#06B6D4';
   }, [recipientInfo]);
 
   const handleSendPayment = async () => {
@@ -198,9 +176,9 @@ export default function SendMoney() {
 
       const recipientFullName = recipientInfo.firstName && recipientInfo.lastName
         ? `${recipientInfo.firstName} ${recipientInfo.lastName}`
-        : recipientInfo.email;
+        : recipientInfo.email ?? recipientInfo.accountNumber;
 
-      // Process payment with Demo Mode flag
+      // IMPORTANT: set the second argument to `false` to run the REAL send path.
       await PaymentService.processPayment(
         {
           senderId: user.id,
@@ -209,7 +187,7 @@ export default function SendMoney() {
           totalAmount,
           description: description || undefined,
         },
-        isDemoMode,
+        false, // <-- run real mode (not demo)
         recipientFullName
       );
 
@@ -221,7 +199,7 @@ export default function SendMoney() {
           recipientName: recipientFullName,
           recipientAccount: recipientInfo.accountNumber,
           recipientColor: recipientColor,
-          isDemoMode: isDemoMode.toString(),
+          isDemoMode: 'false',
         },
       });
     } catch (error: any) {
@@ -231,7 +209,7 @@ export default function SendMoney() {
     }
   };
 
-  // Prepare bank options for demo mode
+  // Prepare bank options for demo mode UI (still used for UI when no real banks)
   const getMockBankOptions = (): BankOption[] => {
     return mockBanks.map((bank) => ({
       id: bank.id,
@@ -244,7 +222,7 @@ export default function SendMoney() {
   };
 
   const alreadySelectedIds = sources.map((s) => s.id);
-  const bankOptionsForSelector = isDemoMode
+  const bankOptionsForSelector = availableBanks.length === 0
     ? getMockBankOptions()
     : availableBanks.map((b) => ({
         id: b.account_id,
@@ -407,7 +385,6 @@ export default function SendMoney() {
             </TouchableOpacity>
           </View>
         </View>
-          
 
         {/* Bank selector modal */}
         <BankSourceSelector

@@ -18,7 +18,7 @@
       "ios": {
         "simulator": true
       },
-      "destruction": "internal"
+      "distribution": "internal"
     },
     "preview": {
       "distribution": "internal"

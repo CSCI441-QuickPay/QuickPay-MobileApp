@@ -1,13 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useUser } from "@clerk/clerk-expo";
-import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import BalanceCard from "@/components/home/BalanceCard";
 import BottomNav from "@/components/BottomNav";
+import BalanceCard from "@/components/home/BalanceCard";
 import Header from "@/components/home/Header";
 import TransactionFilter from "@/components/home/TransactionFilter";
 import TransactionList from "@/components/home/TransactionList";
@@ -24,6 +16,14 @@ import {
   transformPlaidTransaction,
 } from "@/services/PlaidService";
 import UserSyncService from "@/services/UserSyncService";
+import { useUser } from "@clerk/clerk-expo";
+import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, DeviceEventEmitter, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
   const { user } = useUser();
@@ -32,9 +32,23 @@ export default function Home() {
   const [plaidAccounts, setPlaidAccounts] = useState<PlaidAccount[]>([]);
   const [plaidTransactions, setPlaidTransactions] = useState<any[]>([]);
   const [loadingPlaidData, setLoadingPlaidData] = useState(false);
-  const [totalBalance, setTotalBalance] = useState(0);
+
+  // Separate quickpay/plaid balances so we can see breakdowns
+  const [quickpayBalance, setQuickpayBalance] = useState<number>(0);
+  const [plaidBalance, setPlaidBalance] = useState<number>(0);
+
+  // single prop passed to BalanceCard (sum of both)
+  const [totalBalance, setTotalBalance] = useState<number>(0);
+
   const [hasPlaidLinked, setHasPlaidLinked] = useState<boolean | null>(null);
   const [plaidError, setPlaidError] = useState<string | null>(null);
+
+  // helper: recompute combined total and log breakdown
+  const recomputeTotal = (qp: number, pb: number) => {
+    const total = Number((qp || 0) + (pb || 0));
+    console.log("[Home] balances: quickpay=", qp, "plaid=", pb, "total=", total);
+    setTotalBalance(total);
+  };
 
   // Fetch Plaid transactions and accounts
   const fetchPlaidData = async () => {
@@ -42,6 +56,17 @@ export default function Home() {
 
     setLoadingPlaidData(true);
     setPlaidError(null);
+
+    // Read authoritative quickpay from DB first to avoid race/stale quickpay
+    let authoritativeQuickpay = quickpayBalance;
+    try {
+      const userRow = await UserModel.getByClerkId(user.id);
+      authoritativeQuickpay = Number(userRow?.balance || 0);
+      setQuickpayBalance(authoritativeQuickpay);
+      console.log('[Home] fetchPlaidData authoritativeQuickpay=', authoritativeQuickpay);
+    } catch (e) {
+      console.warn('[Home] fetchPlaidData failed to read user balance', e);
+    }
 
     try {
       const [accountsData, transactionsData] = await Promise.all([
@@ -56,7 +81,7 @@ export default function Home() {
       );
 
       let combinedTransactions = transformedTransactions;
-      let combinedBalance = calculateTotalBalance(accountsData);
+      let combinedPlaidBalance = calculateTotalBalance(accountsData);
 
       if (isDemoMode) {
         const { PaymentService } = await import("@/services/PaymentService");
@@ -66,11 +91,14 @@ export default function Home() {
 
         // Add demo/mock bank balances
         const demoMockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
-        combinedBalance += demoMockBalance;
+        combinedPlaidBalance += demoMockBalance;
       }
 
       setPlaidTransactions(combinedTransactions);
-      setTotalBalance(combinedBalance);
+      setPlaidBalance(combinedPlaidBalance);
+
+      // combine with authoritative quickpay we read earlier
+      recomputeTotal(authoritativeQuickpay, combinedPlaidBalance);
     } catch (error: any) {
       console.error("❌ Failed to fetch Plaid data:", error);
       setPlaidError(error.message || "Failed to load bank data");
@@ -81,16 +109,31 @@ export default function Home() {
         const combinedTransactions = isDemoMode ? [...demoTxs, ...mockTransactions] : [...mockTransactions];
         setPlaidTransactions(combinedTransactions);
 
-        const fallbackBalance = isDemoMode
+        const fallbackPlaidBalance = isDemoMode
           ? banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0)
           : 0;
-        setTotalBalance(fallbackBalance);
+        setPlaidBalance(fallbackPlaidBalance);
+        recomputeTotal(authoritativeQuickpay, fallbackPlaidBalance);
       } catch {
         setPlaidTransactions(mockTransactions);
-        setTotalBalance(0);
+        setPlaidBalance(0);
+        recomputeTotal(authoritativeQuickpay, 0);
       }
     } finally {
       setLoadingPlaidData(false);
+    }
+  };
+
+  // Helper to refresh only the user balance (used when no Plaid accounts are linked)
+  const refreshUserBalance = async () => {
+    if (!user) return;
+    try {
+      const userData = await UserModel.getByClerkId(user.id);
+      const qb = Number(userData?.balance || 0);
+      setQuickpayBalance(qb);
+      recomputeTotal(qb, plaidBalance);
+    } catch (err) {
+      console.error("❌ Failed to refresh user balance:", err);
     }
   };
 
@@ -106,6 +149,10 @@ export default function Home() {
         const hasPlaid = !!userData?.plaidAccessToken;
         setHasPlaidLinked(hasPlaid);
 
+        // set quickpayBalance from DB on init
+        const initialQuickpay = Number(userData?.balance || 0);
+        setQuickpayBalance(initialQuickpay);
+
         if (isDemoMode) {
           if (hasPlaid) {
             await fetchPlaidData();
@@ -114,7 +161,8 @@ export default function Home() {
             const demoTxs = await PaymentService.getDemoTransactions();
             setPlaidTransactions([...demoTxs, ...mockTransactions]);
             const mockBalance = banks.reduce((sum, bank) => sum + (bank.budget || bank.amount), 0);
-            setTotalBalance(mockBalance);
+            setPlaidBalance(mockBalance);
+            recomputeTotal(initialQuickpay, mockBalance);
           }
           return;
         }
@@ -128,7 +176,8 @@ export default function Home() {
             return;
           } else {
             setPlaidTransactions([]);
-            setTotalBalance(userData?.balance || 0);
+            setPlaidBalance(0);
+            recomputeTotal(initialQuickpay, 0);
           }
         } else {
           await fetchPlaidData();
@@ -138,7 +187,49 @@ export default function Home() {
       }
     }
     initializeUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, isDemoMode]);
+
+  // Subscribe to PaymentService event so Home updates totalBalance when payments happen
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener("user:updated", async (payload: any) => {
+      try {
+        console.log("[Home] received user:updated payload:", payload);
+
+        // If payload contains a newBalance, update quickpay and recompute total
+        if (payload?.newBalance != null) {
+          const newQuickpay = Number(payload.newBalance || 0);
+          setQuickpayBalance(newQuickpay);
+
+          // If Plaid linked keep current plaidBalance (or optionally re-fetch if you want authoritative fresh Plaid)
+          if (hasPlaidLinked) {
+            // re-fetch Plaid data to keep totals in sync with any server-updates
+            await fetchPlaidData();
+            // fetchPlaidData will call recomputeTotal after it sets plaidBalance
+          } else {
+            recomputeTotal(newQuickpay, plaidBalance);
+            // also refresh authoritative user row
+            await refreshUserBalance();
+          }
+          return;
+        }
+
+        // Fallback: if payload does not include newBalance, decide what to refresh:
+        if (hasPlaidLinked) {
+          await fetchPlaidData();
+        } else {
+          await refreshUserBalance();
+        }
+      } catch (e) {
+        console.warn("Home: user:updated handler failed", e);
+      }
+    });
+
+    return () => {
+      sub.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, hasPlaidLinked, isDemoMode, plaidBalance, quickpayBalance]);
 
   // Refresh transactions on screen focus
   useFocusEffect(
@@ -159,7 +250,11 @@ export default function Home() {
         } else {
           try {
             const userData = await UserModel.getByClerkId(user.id);
-            if (isActive) setTotalBalance(userData?.balance || 0);
+            if (isActive) {
+              const qb = Number(userData?.balance || 0);
+              setQuickpayBalance(qb);
+              recomputeTotal(qb, plaidBalance);
+            }
           } catch (err) {
             console.error("❌ Failed to refresh balance:", err);
           }

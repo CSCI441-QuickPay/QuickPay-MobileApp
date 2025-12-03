@@ -2,7 +2,7 @@ import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Button, KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
-import api from '@/lib/backend';
+import api from '../lib/backend';
 
 /**
  * Transfer screen (no-webhook flow)
