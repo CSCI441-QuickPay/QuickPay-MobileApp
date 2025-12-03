@@ -1,9 +1,8 @@
+import TransactionActions from "@/components/home/TransactionActions";
+import { Transaction, transactions } from "@/data/transaction";
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import TransactionActions from "@/components/home/TransactionActions";
-import { transactions, Transaction } from "@/data/transaction";
-import { userCards } from "@/data/user";
 
 type Props = {
   filters: {
@@ -14,22 +13,44 @@ type Props = {
   transactions?: Transaction[];
 };
 
+// Helper function to parse date string safely (YYYY-MM-DD format)
+function parseTransactionDate(dateStr: string): Date {
+  // Parse YYYY-MM-DD format manually to avoid timezone issues
+  const [year, month, day] = dateStr.split('-').map(Number);
+  // Create date at noon UTC to avoid timezone shifts
+  return new Date(year, month - 1, day);
+}
+// Helper function to get start of day in local timezone
+function getStartOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 // Helper function to filter by time
 function filterByTime(transactions: Transaction[], timeFilter: string): Transaction[] {
-  const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-  const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+const now = getStartOfDay(new Date());
+  // Calculate week boundaries (Sunday to Saturday)
+  const currentDayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const thisWeekStart = new Date(now);
+  thisWeekStart.setDate(now.getDate() - currentDayOfWeek); // Start of this week (Sunday)
+  const lastWeekStart = new Date(thisWeekStart);
+  lastWeekStart.setDate(thisWeekStart.getDate() - 7); // Start of last week
+  const lastWeekEnd = new Date(thisWeekStart);
+  lastWeekEnd.setTime(lastWeekEnd.getTime() - 1); // End of last week (just before this week starts)
+  // Calculate month boundary (30 days ago)
+  const oneMonthAgo = new Date(now);
+  oneMonthAgo.setDate(now.getDate() - 30);
 
   return transactions.filter((tx) => {
-    const txDate = new Date(tx.date);
+    const txDate = parseTransactionDate(tx.date);
     switch (timeFilter) {
       case "week":
-        return txDate >= oneWeekAgo;
+        return txDate >= thisWeekStart && txDate <= now;
       case "last_week":
-        return txDate >= twoWeeksAgo && txDate < oneWeekAgo;
+        return txDate >= lastWeekStart && txDate <= thisWeekStart;
       case "last_month":
-        return txDate >= oneMonthAgo;
+        // Last 30 days
+        return txDate >= oneMonthAgo && txDate <= now;
       case "all":
       default:
         return true;

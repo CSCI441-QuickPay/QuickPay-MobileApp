@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import FavoriteModel from '@/models/FavoriteModel';
+import { RecipientInfo } from '@/services/PaymentService';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { RecipientInfo, PaymentService } from '@/services/PaymentService';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface RecipientInputProps {
   onRecipientSelect: (recipient: RecipientInfo | null) => void;
@@ -58,8 +59,19 @@ export default function RecipientInput({
   };
 
   const validateAccountNumber = async (accNum: string) => {
-    if (accNum.length !== 10) {
-      setError('Account number must be 10 digits');
+    // Validate account number contains only digits
+    if (!/^\d+$/.test(accNum)) {
+      setError('Account number must contain only numbers');
+      return;
+    }
+
+    // Validate account number length
+    if (accNum.length < 6) {
+      setError('Account number must be at least 6 digits');
+      return;
+    }
+    if (accNum.length > 20) {
+      setError('Account number cannot exceed 20 digits');
       return;
     }
 
@@ -72,13 +84,22 @@ export default function RecipientInput({
     setError('');
 
     try {
-      const recipient = await PaymentService.getRecipientInfo(accNum);
+      // Use FavoriteModel directly like AddFavoriteModal does
+      const accountHolder = await FavoriteModel.getAccountHolderByAccountNumber(accNum);
 
-      if (!recipient) {
+      if (!accountHolder) {
         setError('Account not found');
         setValidatedRecipient(null);
         onRecipientSelect(null);
       } else {
+        // Create RecipientInfo object from account holder data
+        const recipient: RecipientInfo = {
+          accountNumber: accNum,
+          firstName: accountHolder.name.split(' ')[0],
+          lastName: accountHolder.name.split(' ').slice(1).join(' '),
+          email: '', // Not needed for display
+          profilePicture: accountHolder.profilePicture,
+        };
         setValidatedRecipient(recipient);
         onRecipientSelect(recipient);
       }

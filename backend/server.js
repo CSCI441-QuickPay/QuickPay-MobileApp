@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require("express");
 const Stripe = require("stripe");
 const cors = require("cors");
@@ -28,6 +27,32 @@ app.use(
 
 app.get("/", (req, res) => res.send("QuickPay Stripe backend"));
 
+/**
+ * Quick mock recipient lookup (local dev / smoke test)
+ * GET /api/recipients/:phone
+ * - Returns a mock recipient object when phone === '5502494860'
+ * - Otherwise returns 404
+ *
+ * Replace or remove this when you add a real DB-backed lookup.
+ */
+app.get("/api/recipients/:phone", (req, res) => {
+  const phone = req.params.phone;
+  if (!phone) return res.status(400).json({ error: "phone required" });
+
+  if (phone === "5502494860" || phone.endsWith("5502494860")) {
+    const mockRecipient = {
+      accountNumber: "5502494860",
+      firstName: "Test",
+      lastName: "Recipient",
+      email: "test.recipient@example.com",
+      profilePicture: null,
+    };
+    return res.json({ recipient: mockRecipient });
+  }
+
+  return res.status(404).json({ message: "Recipient not found" });
+});
+
 // Create Checkout Session
 app.post("/create-checkout-session", async (req, res) => {
   try {
@@ -39,8 +64,6 @@ app.post("/create-checkout-session", async (req, res) => {
 
     const publicRoot = process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 4242}`;
 
-    // If client provided return_url, use it for success redirect (useful for deep links to app)
-    // return_url should be a base URL / scheme (e.g., quickpay://transfer/success)
     const successUrl = return_url
       ? `${return_url}?session_id={CHECKOUT_SESSION_ID}`
       : `${publicRoot}/success?session_id={CHECKOUT_SESSION_ID}`;
@@ -77,19 +100,16 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-// Verify Checkout Session (no webhook approach)
-// GET /verify-checkout-session?session_id=cs_...
+// Verify Checkout Session
 app.get("/verify-checkout-session", async (req, res) => {
   const sessionId = req.query.session_id;
   if (!sessionId) return res.status(400).json({ error: "session_id required" });
 
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId.toString());
-    // Optionally retrieve payment_intent for more details:
-    // const paymentIntent = await stripe.paymentIntents.retrieve(session.payment_intent);
     return res.json({
       id: session.id,
-      payment_status: session.payment_status, // 'paid' is successful
+      payment_status: session.payment_status,
       amount_total: session.amount_total,
       currency: session.currency,
       metadata: session.metadata,
@@ -100,7 +120,7 @@ app.get("/verify-checkout-session", async (req, res) => {
   }
 });
 
-// Webhook endpoint (kept for future use, verifies signature if secret set)
+// Webhook endpoint (kept for future use)
 app.post("/webhook", bodyParser.raw({ type: "application/json" }), (req, res) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   const sig = req.headers["stripe-signature"];
@@ -118,12 +138,10 @@ app.post("/webhook", bodyParser.raw({ type: "application/json" }), (req, res) =>
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle the event
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object;
       console.log("Checkout session completed:", session.id, "metadata:", session.metadata);
-      // TODO: mark transfer complete in DB
       break;
     }
     default:
