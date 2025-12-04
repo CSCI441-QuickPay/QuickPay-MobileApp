@@ -268,9 +268,6 @@ QuickPay-MobileApp/
 ├── jest.setup.js                 # Jest setup file
 ├── package.json                  # NPM dependencies and scripts
 ├── tsconfig.json                 # TypeScript configuration
-├── DATA_COLLECTION.md            # Data collection documentation
-├── TESTS_EXPLAINED_SIMPLE.md     # Testing guide for presentations
-├── PRESENTATION_GUIDE.md         # 3-minute presentation guide
 └── README.md                     # This file
 ```
 
