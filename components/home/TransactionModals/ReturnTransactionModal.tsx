@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import { Modal, View, Text, TouchableOpacity, TextInput, ScrollView, Alert } from 'react-native';
 import { useState } from 'react';
 import TransactionModalHeader from './TransactionModalHeader';
