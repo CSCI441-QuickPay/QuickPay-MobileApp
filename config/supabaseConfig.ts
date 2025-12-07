@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 // config/supabaseConfig.ts
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
