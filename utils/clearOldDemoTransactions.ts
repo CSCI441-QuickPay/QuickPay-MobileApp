@@ -1,4 +1,11 @@
 /**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
+/**
  * Utility to clear old demo transactions with invalid dates
  * This should be called once on app startup to clean up corrupted demo transaction data
  */
