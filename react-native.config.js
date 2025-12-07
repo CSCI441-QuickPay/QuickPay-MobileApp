@@ -1,4 +1,11 @@
 /**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
+/**
  * React Native Configuration
  *
  * This configuration excludes react-native-worklets from autolinking
