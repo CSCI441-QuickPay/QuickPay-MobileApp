@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { Linking, Text, TouchableOpacity, View } from 'react-native';
