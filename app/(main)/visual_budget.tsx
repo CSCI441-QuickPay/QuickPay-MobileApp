@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, Alert, ActivityIndicator } from 'react-native';
