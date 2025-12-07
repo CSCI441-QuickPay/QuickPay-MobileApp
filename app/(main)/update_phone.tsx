@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 // app/main/update-phone.tsx
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
