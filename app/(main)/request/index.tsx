@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import NumberPad from "@/components/request/NumberPad";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
