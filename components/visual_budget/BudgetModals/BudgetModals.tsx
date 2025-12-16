@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import { Alert } from 'react-native';
 import AddCategoryModal from '@/components/visual_budget/BudgetModals/AddCategoryModal';
 import EditCategoryInfoModal from '@/components/visual_budget/BudgetModals/EditCategoryInfoModal';

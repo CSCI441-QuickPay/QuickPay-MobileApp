@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import { Animated, View, Dimensions, PanResponder } from 'react-native';
 import { useRef, useState, useEffect } from 'react';
 import ConnectionLines from '@/components/visual_budget/ConnectionLines';

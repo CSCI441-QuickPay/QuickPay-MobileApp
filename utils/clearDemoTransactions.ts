@@ -1,4 +1,11 @@
 /**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
+/**
  * Utility to clear demo mode transactions from AsyncStorage
  *
  * Demo transactions are created when sending payments in Demo Mode.

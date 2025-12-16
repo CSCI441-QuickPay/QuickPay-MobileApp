@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import { useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -112,7 +119,7 @@ function filterByBank(transactions: Transaction[], bankFilter: string): Transact
 // Helper function to sort transactions
 function sortTransactions(transactions: Transaction[], sortType: string): Transaction[] {
   const sorted = [...transactions];
-  
+
   switch (sortType) {
     case "date_asc":
       return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -123,7 +130,8 @@ function sortTransactions(transactions: Transaction[], sortType: string): Transa
     case "amount_desc":
       return sorted.sort((a, b) => b.amount - a.amount);
     default:
-      return sorted;
+      // Default to newest first
+      return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 }
 

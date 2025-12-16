@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 export { default as ExportReceiptModal } from './ExportReceiptModal';
 export { default as ReturnTransactionModal } from './ReturnTransactionModal';
 export { default as TransactionDetailModal } from './TransactionDetailModal';

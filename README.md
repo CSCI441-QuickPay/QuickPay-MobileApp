@@ -1,4 +1,4 @@
-# QuickPay Mobile App
+# QuickPay Mobile App v1.1
 
 > A React Native mobile banking application with Plaid integration, built with Expo, Clerk authentication, and Supabase backend.
 
@@ -35,7 +35,7 @@
 - Track spending with transaction categorization
 - Generate QR codes for payment requests
 
-Built with React Native and Expo for cross-platform compatibility (iOS & Android), QuickPay uses Clerk for authentication and Supabase for backend infrastructure.
+Built with React Native and Expo for cross-platform compatibility (iOS & Android).
 
 ---
 
@@ -155,77 +155,111 @@ Built with React Native and Expo for cross-platform compatibility (iOS & Android
 
 ## Project Structure
 
-```
+```text
 QuickPay-MobileApp/
 ├── app/                          # Main application screens (Expo Router)
 │   ├── (auth)/                   # Authentication screens
 │   │   ├── login.tsx             # Login screen
+│   │   ├── forgot_password.tsx   # Password recovery
 │   │   ├── signup/               # Multi-step signup flow
+│   │   │   ├── index.tsx         # Signup entry point
 │   │   │   ├── StepName.tsx      # Step 1: Name input
 │   │   │   ├── StepBirthday.tsx  # Step 2: Birthday input
 │   │   │   ├── StepPhone.tsx     # Step 3: Phone input
 │   │   │   ├── StepEmail.tsx     # Step 4: Email input
-│   │   │   └── StepPassword.tsx  # Step 5: Password input
-│   │   └── forgot_password.tsx   # Password recovery
+│   │   │   ├── StepPassword.tsx  # Step 5: Password input
+│   │   │   └── StepDone.tsx      # Signup completion
+│   │   └── _layout.tsx           # Auth layout wrapper
 │   ├── (main)/                   # Main app screens (after login)
+│   │   ├── index.tsx             # Main entry/redirect
 │   │   ├── home.tsx              # Dashboard with transactions
 │   │   ├── favorite.tsx          # Favorite contacts management
 │   │   ├── profile.tsx           # User profile and settings
+│   │   ├── my_profile.tsx        # Extended profile editing
+│   │   ├── my_bank.tsx           # Bank accounts management
 │   │   ├── visual_budget.tsx     # Budget visualization
-│   │   └── contact_us.tsx        # Support/contact form
-│   ├── plaid-onboarding-hosted.tsx  # Plaid bank linking
-│   ├── index.tsx                 # Entry point (routing logic)
+│   │   ├── send.tsx              # Send money screen
+│   │   ├── send-confirmation.tsx # Payment confirmation
+│   │   ├── request/              # Request money flows
+│   │   │   ├── index.tsx         # Request entry
+│   │   │   └── qr.tsx            # QR code generation
+│   │   ├── qr_scan.tsx           # QR code scanner
+│   │   ├── plaid-onboarding-hosted.tsx  # Plaid bank linking
+│   │   ├── notification.tsx      # Notifications
+│   │   ├── language.tsx          # Language settings
+│   │   ├── security.tsx          # Security settings
+│   │   ├── term_condition.tsx    # Terms and conditions
+│   │   ├── contact_us.tsx        # Support/contact form
+│   │   ├── update_phone.tsx      # Phone number update
+│   │   └── _layout.tsx           # Main layout with bottom nav
+│   ├── index.tsx                 # App entry point (routing logic)
+│   ├── test-network.tsx          # Network testing utility
 │   └── _layout.tsx               # Root layout with providers
 │
 ├── components/                   # Reusable UI components
 │   ├── home/                     # Home screen components
-│   │   ├── BalanceCard.tsx       # Balance display card
-│   │   ├── TransactionList.tsx   # Transaction list view
-│   │   ├── FilterModal.tsx       # Transaction filters
-│   │   ├── Header.tsx            # Home header
-│   │   ├── QRCodeModal.tsx       # QR code generator
-│   │   └── TransactionItem.tsx   # Single transaction item
 │   ├── favorite/                 # Favorites components
-│   │   ├── AddFavoriteModal.tsx  # Add favorite form
-│   │   └── SplitTransferModal.tsx # Split payment modal
+│   ├── send/                     # Send money components
+│   ├── request/                  # Request money components
 │   ├── profile/                  # Profile components
 │   ├── visual_budget/            # Budget components
+│   ├── shared/                   # Shared/common components
 │   └── BottomNav.tsx             # Bottom navigation bar
 │
 ├── services/                     # Business logic layer
 │   ├── UserSyncService.ts        # Clerk-Supabase user sync
-│   └── PlaidService.ts           # Plaid API integration
+│   ├── PlaidService.ts           # Plaid API integration
+│   ├── PlaidTransferService.ts   # Plaid transfer operations
+│   ├── PaymentService.ts         # Payment processing logic
+│   └── profileService.ts         # Profile management
 │
 ├── models/                       # Data models and database operations
 │   ├── UserModel.ts              # User CRUD operations
+│   ├── FavoriteModel.ts          # Favorites CRUD
+│   ├── TransactionModel.ts       # Transaction operations
+│   ├── BankAccountModel.ts       # Bank account operations
+│   ├── QRCodeModel.ts            # QR code data
+│   ├── GroupExpenseModel.ts      # Split payments
+│   ├── ExternalServiceLogModel.ts # API logging
 │   └── BudgetModel.ts            # Budget data structures
 │
+├── contexts/                     # React contexts
+├── controllers/                  # API controllers
 ├── config/                       # Configuration files
 │   └── supabaseConfig.ts         # Supabase client setup
 │
 ├── supabase/                     # Backend infrastructure
 │   ├── functions/                # Edge Functions (Deno)
-│   │   ├── plaid-create-link-token/  # Generate Plaid link token
-│   │   ├── plaid-exchange-token/     # Exchange public token
-│   │   ├── plaid-get-accounts/       # Fetch account info
-│   │   ├── plaid-get-transactions/   # Fetch transactions
-│   │   └── clerk-webhook/            # Clerk event webhook
+│   │   ├── plaid-create-link-token/    # Generate Plaid link token
+│   │   ├── plaid-exchange-token/       # Exchange public token
+│   │   ├── plaid-get-accounts/         # Fetch account info
+│   │   ├── plaid-get-transactions/     # Fetch transactions
+│   │   ├── plaid-create-transfer/      # Create money transfer
+│   │   ├── plaid-get-transfer-status/  # Check transfer status
+│   │   └── clerk-webhook/              # Clerk event webhook
 │   └── migrations/               # Database migrations
 │
 ├── __tests__/                    # Test files
-│   ├── unit/                     # Unit tests
-│   │   ├── UserSyncService.test.ts   # UserSyncService tests
-│   │   └── PlaidService.test.ts      # PlaidService tests
-│   └── integration/              # Integration tests
+│   ├── unit/                     # Unit tests (11 tests)
+│   │   ├── PlaidService.test.ts  # PlaidService tests (5 tests)
+│   │   └── UserSyncService.test.ts # UserSyncService tests (6 tests)
+│   └── integration/              # Integration tests (3 tests)
 │       └── AuthFlow.test.ts      # Authentication flow tests
 │
 ├── scripts/                      # Utility scripts
+│   ├── analyze-data-collection.js # Data collection analysis
 │   ├── export-user-data.js       # GDPR data export
-│   └── analyze-data-collection.js # Data collection analysis
+│   └── log-transactions.ts       # Transaction logging
 │
 ├── data/                         # Mock/sample data
+├── data-exports/                 # Generated export files
+├── docs/                         # Documentation files
 ├── utils/                        # Utility functions
+├── types/                        # TypeScript type definitions
+├── constants/                    # App constants
+├── styles/                       # Styling files
 ├── assets/                       # Images, fonts, icons
+├── backend/                      # Backend utilities
 │
 ├── .env                          # Environment variables (not in git)
 ├── app.config.js                 # Expo configuration
@@ -234,7 +268,6 @@ QuickPay-MobileApp/
 ├── jest.setup.js                 # Jest setup file
 ├── package.json                  # NPM dependencies and scripts
 ├── tsconfig.json                 # TypeScript configuration
-├── DATA_COLLECTION.md            # Data collection documentation
 └── README.md                     # This file
 ```
 
@@ -244,10 +277,10 @@ QuickPay-MobileApp/
 
 ### Prerequisites
 
-- **Node.js** (v18 or later) - [Download](https://nodejs.org/)
-- **npm** (v8 or later) or **yarn** - Comes with Node.js
+- **Node.js** - [Download](https://nodejs.org/)
 - **Expo CLI** - Install globally: `npm install -g expo-cli`
-- **iOS Simulator** (Mac only) or **Android Emulator** - [Setup Guide](https://docs.expo.dev/workflow/android-studio-emulator/)
+- **iOS Simulator** (Mac only) - [Setup Guide](https://docs.expo.dev/workflow/ios-simulator/)
+- **Android Emulator** - [Setup Guide](https://docs.expo.dev/workflow/android-studio-emulator/)
 - **Expo Go App** (optional) - [iOS](https://apps.apple.com/app/expo-go/id982107779) | [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)
 
 ### Environment Setup
@@ -327,116 +360,148 @@ QuickPay-MobileApp/
    supabase functions deploy plaid-get-accounts
    supabase functions deploy plaid-get-transactions
    supabase functions deploy clerk-webhook
+   supabase functions deploy plaid-create-transfer
+   supabase functions deploy plaid-get-transfer-status
    ```
 
 ---
 
 ## Running the App
 
-### Development Mode
-
-```bash
-# Start Expo development server
-npm start
-# or
-expo start
-```
-
-This will open the Expo DevTools in your browser. From there, you can:
-
-- Press `i` - Open iOS Simulator (Mac only)
-- Press `a` - Open Android Emulator
-- Scan QR code with Expo Go app on your phone
-
-### Platform-Specific Commands
-
-```bash
-# iOS
-npm run ios
-# or
-expo run:ios
-
-# Android
-npm run android
-# or
-expo run:android
-```
-
 ### Development Build (Recommended for testing Plaid)
 
 Expo Go has limitations with native modules. For full Plaid functionality, create a development build:
 
 ```bash
-# Install EAS CLI
-npm install -g eas-cli
+# Create development build iOS
+npx expo prebuild --clean --platform ios
+npx expo run:ios
 
-# Configure EAS
-eas build:configure
-
-# Create development build
-eas build --profile development --platform ios
-# or
-eas build --profile development --platform android
+# Create development build Android
+npx expo prebuild --clean --platform android
+npx expo run:android
 ```
 
 ---
 
 ## Testing
 
-### Run All Tests
+### Test Technologies
+
+- **Jest** (30.2.0) - Testing framework
+- **ts-jest** (29.4.5) - TypeScript support
+- **@testing-library/react-native** (13.3.3) - Testing utilities
+- **React Native preset** - Pre-configured for mobile testing
+
+---
+
+### Test Commands
 
 ```bash
+# Run all tests
 npm test
-```
 
-### Run Specific Test Suites
-
-```bash
-# Unit tests only
+# Run specific test suites
+# Unit tests only (11 tests)
 npm run test:unit
 
-# Integration tests only
-npm run test:integration
+# Integration tests only (3 tests)
+npm run test:integration 
 ```
+
+---
 
 ### Test Structure
 
-- **Unit Tests** (`__tests__/unit/`):
-  - `UserSyncService.test.ts` - Tests user synchronization between Clerk and Supabase
-  - `PlaidService.test.ts` - Tests Plaid API integration
-
-- **Integration Tests** (`__tests__/integration/`):
-  - `AuthFlow.test.ts` - Tests complete authentication flow
-
-### Test Coverage
-
-Current test coverage:
-
-- **UserSyncService**: ~95% - Tests data transformation, user creation, updates, error handling
-- **PlaidService**: ~90% - Tests transaction fetching, account fetching, data transformation
-- **AuthFlow**: ~85% - Tests signup, login, data synchronization, error scenarios
-
-### Data Collection Testing
-
-#### Quick Start - Interactive Script
-
-Run the interactive menu to test data collection:
-
-```bash
-# Windows
-run-data-collection.bat
-
-# Mac/Linux
-chmod +x run-data-collection.sh && ./run-data-collection.sh
+```
+__tests__/
+├── unit/                              # Unit tests (11 tests)
+│   ├── PlaidService.test.ts           # Banking API integration (5 tests)
+│   └── UserSyncService.test.ts        # User data sync (6 tests)
+└── integration/                       # Integration tests (3 tests)
+    └── AuthFlow.test.ts               # Complete auth workflows
 ```
 
-**Menu Options**:
+---
 
-1. View Data Collection Analysis (console output)
-2. Export Analysis to JSON (saves to file)
-3. Export User Data by Clerk ID (GDPR compliance)
-4. View Help
-5. Exit
+### Unit Tests (11 tests)
+
+#### **PlaidService Tests** (5 tests)
+
+Tests banking integration and data transformation:
+
+1. **fetchPlaidTransactions** - Verifies transaction fetching with date ranges
+2. **fetchPlaidAccounts** - Tests account information retrieval
+3. **calculateTotalBalance** - Tests balance calculation across multiple accounts
+   - Handles Plaid's cent-based amounts (divides by 100)
+   - Example: $1000 + $5000 - $250 = $5,750
+4. **transformPlaidTransaction** - Tests data format conversion
+   - Plaid format: positive amount = expense
+   - App format: negative amount = expense
+   - Example: Plaid `45.50` → App `-45.50` (expense)
+5. **isPlaidLinked** - Checks if user has linked bank account
+
+**Why These Matter**: Ensures transactions and balances display correctly, preventing user confusion and financial errors.
+
+#### **UserSyncService Tests** (6 tests)
+
+Tests user data synchronization between Clerk and Supabase:
+
+1. **getClerkUserData** - Tests data extraction from Clerk user objects
+2. **Create New User** - Verifies new user creation with correct defaults
+   - Initial balance: $0
+   - Status: Active
+   - Verified: False
+3. **Update Existing User** - Tests updating user information on login
+4. **Duplicate Key Handling** - Tests race condition prevention
+   - Scenario: Two processes create same user simultaneously
+   - Expected: Gracefully continues without crashing
+5. **Error Propagation** - Verifies non-duplicate errors are thrown
+6. **syncCurrentUser** - Tests the complete sync workflow
+
+**Why These Matter**: Prevents duplicate accounts, data loss, and ensures user data stays synchronized between authentication and database.
+
+---
+
+### Integration Tests (3 tests)
+
+#### **AuthFlow Tests** (3 tests)
+
+Tests complete user journeys from start to finish:
+
+1. **Complete Signup Flow** 🆕
+
+   ```text
+   User Form → Clerk Auth → Get Data → Create Database Record → Done
+   ```
+
+   - Verifies user created with correct email, balance, status
+   - Tests both Clerk ID and email lookups
+   - **Why It Matters**: If this breaks, nobody can sign up!
+
+2. **Complete Login Flow** 🔐
+
+   ```text
+   Enter Password → Clerk Auth → Find User → Update Info → Access Account
+   ```
+
+   - Verifies existing user found and updated
+   - Ensures no duplicate creation
+   - **Why It Matters**: Returns users must access their existing account
+
+3. **Account Recovery Flow** 🔄
+
+   ```text
+   New Device → New Clerk ID → Find by Email → Link Account → No Duplicate
+   ```
+
+   - Tests email fallback when Clerk ID lookup fails
+   - Prevents duplicate accounts during device switches
+   - **Why It Matters**: Users keep their money and transaction history across devices
+
+---
+
+### Data Collection Testing
 
 #### Manual Commands
 
@@ -446,20 +511,9 @@ node scripts/analyze-data-collection.js
 
 # Export analysis to JSON
 node scripts/analyze-data-collection.js --export
-
-# Export specific user's data (replace with actual Clerk ID)
-node scripts/export-user-data.js user_2a1b2c3d4e5f
 ```
 
 #### What Gets Tested
-
-**Data Collection Analysis** (`analyze-data-collection.js`):
-
-- ✅ 7 data collection points (signup, login, Plaid, favorites, etc.)
-- ✅ 5 storage locations (Supabase, Clerk, SecureStore, AsyncStorage, Memory)
-- ✅ 4 external services (Clerk, Plaid, Supabase, Expo)
-- ✅ 6 security measures (TLS, bcrypt, RLS, etc.)
-- ✅ GDPR & CCPA compliance info
 
 **User Data Export** (`export-user-data.js`):
 
@@ -467,55 +521,6 @@ node scripts/export-user-data.js user_2a1b2c3d4e5f
 - ✅ All favorite contacts
 - ✅ Account metadata (age, status, Plaid linking)
 - ✅ Summary statistics
-- ❌ Sensitive tokens (redacted for security)
-- ❌ Transactions (not stored in database)
-
-#### Expected Output
-
-**Analysis Output** (console):
-
-```
-╔═══════════════════════════════════════════════════╗
-║   QUICKPAY DATA COLLECTION ANALYSIS REPORT        ║
-╚═══════════════════════════════════════════════════╝
-
-📍 ===== DATA COLLECTION POINTS =====
-
-Total Collection Points: 7
-
-1. User Signup
-   Screen: app/(auth)/signup/*
-   Data Collected: email, password, firstName, lastName, phoneNumber, birthday
-   Storage: Clerk (auth) + Supabase (profile)
-   Purpose: Create user account and profile
-   Required: Yes
-...
-```
-
-**User Export Output** (JSON file in `data-exports/`):
-
-```json
-{
-  "metadata": {
-    "exportDate": "2024-10-31T10:30:00Z",
-    "clerkId": "user_2a1b2c3d4e5f"
-  },
-  "user": {
-    "email": "user@example.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "phoneNumber": "+1234567890",
-    "plaid_access_token": "[REDACTED - Token exists]",
-    "hasPlaidLinked": true
-  },
-  "favorites": [...],
-  "summary": {
-    "totalFavorites": 3,
-    "accountAge": "5 days",
-    "plaidLinked": true
-  }
-}
-```
 
 #### Finding Your Clerk User ID
 
@@ -572,7 +577,7 @@ QuickPay is committed to transparency about data collection and usage.
 #### What We DON'T Collect
 
 - ❌ Bank passwords (handled by Plaid)
-- ❌ Credit card numbers
+- ❌ Card numbers
 - ❌ Social Security numbers
 - ❌ Location data
 - ❌ Device fingerprinting
@@ -582,146 +587,11 @@ QuickPay is committed to transparency about data collection and usage.
 - **Supabase PostgreSQL**: User profiles, favorites, Plaid tokens (encrypted)
 - **Clerk Cloud**: Authentication credentials, OAuth tokens
 
-### Testing Data Collection
-
-#### Export User Data
-
-```bash
-# Export all data for a specific user
-node scripts/export-user-data.js <clerkId>
-```
-
-**Output**: JSON file in `data-exports/` with:
-
-- User profile
-- Favorite contacts
-- Account metadata
-- Summary statistics
-
----
-
-## API Documentation
-
-### Supabase Edge Functions
-
-All edge functions are located in `supabase/functions/`.
-
-#### 1. plaid-create-link-token
-
-**Purpose**: Generate Plaid Link token for bank linking
-
-**Endpoint**: `POST /functions/v1/plaid-create-link-token`
-
-**Request Body**:
-
-```json
-{
-  "clerkId": "clerk_user123"
-}
-```
-
-**Response**:
-
-```json
-{
-  "link_token": "link-sandbox-abc123..."
-}
-```
-
-#### 2. plaid-exchange-token
-
-**Purpose**: Exchange Plaid public token for access token
-
-**Endpoint**: `POST /functions/v1/plaid-exchange-token`
-
-**Request Body**:
-
-```json
-{
-  "publicToken": "public-sandbox-xyz...",
-  "clerkId": "clerk_user123"
-}
-```
-
-**Response**:
-
-```json
-{
-  "success": true,
-  "access_token": "access-sandbox-def456..."
-}
-```
-
-#### 3. plaid-get-accounts
-
-**Purpose**: Fetch user's bank accounts
-
-**Endpoint**: `POST /functions/v1/plaid-get-accounts`
-
-**Request Body**:
-
-```json
-{
-  "clerkId": "clerk_user123"
-}
-```
-
-**Response**:
-
-```json
-{
-  "accounts": [
-    {
-      "account_id": "acc123",
-      "name": "Plaid Checking",
-      "type": "depository",
-      "subtype": "checking",
-      "balances": {
-        "available": 1000,
-        "current": 1050
-      }
-    }
-  ]
-}
-```
-
-#### 4. plaid-get-transactions
-
-**Purpose**: Fetch user's transactions
-
-**Endpoint**: `POST /functions/v1/plaid-get-transactions`
-
-**Request Body**:
-
-```json
-{
-  "clerkId": "clerk_user123",
-  "startDate": "2024-01-01",
-  "endDate": "2024-01-31"
-}
-```
-
-**Response**:
-
-```json
-{
-  "transactions": [...],
-  "accounts": [...]
-}
-```
-
-## Acknowledgments
-
-- **Expo Team** - For the amazing React Native framework
-- **Clerk** - For seamless authentication
-- **Supabase** - For powerful backend infrastructure
-- **Plaid** - For reliable banking integrations
-
 ---
 
 ## Changelog
 
-### v1.0.0 (Current) - Demo #1 (October 31, 2024)
+### v1.1 (Current)
 
 **Features Implemented**:
 
@@ -731,7 +601,7 @@ All edge functions are located in `supabase/functions/`.
 - ✅ Real-time transaction viewing
 - ✅ Account balance display
 - ✅ Favorites management
-- ✅ Visual budget interface (drag-and-drop)
+- ✅ Visual budget interface
 - ✅ User profile and settings
 - ✅ QR code generation
 - ✅ Transaction filtering and sorting
@@ -740,16 +610,15 @@ All edge functions are located in `supabase/functions/`.
 **Known Issues & Workarounds**:
 
 - ⚠️ Deep link callback issue in Expo Go
-  - **Workaround**: Manual token entry field added
-  - **Permanent Fix**: Build EAS development version
-  - **Documentation**: See WHY_DEEP_LINK_FAILS.md
+  - **Permanent Fix**: Build development version
 
 **Testing**:
 
-- ✅ Unit tests for services (~95% coverage)
-- ✅ Integration tests for auth flow (~85% coverage)
-- ✅ PlaidService tests (~90% coverage)
-- ✅ Overall test coverage: ~90%
+- ✅ 14 comprehensive tests (all passing in ~3.6 seconds)
+- ✅ Unit tests: PlaidService (5 tests), UserSyncService (6 tests)
+- ✅ Integration tests: AuthFlow (3 tests - signup, login, recovery)
+- ✅ Test coverage: ~90% (UserSyncService: 95%, PlaidService: 90%, AuthFlow: 90%)
+- ✅ Edge case testing: race conditions, duplicate prevention, error handling
 
 **Documentation**:
 
@@ -766,15 +635,17 @@ All edge functions are located in `supabase/functions/`.
 **Edge Functions Deployed**:
 
 - ✅ plaid-create-link-token
-- ✅ plaid-exchange-token (with comprehensive logging)
+- ✅ plaid-exchange-token
 - ✅ plaid-get-accounts
 - ✅ plaid-get-transactions
 - ✅ clerk-webhook
+- ✅ plaid-create-transfer
+- ✅ plaid-get-transfer-status
 
-**Current Status**: Testing-ready with minor known issue (deep linking in Expo Go). All core features functional. Plaid integration complete with manual workaround.
+**Current Status**: Testing-ready with Development Build. All core features functional. Plaid integration complete with manual workaround.
 
 ---
 
 **Made with ❤️ by the QuickPay Team**
 
-Last Updated: October 31, 2024
+Last Updated: December 3, 2024

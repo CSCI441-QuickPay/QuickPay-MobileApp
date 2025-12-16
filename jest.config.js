@@ -1,4 +1,11 @@
 /**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
+/**
  * Jest Configuration for QuickPay Mobile App
  *
  * This configuration sets up Jest testing framework for React Native
@@ -57,6 +64,6 @@ module.exports = {
 
   // Transform ignore patterns for node_modules
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|@expo|@clerk|@supabase)/)',
+    'node_modules/(?!(react-native|@react-native|expo|@expo|@clerk|@supabase|react-native-url-polyfill)/)',
   ],
 };

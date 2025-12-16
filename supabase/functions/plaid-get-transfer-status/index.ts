@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { Configuration, PlaidApi, PlaidEnvironments } from "npm:plaid@24.0.0"
 

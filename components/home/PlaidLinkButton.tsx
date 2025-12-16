@@ -1,3 +1,10 @@
+/**
+ * written by: Team QuickPay
+ * tested by: Team QuickPay
+ * debugged by: Team QuickPay
+ * Notes: Contributions were shared, see GitHub history for commit details.
+ * Unit Tests for UserSyncService
+ */
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, Alert } from 'react-native';
 import { create, open, LinkSuccess, LinkExit, LinkLogLevel } from 'react-native-plaid-link-sdk';
